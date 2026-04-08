@@ -1,1 +1,2515 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Isometric Piping Designer v3</title><style>:root{--bg:#0f172a;--panel:#111827;--panel-2:#1f2937;--text:#e5e7eb;--muted:#94a3b8;--accent:#38bdf8;--accent-2:#22c55e;--danger:#ef4444;--warning:#f59e0b;--border:#334155;--grid:rgba(148,163,184,0.22);--grid-strong:rgba(148,163,184,0.42);--pipe-fill:#7dd3fc;--selected:#f59e0b;--surface:#0b1220;}*{box-sizing:border-box;}html,body{margin:0;height:100%;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);}body{display:grid;grid-template-columns:360px 1fr;min-height:100vh;}aside{border-right:1px solid var(--border);background:linear-gradient(180deg,rgba(17,24,39,1) 0%,rgba(15,23,42,1) 100%);padding:16px;overflow-y:auto;}main{display:grid;grid-template-rows:auto 1fr auto;min-width:0;min-height:0;}.topbar,.statusbar{border-bottom:1px solid var(--border);background:rgba(15,23,42,0.92);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}.statusbar{border-top:1px solid var(--border);border-bottom:0;color:var(--muted);font-size:12px;}.workspace{position:relative;min-height:0;overflow:hidden;background:radial-gradient(circle at top,rgba(56,189,248,0.08),transparent 30%),linear-gradient(180deg,#0b1220 0%,#0f172a 100%);}#svgCanvas{width:100%;height:100%;display:block;cursor:crosshair;user-select:none;touch-action:none;}.section{margin-bottom:16px;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:rgba(15,23,42,0.85);box-shadow:0 8px 30px rgba(0,0,0,0.2);}.section h3{margin:0;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;color:#cbd5e1;padding:12px 14px;background:rgba(31,41,55,0.9);border-bottom:1px solid var(--border);}.section-body{padding:12px 14px 14px;}.field{display:grid;gap:6px;margin-bottom:10px;}.field.inline{grid-template-columns:1fr 100px;align-items:center;gap:10px;}.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}label,.field-title{font-size:12px;color:var(--muted);}input[type="text"],input[type="number"],select,textarea{width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:#0b1220;color:var(--text);outline:none;}textarea{min-height:66px;resize:vertical;}input[type="range"]{width:100%;}.button-row,.tool-row,.toggle-row{display:flex;flex-wrap:wrap;gap:8px;}.toggle-row label{display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:9px;border:1px solid var(--border);background:rgba(11,18,32,0.75);cursor:pointer;color:var(--text);}button{border:1px solid var(--border);background:var(--panel-2);color:var(--text);padding:9px 12px;border-radius:9px;cursor:pointer;transition:0.15s ease;font-weight:600;}button:hover{transform:translateY(-1px);border-color:#60a5fa;}button.primary{background:linear-gradient(180deg,#0284c7 0%,#0369a1 100%);border-color:#0ea5e9;}button.success{background:linear-gradient(180deg,#16a34a 0%,#15803d 100%);border-color:#22c55e;}button.danger{background:linear-gradient(180deg,#dc2626 0%,#b91c1c 100%);border-color:#ef4444;}button.ghost{background:#0b1220;}button.active{outline:2px solid rgba(56,189,248,0.55);border-color:#38bdf8;background:rgba(2,132,199,0.22);}.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.35);color:#bae6fd;font-size:12px;}.small{font-size:12px;color:var(--muted);line-height:1.45;}.library-list{display:grid;gap:8px;max-height:240px;overflow-y:auto;padding-right:4px;}.lib-item{border:1px solid var(--border);border-radius:10px;padding:10px;background:rgba(11,18,32,0.9);cursor:pointer;}.lib-item.selected{border-color:var(--accent);box-shadow:inset 0 0 0 1px rgba(56,189,248,0.45);background:rgba(2,132,199,0.14);}.lib-item strong{display:block;margin-bottom:2px;font-size:13px;}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;border:1px solid var(--border);background:#0b1220;border-bottom-width:2px;padding:2px 6px;border-radius:6px;color:#cbd5e1;}.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted);}.color-dot{width:10px;height:10px;border-radius:999px;display:inline-block;vertical-align:middle;margin-right:5px;}.hidden-file-input{display:none;}.title-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}.title-wrap h1{margin:0;font-size:18px;}.selection-box{display:grid;gap:6px;padding:10px;border-radius:10px;background:rgba(11,18,32,0.7);border:1px dashed var(--border);font-size:12px;line-height:1.45;}.selection-box strong{color:#fcd34d;}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;}@media (max-width:1100px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr;}aside{max-height:48vh;border-right:0;border-bottom:1px solid var(--border);}}</style></head><body><aside><div class="section"><h3>Drawing Tools</h3><div class="section-body"><div class="field"><label>Mode</label><div class="tool-row"><button class="active" data-mode="select">Select</button><button data-mode="pipe">Pipe</button><button data-mode="component">Component</button><button data-mode="pan">Pan</button></div></div><div class="field"><label>Axis</label><div class="tool-row"><button class="active" data-axis="x">X</button><button data-axis="y">Y</button><button data-axis="z">Z</button></div></div><div class="field inline"><label for="workingZ">Working elevation (Z)</label><input id="workingZ" type="number" step="1" value="0" /></div><div class="field inline"><label for="pipeDiameter">Pipe diameter</label><div id="pipeDiameterValue" class="badge">0.45 grid</div></div><div class="field"><input id="pipeDiameter" type="range" min="0.15" max="1.25" step="0.05" value="0.45" /></div><div class="field inline"><label for="gridScale">Grid scale</label><div id="gridScaleValue" class="badge">36 px</div></div><div class="field"><input id="gridScale" type="range" min="24" max="60" step="2" value="36" /></div><div class="field"><label for="pipeColor">Pipe color</label><input id="pipeColor" type="text" value="#7dd3fc" /></div><div class="field"><span class="field-title">Display and snapping</span><div class="toggle-row"><label><input id="snapToggle" type="checkbox" checked /> Snap to connections</label><label><input id="dimensionsToggle" type="checkbox" checked /> Show dimensions</label><label><input id="autoJoinToggle" type="checkbox" checked /> Auto-join elbows/tees</label></div></div><div class="button-row"><button id="endRunBtn" class="ghost">End Pipe Run</button><button id="clearSelectionBtn" class="ghost">Clear Selection</button><button id="deleteSelectionBtn" class="danger">Delete Selected</button></div></div></div><div class="section"><h3>Component Library</h3><div class="section-body"><div class="field"><label for="componentName">Name</label><input id="componentName" type="text" placeholder="Example: 2in Gate Valve" /></div><div class="grid-2"><div class="field"><label for="componentType">Type</label><select id="componentType"><option value="gate_valve">Gate Valve</option><option value="ball_valve">Ball Valve</option><option value="globe_valve">Globe Valve</option><option value="check_valve">Check Valve</option><option value="elbow_90">90° Elbow</option><option value="tee">Tee</option><option value="reducer">Reducer</option><option value="flange">Flange</option><option value="cap">Cap</option><option value="generic">Generic Marker</option></select></div><div class="field"><label for="componentScale">Scale</label><input id="componentScale" type="number" step="0.1" min="0.4" max="3" value="1" /></div></div><div class="grid-2"><div class="field"><label for="componentAxis">Default axis</label><select id="componentAxis"><option value="x">X</option><option value="y">Y</option><option value="z">Z</option></select></div><div class="field"><label for="componentColor">Color</label><input id="componentColor" type="text" value="#f8fafc" /></div></div><div class="field"><label for="componentNotes">Notes</label><textarea id="componentNotes" placeholder="Optional description or tag"></textarea></div><div class="button-row"><button id="saveComponentBtn" class="success">Save Component</button><button id="updateComponentBtn" class="primary">Update Selected</button><button id="deleteComponentBtn" class="danger">Delete Library Item</button></div><hr style="border:0;border-top:1px solid var(--border);margin:14px 0;"><div class="field inline"><label>Selected library item</label><div id="activeComponentLabel" class="badge">None</div></div><div id="libraryList" class="library-list"></div></div></div><div class="section"><h3>Project</h3><div class="section-body"><div class="field"><label for="projectName">Project name</label><input id="projectName" type="text" value="My Isometric Layout" /></div><div class="button-row"><button id="saveProjectBtn" class="success">Save in Browser</button><button id="loadProjectBtn" class="primary">Load from Browser</button><button id="newProjectBtn" class="ghost">New Project</button></div><hr style="border:0;border-top:1px solid var(--border);margin:14px 0;"><div class="button-row"><button id="exportJsonBtn" class="ghost">Export JSON</button><button id="importJsonBtn" class="ghost">Import JSON</button><button id="exportBomBtn" class="ghost">Export BOM CSV</button><button id="exportCadBtn" class="ghost">Export DXF-like</button><button id="printSheetBtn" class="primary">Print Sheet Layout</button><input id="importJsonInput" class="hidden-file-input" type="file" accept="application/json" /></div><p class="small">Everything stays browser-only. Projects and saved component definitions are stored with local storage on the same device/browser.</p></div></div><div class="section"><h3>Selection</h3><div class="section-body"><div id="selectionInfo" class="selection-box"><div><strong>Nothing selected</strong></div><div>Select a pipe or component to inspect it.</div></div><hr style="border:0;border-top:1px solid var(--border);margin:14px 0;"><div class="grid-2"><div class="field"><label for="selectedDiameter">Selected pipe diameter</label><input id="selectedDiameter" type="number" step="0.05" min="0.1" value="0.45" /></div><div class="field"><label for="selectedScale">Selected component scale</label><input id="selectedScale" type="number" step="0.1" min="0.2" value="1" /></div></div><div class="grid-2"><div class="field"><label for="selectedColor">Selected object color</label><input id="selectedColor" type="text" value="#7dd3fc" /></div><div class="field"><label for="selectedAxis">Selected component axis</label><select id="selectedAxis"><option value="x">X</option><option value="y">Y</option><option value="z">Z</option></select></div></div><div class="button-row"><button id="applySelectionBtn" class="primary">Apply Selection Changes</button></div></div></div><div class="section"><h3>How to Use</h3><div class="section-body"><p class="small">Choose <span class="kbd">Pipe</span>, pick an axis, then click to place the start and end of each segment. The run stays chained until you press <span class="kbd">End Pipe Run</span>.</p><p class="small">In <span class="kbd">Select</span> mode, drag the orange end handles on a selected pipe to edit geometry. Drag a component to reposition it. Midpoint handles move the whole pipe.</p><p class="small">Snapping uses pipe endpoints and component connection points. Dimensions show centerline lengths in grid units.</p><p class="small">Mouse wheel zooms. Middle mouse or <span class="kbd">Pan</span> mode drags the view. Double-click empty space centers the view. Use <span class="kbd">Print Sheet Layout</span> for an isometric + orthographic printable sheet.</p></div></div></aside><main><div class="topbar"><div class="title-wrap"><h1>Isometric Piping Designer</h1><span class="badge">Single-file browser app</span><span class="badge">No dependencies</span><span class="badge">Auto elbows/tees + print sheet</span></div><div class="legend"><span><span class="color-dot" style="background:#7dd3fc"></span>Pipes</span><span><span class="color-dot" style="background:#f8fafc"></span>Components</span><span><span class="color-dot" style="background:#f59e0b"></span>Selection / handles</span></div></div><div class="workspace" id="workspace"><svg id="svgCanvas" xmlns="http://www.w3.org/2000/svg"><defs><filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" /></filter></defs></svg></div><div class="statusbar"><div id="statusLeft">Ready.</div><div id="statusRight">Tip: library items and projects persist in this browser.</div></div></main><script>(()=>{const e="isoPipingDesignerState_v2";function t(){return Math.random().toString(36).slice(2,10)}const n=[{id:t(),name:"Gate Valve",type:"gate_valve",scale:1,axis:"x",color:"#f8fafc",notes:"Default valve"},{id:t(),name:"Ball Valve",type:"ball_valve",scale:1,axis:"x",color:"#f8fafc",notes:""},{id:t(),name:"90° Elbow",type:"elbow_90",scale:1,axis:"x",color:"#f8fafc",notes:""},{id:t(),name:"Tee",type:"tee",scale:1,axis:"x",color:"#f8fafc",notes:""},{id:t(),name:"Reducer",type:"reducer",scale:1,axis:"x",color:"#f8fafc",notes:""},{id:t(),name:"Flange",type:"flange",scale:1,axis:"x",color:"#f8fafc",notes:""}],i={mode:"select",axis:"x",grid:36,originX:800,originY:360,zoom:1,workingZ:0,defaultDiameter:.45,defaultPipeColor:"#7dd3fc",snapEnabled:!0,showDimensions:!0,autoJoinEnabled:!0,pipes:[],components:[],library:[],activeLibraryId:null,selected:null,drawingStart:null,previewEnd:null,pointerScreen:{x:0,y:0},projectName:"My Isometric Layout",isPanning:!1,panOrigin:null,dragState:null,snapCandidate:null},o={svg:document.getElementById("svgCanvas"),workspace:document.getElementById("workspace"),statusLeft:document.getElementById("statusLeft"),statusRight:document.getElementById("statusRight"),modeButtons:[...document.querySelectorAll("[data-mode]")],axisButtons:[...document.querySelectorAll("[data-axis]")],pipeDiameter:document.getElementById("pipeDiameter"),pipeDiameterValue:document.getElementById("pipeDiameterValue"),gridScale:document.getElementById("gridScale"),gridScaleValue:document.getElementById("gridScaleValue"),pipeColor:document.getElementById("pipeColor"),workingZ:document.getElementById("workingZ"),snapToggle:document.getElementById("snapToggle"),dimensionsToggle:document.getElementById("dimensionsToggle"),autoJoinToggle:document.getElementById("autoJoinToggle"),endRunBtn:document.getElementById("endRunBtn"),deleteSelectionBtn:document.getElementById("deleteSelectionBtn"),clearSelectionBtn:document.getElementById("clearSelectionBtn"),libraryList:document.getElementById("libraryList"),componentName:document.getElementById("componentName"),componentType:document.getElementById("componentType"),componentScale:document.getElementById("componentScale"),componentAxis:document.getElementById("componentAxis"),componentColor:document.getElementById("componentColor"),componentNotes:document.getElementById("componentNotes"),saveComponentBtn:document.getElementById("saveComponentBtn"),updateComponentBtn:document.getElementById("updateComponentBtn"),deleteComponentBtn:document.getElementById("deleteComponentBtn"),activeComponentLabel:document.getElementById("activeComponentLabel"),selectionInfo:document.getElementById("selectionInfo"),selectedDiameter:document.getElementById("selectedDiameter"),selectedScale:document.getElementById("selectedScale"),selectedColor:document.getElementById("selectedColor"),selectedAxis:document.getElementById("selectedAxis"),applySelectionBtn:document.getElementById("applySelectionBtn"),projectName:document.getElementById("projectName"),saveProjectBtn:document.getElementById("saveProjectBtn"),loadProjectBtn:document.getElementById("loadProjectBtn"),newProjectBtn:document.getElementById("newProjectBtn"),exportJsonBtn:document.getElementById("exportJsonBtn"),importJsonBtn:document.getElementById("importJsonBtn"),importJsonInput:document.getElementById("importJsonInput"),exportBomBtn:document.getElementById("exportBomBtn"),exportCadBtn:document.getElementById("exportCadBtn"),printSheetBtn:document.getElementById("printSheetBtn")};function r(e,t,n){return Math.min(n,Math.max(t,e))}function a(e){const t=Math.cos(Math.PI/6),n=Math.sin(Math.PI/6);return{x:i.originX+(e.x-e.y)*t*i.grid*i.zoom,y:i.originY+(e.x+e.y)*n*i.grid*i.zoom-e.z*i.grid*i.zoom}}function d(e,t,n=i.workingZ){const o=Math.cos(Math.PI/6),r=Math.sin(Math.PI/6),a=(e-i.originX)/(o*i.grid*i.zoom),d=(t-i.originY+n*i.grid*i.zoom)/(r*i.grid*i.zoom);return{x:Math.round((a+d)/2),y:Math.round((d-a)/2),z:n}}function s(e){const t=Math.hypot(e.x,e.y)||1;return{x:e.x/t,y:e.y/t}}function l(e){return"x"===e?{x:1,y:0,z:0}:"y"===e?{x:0,y:1,z:0}:{x:0,y:0,z:1}}function c(e){return e.start.x!==e.end.x?"x":e.start.y!==e.end.y?"y":"z"}function p(e){return Math.abs(e.start.x-e.end.x)+Math.abs(e.start.y-e.end.y)+Math.abs(e.start.z-e.end.z)}function u(e,t){return!!e&&!!t&&e.x===t.x&&e.y===t.y&&e.z===t.z}function y(e){return{x:e.x,y:e.y,z:e.z}}function x(e,t){return{x:e.x+t.x,y:e.y+t.y,z:e.z+t.z}}function m(e,t){return{x:(e.x+t.x)/2,y:(e.y+t.y)/2,z:(e.z+t.z)/2}}function g(e){return"x"===e?"y":"y"===e?"z":"x"}function f(e,t){const n=String(e||"#7dd3fc").replace("#",""),i=3===n.length?n.split("").map(e=>e+e).join(""):n,o=parseInt(i,16);return`rgb(${r((o>>16&255)+t,0,255)}, ${r((o>>8&255)+t,0,255)}, ${r((255&o)+t,0,255)})`}function v(e,t){o.statusLeft.textContent=e,t&&(o.statusRight.textContent=t)}function h(e){i.mode=e,i.drawingStart=null,i.previewEnd=null,i.dragState=null,o.modeButtons.forEach(t=>t.classList.toggle("active",t.dataset.mode===e)),o.svg.style.cursor="pan"===e?"grab":"select"===e?"default":"crosshair",v(`Mode: ${e}.`),W()}function b(e){i.axis=e,o.axisButtons.forEach(t=>t.classList.toggle("active",t.dataset.axis===e)),v(`Axis: ${e.toUpperCase()}.`),W()}function w(){return i.library.find(e=>e.id===i.activeLibraryId)||null}function k(){const e=w();o.activeComponentLabel.textContent=e?e.name:"None"}function $(){try{const t=localStorage.getItem(e);if(t)return JSON.parse(t||"{}");const n=localStorage.getItem("isoPipingDesignerState_v1");if(n){const t=JSON.parse(n||"{}");return localStorage.setItem(e,JSON.stringify(t)),t}return{}}catch{return{}}}function E(t){localStorage.setItem(e,JSON.stringify(t))}function S(){const e=$();e.library=i.library,e.projects=e.projects||{},E(e)}function A(){return $().projects||{}}function z(){return{projectName:i.projectName,pipes:i.pipes,components:i.components,defaultDiameter:i.defaultDiameter,defaultPipeColor:i.defaultPipeColor,grid:i.grid,workingZ:i.workingZ,originX:i.originX,originY:i.originY,zoom:i.zoom,snapEnabled:i.snapEnabled,showDimensions:i.showDimensions,autoJoinEnabled:i.autoJoinEnabled}}function C(e){i.projectName=e.projectName||"Imported Project",i.pipes=Array.isArray(e.pipes)?e.pipes:[],i.components=Array.isArray(e.components)?e.components:[],i.defaultDiameter=e.defaultDiameter??.45,i.defaultPipeColor=e.defaultPipeColor||"#7dd3fc",i.grid=e.grid||36,i.workingZ=Number.isFinite(e.workingZ)?e.workingZ:0,i.originX=e.originX||Math.max(420,.54*o.workspace.clientWidth),i.originY=e.originY||Math.max(260,.55*o.workspace.clientHeight),i.zoom=e.zoom||1,i.snapEnabled=e.snapEnabled??!0,i.showDimensions=e.showDimensions??!0,i.autoJoinEnabled=e.autoJoinEnabled??!0,i.selected=null,i.drawingStart=null,i.previewEnd=null,i.dragState=null,B(),W()}function B(){o.projectName.value=i.projectName,o.pipeDiameter.value=String(i.defaultDiameter),o.pipeDiameterValue.textContent=`${Number(i.defaultDiameter).toFixed(2)} grid`,o.gridScale.value=String(i.grid),o.gridScaleValue.textContent=`${i.grid} px`,o.pipeColor.value=i.defaultPipeColor,o.workingZ.value=String(i.workingZ),o.snapToggle.checked=i.snapEnabled,o.dimensionsToggle.checked=i.showDimensions,o.autoJoinToggle.checked=i.autoJoinEnabled,k(),P()}function N(e){return String(e||"").replace(/_/g," ").replace(/\b\w/g,e=>e.toUpperCase())}function I(e){return String(e).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;")}function L(){o.libraryList.innerHTML="",i.library.forEach(e=>{const t=document.createElement("div");t.className="lib-item"+(e.id===i.activeLibraryId?" selected":""),t.innerHTML=`\n            <strong>${I(e.name)}</strong>\n            <div class="small">${N(e.type)} · axis ${e.axis.toUpperCase()} · scale ${e.scale}</div>\n            <div class="small">${I(e.notes||"No notes")}</div>\n          `,t.addEventListener("click",()=>{i.activeLibraryId=e.id,j(e),k(),L(),v(`Active component: ${e.name}.`)}),o.libraryList.appendChild(t)})}function j(e){o.componentName.value=e.name,o.componentType.value=e.type,o.componentScale.value=e.scale,o.componentAxis.value=e.axis,o.componentColor.value=e.color,o.componentNotes.value=e.notes||""}function M(e=!1){const n={id:e&&i.activeLibraryId?i.activeLibraryId:t(),name:o.componentName.value.trim()||"Unnamed Component",type:o.componentType.value,scale:Number(o.componentScale.value)||1,axis:o.componentAxis.value,color:o.componentColor.value.trim()||"#f8fafc",notes:o.componentNotes.value.trim()};if(e&&i.activeLibraryId){const e=i.library.findIndex(e=>e.id===i.activeLibraryId);e>=0&&(i.library[e]=n)}else i.library.push(n),i.activeLibraryId=n.id;S(),L(),k(),v(`${e?"Updated":"Saved"} component ${n.name}.`)}function D(){if(!i.activeLibraryId)return;const e=w();i.library=i.library.filter(e=>e.id!==i.activeLibraryId),i.activeLibraryId=i.library[0]?.id||null,S(),L(),k(),i.activeLibraryId&&j(w()),v(`Deleted component ${e?.name||""}.`)}function P(){const e=i.selected;if(!e)return o.selectionInfo.innerHTML="<div><strong>Nothing selected</strong></div><div>Select a pipe segment or component to inspect it.</div><div>Use Select mode to drag orange handles for editing.</div>",o.selectedDiameter.value=i.defaultDiameter,o.selectedScale.value="1",o.selectedColor.value=i.defaultPipeColor,void(o.selectedAxis.value=i.axis);if("pipe"===e.kind){const t=i.pipes.find(t=>t.id===e.id);if(!t)return;const n=c(t).toUpperCase();return o.selectionInfo.innerHTML=`\n            <div><strong>Pipe Segment</strong></div>\n            <div class="mono">ID: ${t.id}</div>\n            <div>Axis: ${n}</div>\n            <div>Start: (${t.start.x}, ${t.start.y}, ${t.start.z})</div>\n            <div>End: (${t.end.x}, ${t.end.y}, ${t.end.z})</div>\n            <div>Length: ${p(t)} grid units</div>\n            <div>Diameter: ${Number(t.diameter).toFixed(2)} grid</div>\n            <div>Drag the end handles to resize. Drag the middle handle to move the full segment.</div>\n          `,o.selectedDiameter.value=Number(t.diameter).toFixed(2),o.selectedScale.value="1",o.selectedColor.value=t.color,void(o.selectedAxis.value=c(t))}const t=i.components.find(t=>t.id===e.id);t&&(o.selectionInfo.innerHTML=`\n          <div><strong>Component</strong></div>\n          <div>Name: ${I(t.name)}</div>\n          <div>Type: ${N(t.type)}</div>\n          <div>Point: (${t.point.x}, ${t.point.y}, ${t.point.z})</div>\n          <div>Axis: ${t.axis.toUpperCase()}</div>\n          <div>Scale: ${t.scale}</div>\n          <div>Drag the component to move it. Snapping targets pipe ends and other component connectors.</div>\n        `,o.selectedDiameter.value=i.defaultDiameter,o.selectedScale.value=Number(t.scale).toFixed(1),o.selectedColor.value=t.color,o.selectedAxis.value=t.axis)}function T(){i.selected&&("pipe"===i.selected.kind?i.pipes=i.pipes.filter(e=>e.id!==i.selected.id):i.components=i.components.filter(e=>e.id!==i.selected.id),i.selected=null,i.dragState=null,P(),W(),v("Deleted selection."))}function Z(){if(i.selected){if("pipe"===i.selected.kind){const e=i.pipes.find(e=>e.id===i.selected.id);if(!e)return;e.diameter=r(Number(o.selectedDiameter.value)||e.diameter,.1,4),e.color=o.selectedColor.value.trim()||e.color,v(`Updated pipe ${e.id}.`)}else{const e=i.components.find(e=>e.id===i.selected.id);if(!e)return;e.scale=r(Number(o.selectedScale.value)||e.scale,.2,5),e.color=o.selectedColor.value.trim()||e.color,e.axis=o.selectedAxis.value||e.axis,v(`Updated component ${e.name}.`)}P(),W()}else v("Nothing selected to update.")}function J(e,t,n,i,o,a){const d=o-n,s=a-i;if(0===d&&0===s)return Math.hypot(e-n,t-i);const l=r(((e-n)*d+(t-i)*s)/(d*d+s*s),0,1),c=n+l*d,p=i+l*s;return Math.hypot(e-c,t-p)}function O(e){const t=Math.max(.8,e.scale||1),n=l(e.axis||"x"),i=l(e.branchAxis||g(e.axis||"x")),o=[x(e.point,{x:-n.x*t,y:-n.y*t,z:-n.z*t}),x(e.point,{x:n.x*t,y:n.y*t,z:n.z*t})];switch(e.type){case"elbow_90":return[y(e.point),x(e.point,{x:n.x*t,y:n.y*t,z:n.z*t}),x(e.point,{x:i.x*t,y:i.y*t,z:i.z*t})];case"tee":return[...o,x(e.point,{x:i.x*t,y:i.y*t,z:i.z*t})];case"cap":return[x(e.point,{x:-n.x*t,y:-n.y*t,z:-n.z*t})];case"generic":return[y(e.point)];default:return o}}function _(e=null){const t=[];for(const n of i.pipes)e&&"pipe"===e.kind&&e.id===n.id||(t.push({point:y(n.start),source:{kind:"pipe",id:n.id,end:"start"}}),t.push({point:y(n.end),source:{kind:"pipe",id:n.id,end:"end"}}));for(const n of i.components)if(!e||"component"!==e.kind||e.id!==n.id)for(const e of O(n))t.push({point:y(e),source:{kind:"component",id:n.id}});return t}function U(e,t,n=null,o=18){if(!i.snapEnabled)return null;let r=null;for(const i of _(n)){const n=a(i.point),d=Math.hypot(e-n.x,t-n.y);d<=o&&(!r||d<r.dist)&&(r={...i,dist:d})}return r}function R(e,t,n){return"x"===n?t.y===e.y&&t.z===e.z:"y"===n?t.x===e.x&&t.z===e.z:t.x===e.x&&t.y===e.y}function F(e,t,n,o,r=null){let s;if("z"===o){const t=Math.round((a(e).y-n)/(i.grid*i.zoom));s={x:e.x,y:e.y,z:e.z+t}}else{const i=d(t,n,e.z);s="x"===o?{x:i.x,y:e.y,z:e.z}:{x:e.x,y:i.y,z:e.z}}if(!i.snapEnabled)return s;let l=null;for(const i of _(r)){if(!R(e,i.point,o))continue;const r=a(i.point),d=Math.hypot(t-r.x,n-r.y);d<=18&&(!l||d<l.dist)&&(l={point:i.point,dist:d})}return l?y(l.point):s}function V(e,t,n=i.workingZ,o=null){const r=d(e,t,n),a=U(e,t,o);return i.snapCandidate=a?y(a.point):null,a?y(a.point):r}function Y(e){return`${e.x},${e.y},${e.z}`}function X(e){const[t,n,i]=e.split(",").map(Number);return{x:t,y:n,z:i}}function H(e,t=[]){return i.components.some(n=>u(n.point,e)&&(!t.length||t.includes(n.type)))}function q(){if(!i.autoJoinEnabled)return[];const e=new Map;for(const t of i.pipes){const n=c(t);for(const i of["start","end"]){const o=Y(t[i]);e.has(o)||e.set(o,[]),e.get(o).push({pipeId:t.id,axis:n})}}const t=[];for(const[n,i]of e.entries()){if(i.length<2)continue;const e={x:0,y:0,z:0};i.forEach(t=>e[t.axis]+=1);const o=["x","y","z"].filter(t=>e[t]>0);if(o.length<2)continue;const r=X(n),a=["x","y","z"].sort((t,n)=>e[n]-e[t]);let d="",s=a[0],l=o.find(e=>e!==s)||g(s),c="",p="";2===i.length&&2===o.length?(d="elbow_90",s=o[0],l=o[1],c="Auto Elbow",p="Derived from two non-collinear connected pipe segments"):(d="tee",s=a[0],l=o.find(e=>e!==s)||g(s),c=e[s]>=2?"Auto Tee":"Auto Branch Tee",p=i.length>=4?"Derived from multi-branch pipe junction":"Derived from three-way pipe junction"),H(r,["elbow_90","tee"])||t.push({id:`auto_${d}_${n.replaceAll(",","_")}`,name:c,type:d,point:r,axis:s,branchAxis:l,scale:.95,color:"#fbbf24",notes:p,auto:!0})}return t}function G(e,t){let n=null;for(const o of i.components){const i=a(o.point),r=Math.hypot(e-i.x,t-i.y);r<16&&(!n||r<n.dist)&&(n={kind:"component",id:o.id,dist:r})}for(const o of i.pipes){const r=a(o.start),d=a(o.end),s=J(e,t,r.x,r.y,d.x,d.y),l=o.diameter*i.grid*i.zoom/2+8;s<Math.max(l,16)&&(!n||s<n.dist)&&(n={kind:"pipe",id:o.id,dist:s})}return n?{kind:n.kind,id:n.id}:null}function W(){const e=o.workspace.clientWidth||1400,t=o.workspace.clientHeight||800;o.svg.setAttribute("viewBox",`0 0 ${e} ${t}`),o.svg.innerHTML='<defs><filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" /></filter></defs>',function(){const e=document.createElementNS("http://www.w3.org/2000/svg","g"),t=30;for(let n=-t;n<=t;n++)Q(e,{x:-t,y:n,z:i.workingZ},{x:t,y:n,z:i.workingZ},n%5==0?"var(--grid-strong)":"var(--grid)",1),Q(e,{x:n,y:-t,z:i.workingZ},{x:n,y:t,z:i.workingZ},n%5==0?"var(--grid-strong)":"var(--grid)",1);Q(e,{x:0,y:0,z:i.workingZ},{x:5,y:0,z:i.workingZ},"rgba(239,68,68,0.9)",2.2),Q(e,{x:0,y:0,z:i.workingZ},{x:0,y:5,z:i.workingZ},"rgba(34,197,94,0.9)",2.2),Q(e,{x:0,y:0,z:i.workingZ},{x:0,y:0,z:i.workingZ+5},"rgba(59,130,246,0.9)",2.2),o.svg.appendChild(e)}();const n=document.createElementNS("http://www.w3.org/2000/svg","g");n.setAttribute("filter","url(#softShadow)"),o.svg.appendChild(n);for(const e of function(){const e=[];return i.pipes.forEach(t=>{const n=t.start.x+t.start.y+t.end.x+t.end.y+t.start.z+t.end.z;e.push({type:"pipe",depth:n,item:t})}),i.components.forEach(t=>{const n=t.point.x+t.point.y+2*t.point.z;e.push({type:"component",depth:n,item:t})}),e.sort((e,t)=>e.depth-t.depth)}())"pipe"===e.type?ee(n,e.item):te(n,e.item);for(const e of q())te(n,e);!function(e){"pipe"===i.mode&&i.drawingStart&&i.previewEnd&&!u(i.drawingStart,i.previewEnd)&&ee(e,{id:"preview",start:i.drawingStart,end:i.previewEnd,diameter:i.defaultDiameter,color:i.defaultPipeColor},!0);if(i.drawingStart){const t=a(i.drawingStart),n=document.createElementNS("http://www.w3.org/2000/svg","circle");n.setAttribute("cx",t.x),n.setAttribute("cy",t.y),n.setAttribute("r",6),n.setAttribute("fill","#f59e0b"),n.setAttribute("stroke","#ffffff"),n.setAttribute("stroke-width","1.5"),e.appendChild(n)}}(n),function(e){if(!i.selected)return;if("component"===i.selected.kind){const t=i.components.find(e=>e.id===i.selected.id);if(!t)return;const n=a(t.point),o=document.createElementNS("http://www.w3.org/2000/svg","circle");return o.setAttribute("cx",n.x),o.setAttribute("cy",n.y),o.setAttribute("r",Math.max(10,.35*i.grid*t.scale*i.zoom)),o.setAttribute("fill","none"),o.setAttribute("stroke","#f59e0b"),o.setAttribute("stroke-width","1.8"),o.setAttribute("stroke-dasharray","5 4"),e.appendChild(o),void ne(e,t.point,6,"#f59e0b")}const t=i.pipes.find(e=>e.id===i.selected.id);if(!t)return;ne(e,t.start,6,"#f59e0b"),ne(e,t.end,6,"#f59e0b"),ne(e,m(t.start,t.end),5,"#22c55e")}(n),function(e){const t=a(d(i.pointerScreen.x,i.pointerScreen.y,i.workingZ)),n=document.createElementNS("http://www.w3.org/2000/svg","g"),o=document.createElementNS("http://www.w3.org/2000/svg","line"),r=document.createElementNS("http://www.w3.org/2000/svg","line");o.setAttribute("x1",t.x-8),o.setAttribute("y1",t.y),o.setAttribute("x2",t.x+8),o.setAttribute("y2",t.y),r.setAttribute("x1",t.x),r.setAttribute("y1",t.y-8),r.setAttribute("x2",t.x),r.setAttribute("y2",t.y+8),[o,r].forEach(e=>{e.setAttribute("stroke","rgba(248,250,252,0.5)"),e.setAttribute("stroke-width","1"),n.appendChild(e)}),e.appendChild(n)}(n),function(e){if(!i.snapCandidate)return;const t=a(i.snapCandidate),n=document.createElementNS("http://www.w3.org/2000/svg","circle");n.setAttribute("cx",t.x),n.setAttribute("cy",t.y),n.setAttribute("r",8),n.setAttribute("fill","none"),n.setAttribute("stroke","#38bdf8"),n.setAttribute("stroke-width","1.5"),n.setAttribute("stroke-dasharray","4 3"),e.appendChild(n)}(n),P()}function Q(e,t,n,i,o,r=""){const d=a(t),s=a(n),l=document.createElementNS("http://www.w3.org/2000/svg","line");return l.setAttribute("x1",d.x),l.setAttribute("y1",d.y),l.setAttribute("x2",s.x),l.setAttribute("y2",s.y),l.setAttribute("stroke",i),l.setAttribute("stroke-width",o),l.setAttribute("stroke-linecap","round"),r&&l.setAttribute("stroke-dasharray",r),e.appendChild(l),l}function K(e,t,n,i,o,r,a,d="1"){const s=document.createElementNS("http://www.w3.org/2000/svg","ellipse");return s.setAttribute("cx",e),s.setAttribute("cy",t),s.setAttribute("rx",n),s.setAttribute("ry",i),s.setAttribute("fill",r),s.setAttribute("fill-opacity",d),s.setAttribute("stroke",a),s.setAttribute("stroke-width",1.1),s.setAttribute("transform",`rotate(${o} ${e} ${t})`),s}function ee(e,t,n=!1){const o=a(t.start),r=a(t.end),d=s({x:r.x-o.x,y:r.y-o.y}),l=-d.y,c=d.x,u=Math.max(4,t.diameter*i.grid*i.zoom/2),y=o.x+l*u,x=o.y+c*u,m=o.x-l*u,g=o.y-c*u,v=r.x-l*u,h=r.y-c*u,b=r.x+l*u,w=r.y+c*u,k=document.createElementNS("http://www.w3.org/2000/svg","path");k.setAttribute("d",`M ${y} ${x} L ${b} ${w} L ${v} ${h} L ${m} ${g} Z`),k.setAttribute("fill",f(t.color,n?-25:-10)),k.setAttribute("fill-opacity",n?"0.65":"0.95"),k.setAttribute("stroke","pipe"===i.selected?.kind&&i.selected.id===t.id?"var(--selected)":f(t.color,-60)),k.setAttribute("stroke-width","pipe"===i.selected?.kind&&i.selected.id===t.id?"2.2":"1.2"),e.appendChild(k);const $=document.createElementNS("http://www.w3.org/2000/svg","line");$.setAttribute("x1",o.x+l*u*.35),$.setAttribute("y1",o.y+c*u*.35),$.setAttribute("x2",r.x+l*u*.35),$.setAttribute("y2",r.y+c*u*.35),$.setAttribute("stroke","rgba(255,255,255,0.32)"),$.setAttribute("stroke-width",Math.max(1,.18*u)),$.setAttribute("stroke-linecap","round"),e.appendChild($);const E=u,S=Math.max(2.5,.42*u),A=180*Math.atan2(d.y,d.x)/Math.PI,z=K(o.x,o.y,E,S,A,f(t.color,10),f(t.color,-55),n?"0.6":"1"),C=K(r.x,r.y,E,S,A,f(t.color,35),"pipe"===i.selected?.kind&&i.selected.id===t.id?"var(--selected)":f(t.color,-55),n?"0.75":"1");z.setAttribute("fill-opacity",n?"0.55":"0.92"),C.setAttribute("fill-opacity",n?"0.7":"0.96"),e.appendChild(z),e.appendChild(C),!n&&i.showDimensions&&function(e,t){const n=a(t.start),o=a(t.end),r={x:(n.x+o.x)/2,y:(n.y+o.y)/2},d=s({x:o.x-n.x,y:o.y-n.y}),l={x:-d.y,y:d.x},c=Math.max(16,t.diameter*i.grid*i.zoom*.75),u=r.x+l.x*c,y=r.y+l.y*c,x=document.createElementNS("http://www.w3.org/2000/svg","g");Q(x,t.start,t.end,"rgba(248,250,252,0.18)",1,"4 4");const m=document.createElementNS("http://www.w3.org/2000/svg","text");m.setAttribute("x",u),m.setAttribute("y",y),m.setAttribute("fill","#cbd5e1"),m.setAttribute("font-size",Math.max(10,10*i.zoom)),m.setAttribute("text-anchor","middle"),m.textContent=`${p(t)}u`,x.appendChild(m),e.appendChild(x)}(e,t),n||(k.dataset.kind="pipe",k.dataset.id=t.id,C.dataset.kind="pipe",C.dataset.id=t.id,z.dataset.kind="pipe",z.dataset.id=t.id)}function te(e,t){const n=Math.max(10,.35*i.grid*t.scale*i.zoom),o=a(t.point),r=l(t.axis||"x"),d=a({x:t.point.x+r.x,y:t.point.y+r.y,z:t.point.z+r.z}),c=s({x:d.x-o.x,y:d.y-o.y}),p=-c.y,u=c.x,y=document.createElementNS("http://www.w3.org/2000/svg","g");y.dataset.kind="component",y.dataset.id=t.id;const m=t.color||"#f8fafc",v="component"===i.selected?.kind&&i.selected.id===t.id?"var(--selected)":"#0f172a",h={line(e,t,n,i,o=2.2,r=m){const a=document.createElementNS("http://www.w3.org/2000/svg","line");a.setAttribute("x1",e),a.setAttribute("y1",t),a.setAttribute("x2",n),a.setAttribute("y2",i),a.setAttribute("stroke",r),a.setAttribute("stroke-width",o),a.setAttribute("stroke-linecap","round"),y.appendChild(a)},poly(e,t=m,n=1.8){const i=document.createElementNS("http://www.w3.org/2000/svg","polygon");i.setAttribute("points",e.map(e=>`${e.x},${e.y}`).join(" ")),i.setAttribute("fill",t),i.setAttribute("stroke",v),i.setAttribute("stroke-width",n),y.appendChild(i)},circle(e,t,n,i=m,o=1.8){const r=document.createElementNS("http://www.w3.org/2000/svg","circle");r.setAttribute("cx",e),r.setAttribute("cy",t),r.setAttribute("r",n),r.setAttribute("fill",i),r.setAttribute("stroke",v),r.setAttribute("stroke-width",o),y.appendChild(r)},text(e,t,n){const o=document.createElementNS("http://www.w3.org/2000/svg","text");o.setAttribute("x",e),o.setAttribute("y",t),o.setAttribute("fill","#cbd5e1"),o.setAttribute("font-size",Math.max(10,10*i.zoom)),o.setAttribute("text-anchor","middle"),o.textContent=n,y.appendChild(o)}},b={x:o.x-c.x*n*.75,y:o.y-c.y*n*.75},w={x:o.x+c.x*n*.75,y:o.y+c.y*n*.75};switch(t.type){case"gate_valve":h.line(b.x,b.y,o.x-c.x*n*.25,o.y-c.y*n*.25),h.line(o.x+c.x*n*.25,o.y+c.y*n*.25,w.x,w.y),h.poly([{x:o.x-c.x*n*.25-p*n*.45,y:o.y-c.y*n*.25-u*n*.45},{x:o.x-c.x*n*.25+p*n*.45,y:o.y-c.y*n*.25+u*n*.45},{x:o.x+c.x*n*.25+p*n*.45,y:o.y+c.y*n*.25+u*n*.45},{x:o.x+c.x*n*.25-p*n*.45,y:o.y+c.y*n*.25-u*n*.45}],f(m,0)),h.line(o.x,o.y,o.x,o.y-.95*n,1.8),h.line(o.x-.25*n,o.y-.95*n,o.x+.25*n,o.y-.95*n,1.8);break;case"ball_valve":h.line(b.x,b.y,o.x-c.x*n*.35,o.y-c.y*n*.35),h.line(o.x+c.x*n*.35,o.y+c.y*n*.35,w.x,w.y),h.circle(o.x,o.y,.42*n,f(m,-8)),h.line(o.x,o.y,o.x,o.y-.9*n,1.8),h.line(o.x-.25*n,o.y-.9*n,o.x+.25*n,o.y-.9*n,1.8);break;case"globe_valve":h.line(b.x,b.y,o.x-c.x*n*.25,o.y-c.y*n*.25),h.line(o.x+c.x*n*.25,o.y+c.y*n*.25,w.x,w.y),h.circle(o.x,o.y,.36*n,f(m,-12)),h.line(o.x,o.y-.36*n,o.x,o.y-1*n,1.8),h.circle(o.x,o.y-1.07*n,.18*n,"transparent");break;case"check_valve":h.line(b.x,b.y,w.x,w.y),h.poly([{x:o.x-c.x*n*.35-p*n*.42,y:o.y-c.y*n*.35-u*n*.42},{x:o.x-c.x*n*.35+p*n*.42,y:o.y-c.y*n*.35+u*n*.42},{x:o.x+c.x*n*.42,y:o.y+c.y*n*.42}],f(m,-12));break;case"elbow_90":{const e=l(t.branchAxis||g(t.axis||"x")),i=a(x(t.point,e)),r=s({x:i.x-o.x,y:i.y-o.y});h.line(o.x,o.y,o.x+c.x*n*.8,o.y+c.y*n*.8),h.line(o.x,o.y,o.x+r.x*n*.8,o.y+r.y*n*.8),h.circle(o.x,o.y,.15*n,f(m,-8));break}case"tee":{const e=l(t.branchAxis||g(t.axis||"x")),i=a(x(t.point,e)),r=s({x:i.x-o.x,y:i.y-o.y});h.line(b.x,b.y,w.x,w.y),h.line(o.x,o.y,o.x+r.x*n*.9,o.y+r.y*n*.9),h.circle(o.x,o.y,.12*n,f(m,-8));break}case"reducer":h.line(b.x,b.y,w.x,w.y),h.poly([{x:o.x-c.x*n*.45-p*n*.45,y:o.y-c.y*n*.45-u*n*.45},{x:o.x-c.x*n*.45+p*n*.45,y:o.y-c.y*n*.45+u*n*.45},{x:o.x+c.x*n*.45+p*n*.2,y:o.y+c.y*n*.45+u*n*.2},{x:o.x+c.x*n*.45-p*n*.2,y:o.y+c.y*n*.45-u*n*.2}],f(m,-10));break;case"flange":h.line(b.x,b.y,w.x,w.y),h.line(o.x-c.x*n*.28-p*n*.55,o.y-c.y*n*.28-u*n*.55,o.x-c.x*n*.28+p*n*.55,o.y-c.y*n*.28+u*n*.55,3),h.line(o.x+c.x*n*.28-p*n*.55,o.y+c.y*n*.28-u*n*.55,o.x+c.x*n*.28+p*n*.55,o.y+c.y*n*.28+u*n*.55,3);break;case"cap":h.line(b.x,b.y,o.x,o.y),h.line(o.x-p*n*.55,o.y-u*n*.55,o.x+p*n*.55,o.y+u*n*.55,3);break;default:h.circle(o.x,o.y,.24*n,f(m,-8)),h.text(o.x,o.y-.65*n,t.name)}e.appendChild(y)}function ne(e,t,n=6,i="#f59e0b"){const o=a(t),r=document.createElementNS("http://www.w3.org/2000/svg","circle");r.setAttribute("cx",o.x),r.setAttribute("cy",o.y),r.setAttribute("r",n),r.setAttribute("fill",i),r.setAttribute("stroke","#ffffff"),r.setAttribute("stroke-width","1.4"),e.appendChild(r)}function ie(e){const t=o.svg.getBoundingClientRect();return{x:e.clientX-t.left,y:e.clientY-t.top}}function oe(){i.originX=Math.max(400,.52*o.workspace.clientWidth),i.originY=Math.max(260,.52*o.workspace.clientHeight),W(),v("View centered.")}function re(e){e.preventDefault();const t=e.deltaY<0?1.08:.92;i.zoom=r(i.zoom*t,.35,3.25),W()}function ae(e){if(1===e.button||"pan"===i.mode)return void function(e){const t=ie(e);i.isPanning=!0,i.panOrigin=t,o.svg.style.cursor="grabbing"}(e);const n=ie(e);if(i.pointerScreen=n,"select"===i.mode){const e=function(e,t){if(!i.selected)return null;if("pipe"===i.selected.kind){const n=i.pipes.find(e=>e.id===i.selected.id);if(!n)return null;const o=[{handle:"start",point:n.start},{handle:"end",point:n.end},{handle:"mid",point:m(n.start,n.end)}];for(const i of o){const o=a(i.point);if(Math.hypot(e-o.x,t-o.y)<=11)return{kind:"pipe",id:n.id,handle:i.handle}}return null}const n=i.components.find(e=>e.id===i.selected.id);if(!n)return null;const o=a(n.point);return Math.hypot(e-o.x,t-o.y)<=13?{kind:"component",id:n.id,handle:"move"}:null}(n.x,n.y);if(e)return function(e,t=null){if("component"===e.kind){const t=i.components.find(t=>t.id===e.id);if(!t)return;return void(i.dragState={type:"component-move",id:t.id,originalPoint:y(t.point)})}const n=i.pipes.find(t=>t.id===e.id);n&&("start"===e.handle?i.dragState={type:"pipe-start",id:n.id,fixedPoint:y(n.end)}:"end"===e.handle?i.dragState={type:"pipe-end",id:n.id,fixedPoint:y(n.start)}:i.dragState={type:"pipe-move",id:n.id,originalStart:y(n.start),originalEnd:y(n.end),grabGrid:t?d(t.x,t.y,n.start.z):y(n.start)})}(e,n),void W();const t=G(n.x,n.y);return i.selected=t,P(),t&&"component"===t.kind?i.dragState={type:"component-move",id:t.id,originalPoint:y(i.components.find(e=>e.id===t.id).point)}:i.dragState=null,W(),void v(t?`Selected ${t.kind}.`:"Nothing selected.")}if("component"===i.mode){return function(e){const n=w();if(!n)return void v("Select or create a component library item first.");const o={id:t(),name:n.name,type:n.type,scale:n.scale,axis:i.axis||n.axis||"x",color:n.color||"#f8fafc",notes:n.notes||"",point:y(e)};i.components.push(o),i.selected={kind:"component",id:o.id},P(),v(`Placed ${o.name}.`)}(V(n.x,n.y,i.workingZ)),void W()}if("pipe"===i.mode){if(i.drawingStart){const e=F(i.drawingStart,n.x,n.y,i.axis);e&&!u(i.drawingStart,e)&&(!function(e,n){if(u(e,n))return;const o={id:t(),start:y(e),end:y(n),diameter:Number(i.defaultDiameter),color:i.defaultPipeColor};i.pipes.push(o),i.selected={kind:"pipe",id:o.id},P()}(i.drawingStart,e),i.drawingStart=y(e),i.previewEnd=y(e),i.workingZ=e.z,o.workingZ.value=String(i.workingZ),v(`Added segment. Continuing run from (${e.x}, ${e.y}, ${e.z}).`))}else i.drawingStart=V(n.x,n.y,i.workingZ),i.previewEnd=y(i.drawingStart),v(`Pipe start set at (${i.drawingStart.x}, ${i.drawingStart.y}, ${i.drawingStart.z}).`);W()}}function de(e){const t=ie(e);if(i.pointerScreen=t,i.isPanning){const e=t.x-i.panOrigin.x,n=t.y-i.panOrigin.y;return i.originX+=e,i.originY+=n,i.panOrigin=t,void W()}if(i.dragState)return function(e){if(!i.dragState)return;const t=i.dragState;if("component-move"===t.type){const n=i.components.find(e=>e.id===t.id);if(!n)return;return void(n.point=V(e.x,e.y,t.originalPoint.z,{kind:"component",id:n.id}))}if("pipe-start"===t.type||"pipe-end"===t.type){const n=i.pipes.find(e=>e.id===t.id);if(!n)return;const o=F(t.fixedPoint,e.x,e.y,i.axis,{kind:"pipe",id:n.id});if(u(o,t.fixedPoint))return;return void("pipe-start"===t.type?n.start=o:n.end=o)}if("pipe-move"===t.type){const r=i.pipes.find(e=>e.id===t.id);if(!r)return;const a=(n=d(e.x,e.y,t.grabGrid.z),o=t.grabGrid,{x:n.x-o.x,y:n.y-o.y,z:n.z-o.z});r.start=x(t.originalStart,a),r.end=x(t.originalEnd,a)}var n,o}(t),P(),void W();if("pipe"===i.mode&&i.drawingStart)i.previewEnd=F(i.drawingStart,t.x,t.y,i.axis);else if("component"===i.mode||"select"===i.mode){const e=U(t.x,t.y);i.snapCandidate=e?y(e.point):null}else i.snapCandidate=null;W()}function se(){i.dragState&&(P(),v("Edit applied.")),i.dragState=null,i.isPanning=!1,i.panOrigin=null,"pan"===i.mode?o.svg.style.cursor="grab":"select"===i.mode?o.svg.style.cursor="default":o.svg.style.cursor="crosshair"}function le(){i.projectName=o.projectName.value.trim()||"Untitled Project";const e=A();e[i.projectName]=z(),function(e){const t=$();t.library=i.library,t.projects=e,E(t)}(e),v(`Saved project ${i.projectName} in browser.`)}function ce(){const e=A(),t=Object.keys(e);if(!t.length)return void v("No saved projects found in this browser.");const n=prompt(`Saved projects:\n\n${t.join("\n")}\n\nEnter project name to load:`,i.projectName);n&&(e[n]?(C(e[n]),v(`Loaded project ${n}.`)):v(`Project ${n} was not found.`))}function pe(){i.pipes=[],i.components=[],i.selected=null,i.drawingStart=null,i.previewEnd=null,i.dragState=null,i.projectName="My Isometric Layout",i.defaultDiameter=.45,i.defaultPipeColor="#7dd3fc",i.workingZ=0,i.grid=36,i.zoom=1,i.snapEnabled=!0,i.showDimensions=!0,oe(),B(),W(),v("Started new project.")}function ue(e,t,n="text/plain"){const i=new Blob([t],{type:n}),o=URL.createObjectURL(i),r=document.createElement("a");r.href=o,r.download=e,r.click(),URL.revokeObjectURL(o)}function ye(){const e={version:3,exportedAt:(new Date).toISOString(),project:z(),library:i.library};ue(`${(i.projectName||"isometric-piping-project").replace(/[^a-z0-9-_]+/gi,"_")}.json`,JSON.stringify(e,null,2),"application/json"),v("Exported JSON file.")}function xe(){const e=[["Section","Item","Type","Qty","Total Length","Diameter","Axis","Color","Notes"]],t=new Map;for(const e of i.pipes){const n=[c(e),Number(e.diameter).toFixed(2),e.color].join("|"),i=t.get(n)||{qty:0,totalLength:0,axis:c(e),diameter:Number(e.diameter).toFixed(2),color:e.color};i.qty+=1,i.totalLength+=p(e),t.set(n,i)}for(const[,n]of[...t.entries()].sort())e.push(["Pipe","Pipe Segment Group","Pipe",String(n.qty),String(n.totalLength),n.diameter,n.axis.toUpperCase(),n.color,"Grouped by axis, diameter, and color"]);const n=new Map;for(const e of i.components){const t=[e.name,e.type,e.axis,e.color,e.notes||""].join("|"),i=n.get(t)||{qty:0,name:e.name,type:e.type,axis:e.axis,color:e.color,notes:e.notes||""};i.qty+=1,n.set(t,i)}for(const[,t]of[...n.entries()].sort())e.push(["Component",t.name,N(t.type),String(t.qty),"","",t.axis.toUpperCase(),t.color,t.notes]);return e.map(e=>e.map(e=>`"${String(e).replaceAll('"','""')}"`).join(",")).join("\n")}function me(){ue(`${(i.projectName||"isometric-piping-project").replace(/[^a-z0-9-_]+/gi,"_")}_BOM.csv`,xe(),"text/csv"),v("Exported BOM CSV.")}function ge(){ue(`${(i.projectName||"isometric-piping-project").replace(/[^a-z0-9-_]+/gi,"_")}.dxf`,function(){const e=[],t=(...t)=>t.forEach(t=>e.push(String(t)));t("0","SECTION","2","HEADER"),t("9","$PROJECT","1",i.projectName),t("9","$UNITS","1","GRID"),t("0","ENDSEC"),t("0","SECTION","2","ENTITIES");for(const e of i.pipes)t("0","LINE"),t("8","PIPES"),t("5",e.id),t("10",e.start.x,"20",e.start.y,"30",e.start.z),t("11",e.end.x,"21",e.end.y,"31",e.end.z),t("39",Number(e.diameter).toFixed(2)),t("62",e.color),t("999",`LEN=${p(e)}`);for(const e of i.components)t("0","INSERT"),t("8","COMPONENTS"),t("5",e.id),t("2",e.name),t("10",e.point.x,"20",e.point.y,"30",e.point.z),t("41",e.scale,"42",e.scale,"43",e.scale),t("50",e.axis.toUpperCase()),t("62",e.color),t("999",`TYPE=${e.type}`),t("999",`NOTES=${(e.notes||"").replace(/\n/g," ")}`);return t("0","ENDSEC","0","EOF"),e.join("\n")}(),"application/dxf"),v("Exported DXF-like text file.")}function fe(e,t){const n=Math.cos(Math.PI/6),i=Math.sin(Math.PI/6);return"iso"===t?{u:(e.x-e.y)*n,v:(e.x+e.y)*i-e.z}:"top"===t?{u:e.x,v:-e.y}:"front"===t?{u:e.x,v:-e.z}:{u:e.y,v:-e.z}}function ve(e,t,n){const o=function(){const e=[];for(const t of i.pipes)e.push(y(t.start),y(t.end));for(const t of i.components)e.push(y(t.point)),O(t).forEach(t=>e.push(y(t)));for(const t of q())e.push(y(t.point)),O(t).forEach(t=>e.push(y(t)));return e.length||e.push({x:0,y:0,z:0},{x:10,y:10,z:0}),e}().map(t=>fe(t,e));let r=Math.min(...o.map(e=>e.u)),a=Math.max(...o.map(e=>e.u)),d=Math.min(...o.map(e=>e.v)),s=Math.max(...o.map(e=>e.v));r===a&&(r-=1,a+=1),d===s&&(d-=1,s+=1);const c=Math.min((t-48)/(a-r),(n-48)/(s-d));function u(t){const i=fe(t,e);return{x:24+(i.u-r)*c,y:n-24-(i.v-d)*c}}function x(e){const t=u({x:0,y:0,z:0}),n=u(l(e)),i=n.x-t.x,o=n.y-t.y,r=Math.hypot(i,o)||1;return{x:i/r,y:o/r}}const m=[];m.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${t} ${n}" width="${t}" height="${n}">`),m.push(`<rect x="0" y="0" width="${t}" height="${n}" fill="#ffffff" stroke="#111827" stroke-width="1"/>`),m.push(`<rect x="10" y="10" width="${t-20}" height="${n-20}" fill="none" stroke="#cbd5e1" stroke-width="1"/>`);for(const e of i.pipes){const t=u(e.start),n=u(e.end),i=Math.max(2,e.diameter*c*.18);m.push(`<line x1="${t.x}" y1="${t.y}" x2="${n.x}" y2="${n.y}" stroke="#0f172a" stroke-width="${i}" stroke-linecap="round"/>`);const o=(t.x+n.x)/2,r=(t.y+n.y)/2;m.push(`<text x="${o}" y="${r-8}" font-size="10" text-anchor="middle" fill="#334155">${p(e)}u</text>`)}function f(e,t){const n=u(e.point),i=x(e.axis||"x"),o=x((r=e.axis,e.branchAxis||g(r||"x")));var r;const a=-i.y,d=i.x,s=12*(e.scale||1),l=n.x-i.x*s,c=n.y-i.y*s,p=n.x+i.x*s,y=n.y+i.y*s,f=e=>m.push(e);if("elbow_90"===e.type)return f(`<line x1="${n.x}" y1="${n.y}" x2="${n.x+i.x*s}" y2="${n.y+i.y*s}" stroke="${t}" stroke-width="2"/>`),f(`<line x1="${n.x}" y1="${n.y}" x2="${n.x+o.x*s}" y2="${n.y+o.y*s}" stroke="${t}" stroke-width="2"/>`),void f(`<circle cx="${n.x}" cy="${n.y}" r="2.6" fill="${t}"/>`);if("tee"===e.type)return f(`<line x1="${l}" y1="${c}" x2="${p}" y2="${y}" stroke="${t}" stroke-width="2"/>`),f(`<line x1="${n.x}" y1="${n.y}" x2="${n.x+o.x*s}" y2="${n.y+o.y*s}" stroke="${t}" stroke-width="2"/>`),void f(`<circle cx="${n.x}" cy="${n.y}" r="2.2" fill="${t}"/>`);if("reducer"===e.type){const e={x:n.x-i.x*s*.75-a*s*.42,y:n.y-i.y*s*.75-d*s*.42},o={x:n.x-i.x*s*.75+a*s*.42,y:n.y-i.y*s*.75+d*s*.42},r={x:n.x+i.x*s*.75+a*s*.18,y:n.y+i.y*s*.75+d*s*.18},l={x:n.x+i.x*s*.75-a*s*.18,y:n.y+i.y*s*.75-d*s*.18};return void f(`<polygon points="${e.x},${e.y} ${o.x},${o.y} ${r.x},${r.y} ${l.x},${l.y}" fill="none" stroke="${t}" stroke-width="2"/>`)}if("flange"===e.type)return f(`<line x1="${l}" y1="${c}" x2="${p}" y2="${y}" stroke="${t}" stroke-width="2"/>`),f(`<line x1="${n.x-i.x*s*.25-a*s*.55}" y1="${n.y-i.y*s*.25-d*s*.55}" x2="${n.x-i.x*s*.25+a*s*.55}" y2="${n.y-i.y*s*.25+d*s*.55}" stroke="${t}" stroke-width="2"/>`),void f(`<line x1="${n.x+i.x*s*.25-a*s*.55}" y1="${n.y+i.y*s*.25-d*s*.55}" x2="${n.x+i.x*s*.25+a*s*.55}" y2="${n.y+i.y*s*.25+d*s*.55}" stroke="${t}" stroke-width="2"/>`);if("cap"===e.type)return f(`<line x1="${l}" y1="${c}" x2="${n.x}" y2="${n.y}" stroke="${t}" stroke-width="2"/>`),void f(`<line x1="${n.x-a*s*.55}" y1="${n.y-d*s*.55}" x2="${n.x+a*s*.55}" y2="${n.y+d*s*.55}" stroke="${t}" stroke-width="2"/>`);if("ball_valve"===e.type||"globe_valve"===e.type)return f(`<line x1="${l}" y1="${c}" x2="${p}" y2="${y}" stroke="${t}" stroke-width="2"/>`),void f(`<circle cx="${n.x}" cy="${n.y}" r="${.36*s}" fill="none" stroke="${t}" stroke-width="2"/>`);if("gate_valve"===e.type||"check_valve"===e.type){f(`<line x1="${l}" y1="${c}" x2="${p}" y2="${y}" stroke="${t}" stroke-width="2"/>`);const e={x:n.x-i.x*s*.3-a*s*.42,y:n.y-i.y*s*.3-d*s*.42},o={x:n.x-i.x*s*.3+a*s*.42,y:n.y-i.y*s*.3+d*s*.42},r={x:n.x+i.x*s*.3+a*s*.42,y:n.y+i.y*s*.3+d*s*.42},u={x:n.x+i.x*s*.3-a*s*.42,y:n.y+i.y*s*.3-d*s*.42};return void f(`<polygon points="${e.x},${e.y} ${o.x},${o.y} ${r.x},${r.y} ${u.x},${u.y}" fill="none" stroke="${t}" stroke-width="2"/>`)}f(`<circle cx="${n.x}" cy="${n.y}" r="4" fill="${t}"/>`)}for(const e of q())f(e,"#b45309");for(const e of i.components)f(e,"#1f2937");return m.push("</svg>"),m.join("")}function he(){const e=(new Date).toLocaleString(),t=q().length,n=ve("iso",740,440),o=ve("top",360,240),r=ve("front",360,240),a=ve("right",360,240);return`<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8" />\n<title>${I(i.projectName)} - Print Sheet</title>\n<style>\n  * { box-sizing: border-box; }\n  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #dbe2ea; color: #0f172a; }\n  .toolbar { position: sticky; top: 0; display: flex; gap: 10px; padding: 10px 14px; background: #0f172a; color: #fff; z-index: 5; }\n  .toolbar button { padding: 10px 14px; border: 0; border-radius: 6px; font-weight: 700; cursor: pointer; }\n  .toolbar .print { background: #2563eb; color: #fff; }\n  .toolbar .close { background: #475569; color: #fff; }\n  .sheet { width: 1100px; min-height: 850px; margin: 18px auto; background: #fff; border: 1px solid #64748b; box-shadow: 0 12px 40px rgba(15,23,42,0.18); padding: 18px; }\n  .sheet-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }\n  .panel { border: 1px solid #64748b; padding: 8px; background: #fff; }\n  .panel h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }\n  .ortho-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }\n  .title-block { margin-top: 14px; border: 1px solid #0f172a; display: grid; grid-template-columns: 2fr 1fr 1fr; }\n  .title-cell { min-height: 72px; border-right: 1px solid #0f172a; padding: 8px 10px; font-size: 12px; }\n  .title-cell:last-child { border-right: 0; }\n  .title-main { font-size: 18px; font-weight: 700; margin-bottom: 6px; }\n  .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; font-size: 12px; }\n  .bom-table { width: 100%; border-collapse: collapse; font-size: 10px; }\n  .bom-table th, .bom-table td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; vertical-align: top; }\n  .bom-table th { background: #e2e8f0; }\n  .small { font-size: 11px; color: #334155; }\n  @page { size: landscape; margin: 0.35in; }\n  @media print {\n    body { background: #fff; }\n    .toolbar { display: none; }\n    .sheet { margin: 0; border: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; }\n  }\n</style>\n</head>\n<body>\n  <div class="toolbar">\n    <button class="print" onclick="window.print()">Print</button>\n    <button class="close" onclick="window.close()">Close</button>\n  </div>\n  <div class="sheet">\n    <div class="sheet-grid">\n      <div class="panel">\n        <h3>Isometric View</h3>\n        ${n}\n      </div>\n      <div class="panel">\n        <h3>Material Summary</h3>\n        ${function(e=14){const t=xe().split("\n").map(e=>e.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(e=>String(e).replace(/^"|"$/g,"").replaceAll('""','"'))),n=t.shift()||[],i=t.slice(0,e).map(e=>`<tr>${e.map(e=>`<td>${I(e)}</td>`).join("")}</tr>`).join("");return`\n          <table class="bom-table">\n            <thead><tr>${n.map(e=>`<th>${I(e)}</th>`).join("")}</tr></thead>\n            <tbody>${i}</tbody>\n          </table>\n        `}(16)}\n        <div class="small" style="margin-top:8px;">Auto fittings shown on this sheet are derived from shared pipe endpoints when auto-join is enabled.</div>\n      </div>\n    </div>\n\n    <div class="ortho-grid" style="margin-top:14px;">\n      <div class="panel">\n        <h3>Top View (X-Y)</h3>\n        ${o}\n      </div>\n      <div class="panel">\n        <h3>Front View (X-Z)</h3>\n        ${r}\n      </div>\n      <div class="panel">\n        <h3>Right View (Y-Z)</h3>\n        ${a}\n      </div>\n      <div class="panel">\n        <h3>Notes</h3>\n        <div class="small">Pipe dimensions are centerline grid units. Pipe thickness in the print views is diagrammatic. Use exported JSON or DXF-like output for data exchange and the BOM CSV for tabular material summaries.</div>\n      </div>\n    </div>\n\n    <div class="title-block">\n      <div class="title-cell">\n        <div class="title-main">${I(i.projectName)}</div>\n        <div class="small">Browser-only piping isometric sheet generated from the current layout.</div>\n      </div>\n      <div class="title-cell">\n        <div class="meta">\n          <div><strong>Date</strong></div><div>${I(e)}</div>\n          <div><strong>Pipes</strong></div><div>${i.pipes.length}</div>\n          <div><strong>Components</strong></div><div>${i.components.length}</div>\n          <div><strong>Auto fittings</strong></div><div>${t}</div>\n        </div>\n      </div>\n      <div class="title-cell">\n        <div class="meta">\n          <div><strong>Scale</strong></div><div>Not to scale</div>\n          <div><strong>Units</strong></div><div>Grid</div>\n          <div><strong>Diameter default</strong></div><div>${Number(i.defaultDiameter).toFixed(2)}</div>\n          <div><strong>Grid px</strong></div><div>${i.grid}</div>\n        </div>\n      </div>\n    </div>\n  </div>\n</body>\n</html>`}function be(){const e=window.open("","_blank");e?(e.document.open(),e.document.write(he()),e.document.close(),v("Opened print sheet layout in a new tab/window.")):v("Pop-up blocked. Allow pop-ups for this page to open the print sheet.")}function we(){o.modeButtons.forEach(e=>e.addEventListener("click",()=>h(e.dataset.mode))),o.axisButtons.forEach(e=>e.addEventListener("click",()=>b(e.dataset.axis))),o.pipeDiameter.addEventListener("input",()=>{i.defaultDiameter=Number(o.pipeDiameter.value),o.pipeDiameterValue.textContent=`${i.defaultDiameter.toFixed(2)} grid`,W()}),o.gridScale.addEventListener("input",()=>{i.grid=Number(o.gridScale.value),o.gridScaleValue.textContent=`${i.grid} px`,W()}),o.pipeColor.addEventListener("change",()=>{i.defaultPipeColor=o.pipeColor.value.trim()||"#7dd3fc",W()}),o.workingZ.addEventListener("change",()=>{i.workingZ=Math.round(Number(o.workingZ.value)||0),o.workingZ.value=String(i.workingZ),W()}),o.snapToggle.addEventListener("change",()=>{i.snapEnabled=!!o.snapToggle.checked,W()}),o.dimensionsToggle.addEventListener("change",()=>{i.showDimensions=!!o.dimensionsToggle.checked,W()}),o.autoJoinToggle.addEventListener("change",()=>{i.autoJoinEnabled=!!o.autoJoinToggle.checked,W()}),o.endRunBtn.addEventListener("click",()=>{i.drawingStart=null,i.previewEnd=null,W(),v("Pipe run ended.")}),o.deleteSelectionBtn.addEventListener("click",T),o.applySelectionBtn.addEventListener("click",Z),o.clearSelectionBtn.addEventListener("click",()=>{i.selected=null,i.dragState=null,P(),W(),v("Selection cleared.")}),o.saveComponentBtn.addEventListener("click",()=>M(!1)),o.updateComponentBtn.addEventListener("click",()=>M(!0)),o.deleteComponentBtn.addEventListener("click",D),o.projectName.addEventListener("change",()=>i.projectName=o.projectName.value.trim()||"Untitled Project"),o.saveProjectBtn.addEventListener("click",le),o.loadProjectBtn.addEventListener("click",ce),o.newProjectBtn.addEventListener("click",pe),o.exportJsonBtn.addEventListener("click",ye),o.importJsonBtn.addEventListener("click",()=>o.importJsonInput.click()),o.importJsonInput.addEventListener("change",e=>{const t=e.target.files?.[0];t&&function(e){const t=new FileReader;t.onload=()=>{try{const e=JSON.parse(t.result);e.library&&Array.isArray(e.library)&&(i.library=e.library,S(),L()),e.project&&C(e.project),v("Imported JSON data.")}catch(e){console.error(e),v("Could not import JSON.")}},t.readAsText(e)}(t),e.target.value=""}),o.exportBomBtn.addEventListener("click",me),o.exportCadBtn.addEventListener("click",ge),o.printSheetBtn.addEventListener("click",be),o.svg.addEventListener("pointerdown",ae),window.addEventListener("pointermove",de),window.addEventListener("pointerup",se),o.svg.addEventListener("wheel",re,{passive:!1}),o.svg.addEventListener("dblclick",e=>{G(ie(e).x,ie(e).y)||oe()}),window.addEventListener("keydown",e=>{"Escape"===e.key&&(i.drawingStart=null,i.previewEnd=null,i.dragState=null,W(),v("Cancelled current draw action.")),"Delete"!==e.key&&"Backspace"!==e.key||!i.selected||(e.preventDefault(),T()),"v"===e.key.toLowerCase()&&h("select"),"p"===e.key.toLowerCase()&&h("pipe"),"c"===e.key.toLowerCase()&&h("component"),"h"===e.key.toLowerCase()&&h("pan"),"x"===e.key.toLowerCase()&&b("x"),"y"===e.key.toLowerCase()&&b("y"),"z"===e.key.toLowerCase()&&b("z"),"["===e.key&&(i.workingZ-=1,B(),W()),"]"===e.key&&(i.workingZ+=1,B(),W())}),window.addEventListener("resize",()=>W())}!function(){const e=$();i.library=Array.isArray(e.library)&&e.library.length?e.library:n.map(e=>({...e}))}(),!i.activeLibraryId&&i.library.length&&(i.activeLibraryId=i.library[0].id,j(i.library[0])),i.originX=Math.max(420,.54*o.workspace.clientWidth),i.originY=Math.max(260,.55*o.workspace.clientHeight),B(),L(),we(),W()})();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Isometric Piping Designer v4</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: #334155;
+      --grid: rgba(148, 163, 184, 0.22);
+      --grid-strong: rgba(148, 163, 184, 0.42);
+      --pipe-fill: #7dd3fc;
+      --selected: #f59e0b;
+      --surface: #0b1220;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      min-height: 100vh;
+    }
+
+    aside {
+      border-right: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(17,24,39,1) 0%, rgba(15,23,42,1) 100%);
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    main {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .topbar, .statusbar {
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.92);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .statusbar {
+      border-top: 1px solid var(--border);
+      border-bottom: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .workspace {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, rgba(56,189,248,0.08), transparent 30%),
+        linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+    }
+
+    #svgCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .section {
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(15,23,42,0.85);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    }
+
+    .section h3 {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      padding: 12px 14px;
+      background: rgba(31,41,55,0.9);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-body { padding: 12px 14px 14px; }
+    .field { display: grid; gap: 6px; margin-bottom: 10px; }
+    .field.inline { grid-template-columns: 1fr 100px; align-items: center; gap: 10px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+
+    label, .field-title {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      color: var(--text);
+      outline: none;
+    }
+
+    textarea { min-height: 66px; resize: vertical; }
+    input[type="range"] { width: 100%; }
+
+    .button-row, .tool-row, .toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .toggle-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: rgba(11,18,32,0.75);
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: 0.15s ease;
+      font-weight: 600;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: #60a5fa;
+    }
+
+    button.primary {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      border-color: #0ea5e9;
+    }
+
+    button.success {
+      background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+      border-color: #22c55e;
+    }
+
+    button.danger {
+      background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
+      border-color: #ef4444;
+    }
+
+    button.ghost { background: #0b1220; }
+
+    button.active {
+      outline: 2px solid rgba(56,189,248,0.55);
+      border-color: #38bdf8;
+      background: rgba(2,132,199,0.22);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(56,189,248,0.12);
+      border: 1px solid rgba(56,189,248,0.35);
+      color: #bae6fd;
+      font-size: 12px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .library-list {
+      display: grid;
+      gap: 8px;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .lib-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(11,18,32,0.9);
+      cursor: pointer;
+    }
+
+    .lib-item.selected {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(56,189,248,0.45);
+      background: rgba(2,132,199,0.14);
+    }
+
+    .lib-item strong {
+      display: block;
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      border-bottom-width: 2px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: #cbd5e1;
+    }
+
+    .legend {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .color-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 5px;
+    }
+
+    .hidden-file-input { display: none; }
+
+    .title-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .selection-box {
+      display: grid;
+      gap: 6px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(11,18,32,0.7);
+      border: 1px dashed var(--border);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .selection-box strong { color: #fcd34d; }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11px;
+    }
+
+    @media (max-width: 1100px) {
+      body {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+      }
+      aside {
+        max-height: 48vh;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <div class="section">
+      <h3>Drawing Tools</h3>
+      <div class="section-body">
+        <div class="field">
+          <label>Mode</label>
+          <div class="tool-row">
+            <button class="active" data-mode="select">Select</button>
+            <button data-mode="pipe">Pipe</button>
+            <button data-mode="component">Component</button>
+            <button data-mode="pan">Pan</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Pipe direction</label>
+          <div class="small">In pipe mode, the X, Y, or Z axis is chosen automatically from your cursor movement.</div>
+        </div>
+
+        <div class="field inline">
+          <label for="workingZ">Working elevation (Z)</label>
+          <input id="workingZ" type="number" step="1" value="0" />
+        </div>
+
+        <div class="field inline">
+          <label for="pipeDiameter">Pipe diameter</label>
+          <div id="pipeDiameterValue" class="badge">0.45 grid</div>
+        </div>
+        <div class="field">
+          <input id="pipeDiameter" type="range" min="0.15" max="1.25" step="0.05" value="0.45" />
+        </div>
+
+        <div class="field inline">
+          <label for="gridScale">Grid scale</label>
+          <div id="gridScaleValue" class="badge">36 px</div>
+        </div>
+        <div class="field">
+          <input id="gridScale" type="range" min="24" max="60" step="2" value="36" />
+        </div>
+
+        <div class="field">
+          <label for="pipeColor">Pipe color</label>
+          <input id="pipeColor" type="text" value="#7dd3fc" />
+        </div>
+
+        <div class="field">
+          <span class="field-title">Display and snapping</span>
+          <div class="toggle-row">
+            <label><input id="snapToggle" type="checkbox" checked /> Snap to connections</label>
+            <label><input id="dimensionsToggle" type="checkbox" checked /> Show dimensions</label>
+            <label><input id="autoJoinToggle" type="checkbox" checked /> Auto-join elbows/tees</label>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="endRunBtn" class="ghost">End Pipe Run</button>
+          <button id="clearSelectionBtn" class="ghost">Clear Selection</button>
+          <button id="deleteSelectionBtn" class="danger">Delete Selected</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Component Library</h3>
+      <div class="section-body">
+        <div class="field">
+          <label for="componentName">Name</label>
+          <input id="componentName" type="text" placeholder="Example: 2in Gate Valve" />
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="componentType">Type</label>
+            <select id="componentType">
+              <option value="gate_valve">Gate Valve</option>
+              <option value="ball_valve">Ball Valve</option>
+              <option value="globe_valve">Globe Valve</option>
+              <option value="check_valve">Check Valve</option>
+              <option value="elbow_90">90° Elbow</option>
+              <option value="tee">Tee</option>
+              <option value="reducer">Reducer</option>
+              <option value="flange">Flange</option>
+              <option value="cap">Cap</option>
+              <option value="generic">Generic Marker</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="componentScale">Scale</label>
+            <input id="componentScale" type="number" step="0.1" min="0.4" max="3" value="1" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="componentAxis">Default axis</label>
+            <select id="componentAxis">
+              <option value="x">X</option>
+              <option value="y">Y</option>
+              <option value="z">Z</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="componentColor">Color</label>
+            <input id="componentColor" type="text" value="#f8fafc" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="componentNotes">Notes</label>
+          <textarea id="componentNotes" placeholder="Optional description or tag"></textarea>
+        </div>
+        <div class="button-row">
+          <button id="saveComponentBtn" class="success">Save Component</button>
+          <button id="updateComponentBtn" class="primary">Update Selected</button>
+          <button id="deleteComponentBtn" class="danger">Delete Library Item</button>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+        <div class="field inline">
+          <label>Selected library item</label>
+          <div id="activeComponentLabel" class="badge">None</div>
+        </div>
+        <div id="libraryList" class="library-list"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Project</h3>
+      <div class="section-body">
+        <div class="field">
+          <label for="projectName">Project name</label>
+          <input id="projectName" type="text" value="My Isometric Layout" />
+        </div>
+        <div class="button-row">
+          <button id="saveProjectBtn" class="success">Save in Browser</button>
+          <button id="loadProjectBtn" class="primary">Load from Browser</button>
+          <button id="newProjectBtn" class="ghost">New Project</button>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+        <div class="button-row">
+          <button id="exportJsonBtn" class="ghost">Export JSON</button>
+          <button id="importJsonBtn" class="ghost">Import JSON</button>
+          <button id="exportBomBtn" class="ghost">Export BOM CSV</button>
+          <button id="exportCadBtn" class="ghost">Export DXF-like</button>
+          <button id="printSheetBtn" class="primary">Print Sheet Layout</button>
+          <input id="importJsonInput" class="hidden-file-input" type="file" accept="application/json" />
+        </div>
+        <p class="small">Everything stays browser-only. Projects and saved component definitions are stored with local storage on the same device/browser.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Selection</h3>
+      <div class="section-body">
+        <div id="selectionInfo" class="selection-box">
+          <div><strong>Nothing selected</strong></div>
+          <div>Select a pipe or component to inspect it.</div>
+        </div>
+        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+        <div class="grid-2">
+          <div class="field">
+            <label for="selectedDiameter">Selected pipe diameter</label>
+            <input id="selectedDiameter" type="number" step="0.05" min="0.1" value="0.45" />
+          </div>
+          <div class="field">
+            <label for="selectedScale">Selected component scale</label>
+            <input id="selectedScale" type="number" step="0.1" min="0.2" value="1" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="selectedColor">Selected object color</label>
+            <input id="selectedColor" type="text" value="#7dd3fc" />
+          </div>
+          <div class="field">
+            <label for="selectedAxis">Selected component axis</label>
+            <select id="selectedAxis">
+              <option value="x">X</option>
+              <option value="y">Y</option>
+              <option value="z">Z</option>
+            </select>
+          </div>
+        </div>
+        <div class="button-row">
+          <button id="applySelectionBtn" class="primary">Apply Selection Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>How to Use</h3>
+      <div class="section-body">
+        <p class="small">Choose <span class="kbd">Pipe</span>, pick an axis, then click to place the start and end of each segment. The run stays chained until you press <span class="kbd">End Pipe Run</span>.</p>
+        <p class="small">In <span class="kbd">Select</span> mode, drag the orange end handles on a selected pipe to edit geometry. Drag a component to reposition it. Midpoint handles move the whole pipe.</p>
+        <p class="small">Snapping uses pipe endpoints and component connection points. Dimensions show centerline lengths in grid units.</p>
+        <p class="small">Mouse wheel zooms. Middle mouse or <span class="kbd">Pan</span> mode drags the view. Double-click empty space centers the view. Use <span class="kbd">Print Sheet Layout</span> for an isometric + orthographic printable sheet.</p>
+      </div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>Isometric Piping Designer</h1>
+        <span class="badge">Single-file browser app</span>
+        <span class="badge">No dependencies</span>
+        <span class="badge">Auto elbows/tees + print sheet</span>
+      </div>
+      <div class="legend">
+        <span><span class="color-dot" style="background:#7dd3fc"></span>Pipes</span>
+        <span><span class="color-dot" style="background:#f8fafc"></span>Components</span>
+        <span><span class="color-dot" style="background:#f59e0b"></span>Selection / handles</span>
+      </div>
+    </div>
+
+    <div class="workspace" id="workspace">
+      <svg id="svgCanvas" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" />
+          </filter>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="statusbar">
+      <div id="statusLeft">Ready.</div>
+      <div id="statusRight">Pipe mode auto-detects X, Y, and Z direction from cursor movement.</div>
+    </div>
+  </main>
+
+  <script>
+
+    (() => {
+      const STORAGE_KEY = 'isoPipingDesignerState_v2';
+      const LEGACY_STORAGE_KEY = 'isoPipingDesignerState_v1';
+
+      function uid() {
+        return Math.random().toString(36).slice(2, 10);
+      }
+
+      const DEFAULT_COMPONENTS = [
+        { id: uid(), name: 'Gate Valve', type: 'gate_valve', scale: 1, axis: 'x', color: '#f8fafc', notes: 'Default valve' },
+        { id: uid(), name: 'Ball Valve', type: 'ball_valve', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
+        { id: uid(), name: '90° Elbow', type: 'elbow_90', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
+        { id: uid(), name: 'Tee', type: 'tee', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
+        { id: uid(), name: 'Reducer', type: 'reducer', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
+        { id: uid(), name: 'Flange', type: 'flange', scale: 1, axis: 'x', color: '#f8fafc', notes: '' }
+      ];
+
+      const state = {
+        mode: 'select',
+        axis: 'x',
+        grid: 36,
+        originX: 800,
+        originY: 360,
+        zoom: 1,
+        workingZ: 0,
+        defaultDiameter: 0.45,
+        defaultPipeColor: '#7dd3fc',
+        snapEnabled: true,
+        showDimensions: true,
+        autoJoinEnabled: true,
+        pipes: [],
+        components: [],
+        library: [],
+        activeLibraryId: null,
+        selected: null,
+        drawingStart: null,
+        previewEnd: null,
+        pointerScreen: { x: 0, y: 0 },
+        projectName: 'My Isometric Layout',
+        isPanning: false,
+        panOrigin: null,
+        dragState: null,
+        snapCandidate: null
+      };
+
+      const els = {
+        svg: document.getElementById('svgCanvas'),
+        workspace: document.getElementById('workspace'),
+        statusLeft: document.getElementById('statusLeft'),
+        statusRight: document.getElementById('statusRight'),
+        modeButtons: [...document.querySelectorAll('[data-mode]')],
+        pipeDiameter: document.getElementById('pipeDiameter'),
+        pipeDiameterValue: document.getElementById('pipeDiameterValue'),
+        gridScale: document.getElementById('gridScale'),
+        gridScaleValue: document.getElementById('gridScaleValue'),
+        pipeColor: document.getElementById('pipeColor'),
+        workingZ: document.getElementById('workingZ'),
+        snapToggle: document.getElementById('snapToggle'),
+        dimensionsToggle: document.getElementById('dimensionsToggle'),
+        autoJoinToggle: document.getElementById('autoJoinToggle'),
+        endRunBtn: document.getElementById('endRunBtn'),
+        deleteSelectionBtn: document.getElementById('deleteSelectionBtn'),
+        clearSelectionBtn: document.getElementById('clearSelectionBtn'),
+        libraryList: document.getElementById('libraryList'),
+        componentName: document.getElementById('componentName'),
+        componentType: document.getElementById('componentType'),
+        componentScale: document.getElementById('componentScale'),
+        componentAxis: document.getElementById('componentAxis'),
+        componentColor: document.getElementById('componentColor'),
+        componentNotes: document.getElementById('componentNotes'),
+        saveComponentBtn: document.getElementById('saveComponentBtn'),
+        updateComponentBtn: document.getElementById('updateComponentBtn'),
+        deleteComponentBtn: document.getElementById('deleteComponentBtn'),
+        activeComponentLabel: document.getElementById('activeComponentLabel'),
+        selectionInfo: document.getElementById('selectionInfo'),
+        selectedDiameter: document.getElementById('selectedDiameter'),
+        selectedScale: document.getElementById('selectedScale'),
+        selectedColor: document.getElementById('selectedColor'),
+        selectedAxis: document.getElementById('selectedAxis'),
+        applySelectionBtn: document.getElementById('applySelectionBtn'),
+        projectName: document.getElementById('projectName'),
+        saveProjectBtn: document.getElementById('saveProjectBtn'),
+        loadProjectBtn: document.getElementById('loadProjectBtn'),
+        newProjectBtn: document.getElementById('newProjectBtn'),
+        exportJsonBtn: document.getElementById('exportJsonBtn'),
+        importJsonBtn: document.getElementById('importJsonBtn'),
+        importJsonInput: document.getElementById('importJsonInput'),
+        exportBomBtn: document.getElementById('exportBomBtn'),
+        exportCadBtn: document.getElementById('exportCadBtn'),
+        printSheetBtn: document.getElementById('printSheetBtn')
+      };
+
+      function clamp(val, min, max) {
+        return Math.min(max, Math.max(min, val));
+      }
+
+      function projectPoint(p) {
+        const c = Math.cos(Math.PI / 6);
+        const s = Math.sin(Math.PI / 6);
+        return {
+          x: state.originX + ((p.x - p.y) * c * state.grid * state.zoom),
+          y: state.originY + ((p.x + p.y) * s * state.grid * state.zoom) - (p.z * state.grid * state.zoom)
+        };
+      }
+
+      function screenToGridOnWorkingPlane(screenX, screenY, z = state.workingZ) {
+        const c = Math.cos(Math.PI / 6);
+        const s = Math.sin(Math.PI / 6);
+        const dx = (screenX - state.originX) / (c * state.grid * state.zoom);
+        const dy = (screenY - state.originY + z * state.grid * state.zoom) / (s * state.grid * state.zoom);
+        const x = Math.round((dx + dy) / 2);
+        const y = Math.round((dy - dx) / 2);
+        return { x, y, z };
+      }
+
+      function normalize(v) {
+        const len = Math.hypot(v.x, v.y) || 1;
+        return { x: v.x / len, y: v.y / len };
+      }
+
+      function axisVector(axis) {
+        if (axis === 'x') return { x: 1, y: 0, z: 0 };
+        if (axis === 'y') return { x: 0, y: 1, z: 0 };
+        return { x: 0, y: 0, z: 1 };
+      }
+
+      function pipeAxis(pipe) {
+        if (pipe.start.x !== pipe.end.x) return 'x';
+        if (pipe.start.y !== pipe.end.y) return 'y';
+        return 'z';
+      }
+
+      function lengthOfPipe(pipe) {
+        return Math.abs(pipe.start.x - pipe.end.x) + Math.abs(pipe.start.y - pipe.end.y) + Math.abs(pipe.start.z - pipe.end.z);
+      }
+
+      function samePoint(a, b) {
+        return !!a && !!b && a.x === b.x && a.y === b.y && a.z === b.z;
+      }
+
+      function clonePoint(p) {
+        return { x: p.x, y: p.y, z: p.z };
+      }
+
+      function addPoint(a, b) {
+        return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
+      }
+
+      function subPoint(a, b) {
+        return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
+      }
+
+      function midpoint(a, b) {
+        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 };
+      }
+
+      function nextAxis(axis) {
+        if (axis === 'x') return 'y';
+        if (axis === 'y') return 'z';
+        return 'x';
+      }
+
+      function shadeColor(hex, amount) {
+        const clean = String(hex || '#7dd3fc').replace('#', '');
+        const full = clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean;
+        const num = parseInt(full, 16);
+        const r = clamp(((num >> 16) & 255) + amount, 0, 255);
+        const g = clamp(((num >> 8) & 255) + amount, 0, 255);
+        const b = clamp((num & 255) + amount, 0, 255);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      function updateStatus(msg, rightMsg) {
+        els.statusLeft.textContent = msg;
+        if (rightMsg) els.statusRight.textContent = rightMsg;
+      }
+
+      function setMode(mode) {
+        state.mode = mode;
+        state.drawingStart = null;
+        state.previewEnd = null;
+        state.dragState = null;
+        els.modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
+        if (mode === 'pan') els.svg.style.cursor = 'grab';
+        else if (mode === 'select') els.svg.style.cursor = 'default';
+        else els.svg.style.cursor = 'crosshair';
+        updateStatus(`Mode: ${mode}.`);
+        render();
+      }
+
+      function setAxis(axis, announce = false) {
+        state.axis = axis;
+        if (announce) updateStatus(`Axis: ${axis.toUpperCase()}.`);
+        render();
+      }
+
+      function activeLibraryItem() {
+        return state.library.find(item => item.id === state.activeLibraryId) || null;
+      }
+
+      function updateActiveComponentLabel() {
+        const item = activeLibraryItem();
+        els.activeComponentLabel.textContent = item ? item.name : 'None';
+      }
+
+      function loadStorageRoot() {
+        try {
+          const current = localStorage.getItem(STORAGE_KEY);
+          if (current) return JSON.parse(current || '{}');
+          const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
+          if (legacy) {
+            const parsed = JSON.parse(legacy || '{}');
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+            return parsed;
+          }
+          return {};
+        } catch {
+          return {};
+        }
+      }
+
+      function saveStorageRoot(root) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
+      }
+
+      function saveStateToBrowser() {
+        const root = loadStorageRoot();
+        root.library = state.library;
+        root.projects = root.projects || {};
+        saveStorageRoot(root);
+      }
+
+      function loadStoredState() {
+        const raw = loadStorageRoot();
+        state.library = Array.isArray(raw.library) && raw.library.length ? raw.library : DEFAULT_COMPONENTS.map(item => ({ ...item }));
+      }
+
+      function loadProjectsMap() {
+        const root = loadStorageRoot();
+        return root.projects || {};
+      }
+
+      function persistProjectsMap(projects) {
+        const root = loadStorageRoot();
+        root.library = state.library;
+        root.projects = projects;
+        saveStorageRoot(root);
+      }
+
+      function serializeProject() {
+        return {
+          projectName: state.projectName,
+          pipes: state.pipes,
+          components: state.components,
+          defaultDiameter: state.defaultDiameter,
+          defaultPipeColor: state.defaultPipeColor,
+          grid: state.grid,
+          workingZ: state.workingZ,
+          originX: state.originX,
+          originY: state.originY,
+          zoom: state.zoom,
+          snapEnabled: state.snapEnabled,
+          showDimensions: state.showDimensions,
+          autoJoinEnabled: state.autoJoinEnabled
+        };
+      }
+
+      function applyProject(project) {
+        state.projectName = project.projectName || 'Imported Project';
+        state.pipes = Array.isArray(project.pipes) ? project.pipes : [];
+        state.components = Array.isArray(project.components) ? project.components : [];
+        state.defaultDiameter = project.defaultDiameter ?? 0.45;
+        state.defaultPipeColor = project.defaultPipeColor || '#7dd3fc';
+        state.grid = project.grid || 36;
+        state.workingZ = Number.isFinite(project.workingZ) ? project.workingZ : 0;
+        state.originX = project.originX || Math.max(420, els.workspace.clientWidth * 0.54);
+        state.originY = project.originY || Math.max(260, els.workspace.clientHeight * 0.55);
+        state.zoom = project.zoom || 1;
+        state.snapEnabled = project.snapEnabled ?? true;
+        state.showDimensions = project.showDimensions ?? true;
+        state.autoJoinEnabled = project.autoJoinEnabled ?? true;
+        state.selected = null;
+        state.drawingStart = null;
+        state.previewEnd = null;
+        state.dragState = null;
+        syncInputs();
+        render();
+      }
+
+      function syncInputs() {
+        els.projectName.value = state.projectName;
+        els.pipeDiameter.value = String(state.defaultDiameter);
+        els.pipeDiameterValue.textContent = `${Number(state.defaultDiameter).toFixed(2)} grid`;
+        els.gridScale.value = String(state.grid);
+        els.gridScaleValue.textContent = `${state.grid} px`;
+        els.pipeColor.value = state.defaultPipeColor;
+        els.workingZ.value = String(state.workingZ);
+        els.snapToggle.checked = state.snapEnabled;
+        els.dimensionsToggle.checked = state.showDimensions;
+        els.autoJoinToggle.checked = state.autoJoinEnabled;
+        updateActiveComponentLabel();
+        refreshSelectionInfo();
+      }
+
+      function labelType(type) {
+        return String(type || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      function renderLibrary() {
+        els.libraryList.innerHTML = '';
+        state.library.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'lib-item' + (item.id === state.activeLibraryId ? ' selected' : '');
+          div.innerHTML = `
+            <strong>${escapeHtml(item.name)}</strong>
+            <div class="small">${labelType(item.type)} · axis ${item.axis.toUpperCase()} · scale ${item.scale}</div>
+            <div class="small">${escapeHtml(item.notes || 'No notes')}</div>
+          `;
+          div.addEventListener('click', () => {
+            state.activeLibraryId = item.id;
+            populateComponentEditor(item);
+            updateActiveComponentLabel();
+            renderLibrary();
+            updateStatus(`Active component: ${item.name}.`);
+          });
+          els.libraryList.appendChild(div);
+        });
+      }
+
+      function populateComponentEditor(item) {
+        els.componentName.value = item.name;
+        els.componentType.value = item.type;
+        els.componentScale.value = item.scale;
+        els.componentAxis.value = item.axis;
+        els.componentColor.value = item.color;
+        els.componentNotes.value = item.notes || '';
+      }
+
+      function saveComponent(updateExisting = false) {
+        const payload = {
+          id: updateExisting && state.activeLibraryId ? state.activeLibraryId : uid(),
+          name: els.componentName.value.trim() || 'Unnamed Component',
+          type: els.componentType.value,
+          scale: Number(els.componentScale.value) || 1,
+          axis: els.componentAxis.value,
+          color: els.componentColor.value.trim() || '#f8fafc',
+          notes: els.componentNotes.value.trim()
+        };
+        if (updateExisting && state.activeLibraryId) {
+          const idx = state.library.findIndex(item => item.id === state.activeLibraryId);
+          if (idx >= 0) state.library[idx] = payload;
+        } else {
+          state.library.push(payload);
+          state.activeLibraryId = payload.id;
+        }
+        saveStateToBrowser();
+        renderLibrary();
+        updateActiveComponentLabel();
+        updateStatus(`${updateExisting ? 'Updated' : 'Saved'} component ${payload.name}.`);
+      }
+
+      function deleteActiveLibraryItem() {
+        if (!state.activeLibraryId) return;
+        const item = activeLibraryItem();
+        state.library = state.library.filter(entry => entry.id !== state.activeLibraryId);
+        state.activeLibraryId = state.library[0]?.id || null;
+        saveStateToBrowser();
+        renderLibrary();
+        updateActiveComponentLabel();
+        if (state.activeLibraryId) populateComponentEditor(activeLibraryItem());
+        updateStatus(`Deleted component ${item?.name || ''}.`);
+      }
+
+      function refreshSelectionInfo() {
+        const sel = state.selected;
+        if (!sel) {
+          els.selectionInfo.innerHTML = '<div><strong>Nothing selected</strong></div><div>Select a pipe segment or component to inspect it.</div><div>Use Select mode to drag orange handles for editing.</div>';
+          els.selectedDiameter.value = state.defaultDiameter;
+          els.selectedScale.value = '1';
+          els.selectedColor.value = state.defaultPipeColor;
+          els.selectedAxis.value = state.axis;
+          return;
+        }
+
+        if (sel.kind === 'pipe') {
+          const item = state.pipes.find(p => p.id === sel.id);
+          if (!item) return;
+          const axis = pipeAxis(item).toUpperCase();
+          els.selectionInfo.innerHTML = `
+            <div><strong>Pipe Segment</strong></div>
+            <div class="mono">ID: ${item.id}</div>
+            <div>Axis: ${axis}</div>
+            <div>Start: (${item.start.x}, ${item.start.y}, ${item.start.z})</div>
+            <div>End: (${item.end.x}, ${item.end.y}, ${item.end.z})</div>
+            <div>Length: ${lengthOfPipe(item)} grid units</div>
+            <div>Diameter: ${Number(item.diameter).toFixed(2)} grid</div>
+            <div>Drag the end handles to resize. Drag the middle handle to move the full segment.</div>
+          `;
+          els.selectedDiameter.value = Number(item.diameter).toFixed(2);
+          els.selectedScale.value = '1';
+          els.selectedColor.value = item.color;
+          els.selectedAxis.value = pipeAxis(item);
+          return;
+        }
+
+        const item = state.components.find(c => c.id === sel.id);
+        if (!item) return;
+        els.selectionInfo.innerHTML = `
+          <div><strong>Component</strong></div>
+          <div>Name: ${escapeHtml(item.name)}</div>
+          <div>Type: ${labelType(item.type)}</div>
+          <div>Point: (${item.point.x}, ${item.point.y}, ${item.point.z})</div>
+          <div>Axis: ${item.axis.toUpperCase()}</div>
+          <div>Scale: ${item.scale}</div>
+          <div>Drag the component to move it. Snapping targets pipe ends and other component connectors.</div>
+        `;
+        els.selectedDiameter.value = state.defaultDiameter;
+        els.selectedScale.value = Number(item.scale).toFixed(1);
+        els.selectedColor.value = item.color;
+        els.selectedAxis.value = item.axis;
+      }
+
+      function addPipeSegment(start, end) {
+        if (samePoint(start, end)) return;
+        const segment = {
+          id: uid(),
+          start: clonePoint(start),
+          end: clonePoint(end),
+          diameter: Number(state.defaultDiameter),
+          color: state.defaultPipeColor
+        };
+        state.pipes.push(segment);
+        state.selected = { kind: 'pipe', id: segment.id };
+        refreshSelectionInfo();
+      }
+
+      function addPlacedComponent(point) {
+        const tpl = activeLibraryItem();
+        if (!tpl) {
+          updateStatus('Select or create a component library item first.');
+          return;
+        }
+        const comp = {
+          id: uid(),
+          name: tpl.name,
+          type: tpl.type,
+          scale: tpl.scale,
+          axis: tpl.axis || 'x',
+          color: tpl.color || '#f8fafc',
+          notes: tpl.notes || '',
+          point: clonePoint(point)
+        };
+        state.components.push(comp);
+        state.selected = { kind: 'component', id: comp.id };
+        refreshSelectionInfo();
+        updateStatus(`Placed ${comp.name}.`);
+      }
+
+      function deleteSelection() {
+        if (!state.selected) return;
+        if (state.selected.kind === 'pipe') {
+          state.pipes = state.pipes.filter(item => item.id !== state.selected.id);
+        } else {
+          state.components = state.components.filter(item => item.id !== state.selected.id);
+        }
+        state.selected = null;
+        state.dragState = null;
+        refreshSelectionInfo();
+        render();
+        updateStatus('Deleted selection.');
+      }
+
+      function applySelectionChanges() {
+        if (!state.selected) {
+          updateStatus('Nothing selected to update.');
+          return;
+        }
+        if (state.selected.kind === 'pipe') {
+          const item = state.pipes.find(p => p.id === state.selected.id);
+          if (!item) return;
+          item.diameter = clamp(Number(els.selectedDiameter.value) || item.diameter, 0.1, 4);
+          item.color = els.selectedColor.value.trim() || item.color;
+          updateStatus(`Updated pipe ${item.id}.`);
+        } else {
+          const item = state.components.find(c => c.id === state.selected.id);
+          if (!item) return;
+          item.scale = clamp(Number(els.selectedScale.value) || item.scale, 0.2, 5);
+          item.color = els.selectedColor.value.trim() || item.color;
+          item.axis = els.selectedAxis.value || item.axis;
+          updateStatus(`Updated component ${item.name}.`);
+        }
+        refreshSelectionInfo();
+        render();
+      }
+
+      function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
+        const t = clamp(((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy), 0, 1);
+        const cx = x1 + t * dx;
+        const cy = y1 + t * dy;
+        return Math.hypot(px - cx, py - cy);
+      }
+
+      function componentConnectionPoints(comp) {
+        const len = Math.max(0.8, comp.scale || 1);
+        const dir = axisVector(comp.axis || 'x');
+        const alt = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
+        const inline = [
+          addPoint(comp.point, { x: -dir.x * len, y: -dir.y * len, z: -dir.z * len }),
+          addPoint(comp.point, { x: dir.x * len, y: dir.y * len, z: dir.z * len })
+        ];
+
+        switch (comp.type) {
+          case 'elbow_90':
+            return [
+              clonePoint(comp.point),
+              addPoint(comp.point, { x: dir.x * len, y: dir.y * len, z: dir.z * len }),
+              addPoint(comp.point, { x: alt.x * len, y: alt.y * len, z: alt.z * len })
+            ];
+          case 'tee':
+            return [
+              ...inline,
+              addPoint(comp.point, { x: alt.x * len, y: alt.y * len, z: alt.z * len })
+            ];
+          case 'cap':
+            return [addPoint(comp.point, { x: -dir.x * len, y: -dir.y * len, z: -dir.z * len })];
+          case 'generic':
+            return [clonePoint(comp.point)];
+          default:
+            return inline;
+        }
+      }
+
+      function getAllConnectionPoints(exclude = null) {
+        const pts = [];
+        for (const pipe of state.pipes) {
+          if (exclude && exclude.kind === 'pipe' && exclude.id === pipe.id) continue;
+          pts.push({ point: clonePoint(pipe.start), source: { kind: 'pipe', id: pipe.id, end: 'start' } });
+          pts.push({ point: clonePoint(pipe.end), source: { kind: 'pipe', id: pipe.id, end: 'end' } });
+        }
+        for (const comp of state.components) {
+          if (exclude && exclude.kind === 'component' && exclude.id === comp.id) continue;
+          for (const p of componentConnectionPoints(comp)) {
+            pts.push({ point: clonePoint(p), source: { kind: 'component', id: comp.id } });
+          }
+        }
+        return pts;
+      }
+
+      function nearestConnection(screenX, screenY, exclude = null, threshold = 18) {
+        if (!state.snapEnabled) return null;
+        let best = null;
+        for (const entry of getAllConnectionPoints(exclude)) {
+          const p = projectPoint(entry.point);
+          const dist = Math.hypot(screenX - p.x, screenY - p.y);
+          if (dist <= threshold && (!best || dist < best.dist)) {
+            best = { ...entry, dist };
+          }
+        }
+        return best;
+      }
+
+      function compatibleOnAxis(anchor, point, axis) {
+        if (axis === 'x') return point.y === anchor.y && point.z === anchor.z;
+        if (axis === 'y') return point.x === anchor.x && point.z === anchor.z;
+        return point.x === anchor.x && point.y === anchor.y;
+      }
+
+      function projectedAxisDirection(axis, anchor) {
+        const origin = projectPoint(anchor);
+        const tip = projectPoint(addPoint(anchor, axisVector(axis)));
+        return normalize({ x: tip.x - origin.x, y: tip.y - origin.y });
+      }
+
+      function inferDominantAxis(anchor, screenX, screenY, exclude = null) {
+        const snapped = state.snapEnabled ? nearestConnection(screenX, screenY, exclude) : null;
+        if (snapped && !samePoint(anchor, snapped.point)) {
+          const axes = ['x', 'y', 'z'].filter(axis => compatibleOnAxis(anchor, snapped.point, axis));
+          if (axes.length === 1) return axes[0];
+        }
+
+        const start = projectPoint(anchor);
+        const dx = screenX - start.x;
+        const dy = screenY - start.y;
+        const mag = Math.hypot(dx, dy);
+        if (mag < 4) return state.axis || 'x';
+
+        let bestAxis = state.axis || 'x';
+        let bestScore = -Infinity;
+        for (const axis of ['x', 'y', 'z']) {
+          const dir = projectedAxisDirection(axis, anchor);
+          const score = Math.abs((dx * dir.x) + (dy * dir.y)) / mag;
+          if (score > bestScore) {
+            bestScore = score;
+            bestAxis = axis;
+          }
+        }
+        return bestAxis;
+      }
+
+      function autoAxisPoint(anchor, screenX, screenY, exclude = null) {
+        const axis = inferDominantAxis(anchor, screenX, screenY, exclude);
+        state.axis = axis;
+        return constrainedAxisPoint(anchor, screenX, screenY, axis, exclude);
+      }
+
+      function constrainedAxisPoint(anchor, screenX, screenY, axis, exclude = null) {
+        let proposed;
+        if (axis === 'z') {
+          const deltaZ = Math.round((projectPoint(anchor).y - screenY) / (state.grid * state.zoom));
+          proposed = { x: anchor.x, y: anchor.y, z: anchor.z + deltaZ };
+        } else {
+          const pt = screenToGridOnWorkingPlane(screenX, screenY, anchor.z);
+          proposed = axis === 'x'
+            ? { x: pt.x, y: anchor.y, z: anchor.z }
+            : { x: anchor.x, y: pt.y, z: anchor.z };
+        }
+
+        if (!state.snapEnabled) return proposed;
+
+        let best = null;
+        for (const entry of getAllConnectionPoints(exclude)) {
+          if (!compatibleOnAxis(anchor, entry.point, axis)) continue;
+          const projected = projectPoint(entry.point);
+          const dist = Math.hypot(screenX - projected.x, screenY - projected.y);
+          if (dist <= 18 && (!best || dist < best.dist)) {
+            best = { point: entry.point, dist };
+          }
+        }
+        if (best) return clonePoint(best.point);
+        return proposed;
+      }
+
+      function snapGeneralPoint(screenX, screenY, z = state.workingZ, exclude = null) {
+        const base = screenToGridOnWorkingPlane(screenX, screenY, z);
+        const conn = nearestConnection(screenX, screenY, exclude);
+        state.snapCandidate = conn ? clonePoint(conn.point) : null;
+        return conn ? clonePoint(conn.point) : base;
+      }
+
+
+      function pointKey(p) {
+        return `${p.x},${p.y},${p.z}`;
+      }
+
+      function parsePointKey(key) {
+        const [x, y, z] = key.split(',').map(Number);
+        return { x, y, z };
+      }
+
+      function hasManualComponentAt(point, types = []) {
+        return state.components.some(comp => samePoint(comp.point, point) && (!types.length || types.includes(comp.type)));
+      }
+
+      function computeAutoFittings() {
+        if (!state.autoJoinEnabled) return [];
+
+        const nodes = new Map();
+        for (const pipe of state.pipes) {
+          const axis = pipeAxis(pipe);
+          for (const endName of ['start', 'end']) {
+            const p = pipe[endName];
+            const key = pointKey(p);
+            if (!nodes.has(key)) nodes.set(key, []);
+            nodes.get(key).push({ pipeId: pipe.id, axis });
+          }
+        }
+
+        const fittings = [];
+        for (const [key, entries] of nodes.entries()) {
+          if (entries.length < 2) continue;
+          const counts = { x: 0, y: 0, z: 0 };
+          entries.forEach(entry => counts[entry.axis] += 1);
+          const uniqueAxes = ['x', 'y', 'z'].filter(axis => counts[axis] > 0);
+          if (uniqueAxes.length < 2) continue;
+
+          const point = parsePointKey(key);
+          const sortedAxes = ['x', 'y', 'z'].sort((a, b) => counts[b] - counts[a]);
+          let type = '';
+          let axis = sortedAxes[0];
+          let branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
+          let name = '';
+          let notes = '';
+
+          if (entries.length === 2 && uniqueAxes.length === 2) {
+            type = 'elbow_90';
+            axis = uniqueAxes[0];
+            branchAxis = uniqueAxes[1];
+            name = 'Auto Elbow';
+            notes = 'Derived from two non-collinear connected pipe segments';
+          } else {
+            type = 'tee';
+            axis = sortedAxes[0];
+            branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
+            name = counts[axis] >= 2 ? 'Auto Tee' : 'Auto Branch Tee';
+            notes = entries.length >= 4
+              ? 'Derived from multi-branch pipe junction'
+              : 'Derived from three-way pipe junction';
+          }
+
+          if (hasManualComponentAt(point, ['elbow_90', 'tee'])) continue;
+
+          fittings.push({
+            id: `auto_${type}_${key.replaceAll(',', '_')}`,
+            name,
+            type,
+            point,
+            axis,
+            branchAxis,
+            scale: 0.95,
+            color: '#fbbf24',
+            notes,
+            auto: true
+          });
+        }
+
+        return fittings;
+      }
+
+      function hitTest(screenX, screenY) {
+        let best = null;
+        const threshold = 16;
+
+        for (const comp of state.components) {
+          const p = projectPoint(comp.point);
+          const dist = Math.hypot(screenX - p.x, screenY - p.y);
+          if (dist < threshold && (!best || dist < best.dist)) {
+            best = { kind: 'component', id: comp.id, dist };
+          }
+        }
+
+        for (const pipe of state.pipes) {
+          const a = projectPoint(pipe.start);
+          const b = projectPoint(pipe.end);
+          const dist = pointToSegmentDistance(screenX, screenY, a.x, a.y, b.x, b.y);
+          const rad = (pipe.diameter * state.grid * state.zoom) / 2 + 8;
+          if (dist < Math.max(rad, threshold) && (!best || dist < best.dist)) {
+            best = { kind: 'pipe', id: pipe.id, dist };
+          }
+        }
+        return best ? { kind: best.kind, id: best.id } : null;
+      }
+
+      function selectedHandleHit(screenX, screenY) {
+        if (!state.selected) return null;
+        const threshold = 11;
+        if (state.selected.kind === 'pipe') {
+          const pipe = state.pipes.find(p => p.id === state.selected.id);
+          if (!pipe) return null;
+          const points = [
+            { handle: 'start', point: pipe.start },
+            { handle: 'end', point: pipe.end },
+            { handle: 'mid', point: midpoint(pipe.start, pipe.end) }
+          ];
+          for (const entry of points) {
+            const p = projectPoint(entry.point);
+            if (Math.hypot(screenX - p.x, screenY - p.y) <= threshold) {
+              return { kind: 'pipe', id: pipe.id, handle: entry.handle };
+            }
+          }
+          return null;
+        }
+
+        const comp = state.components.find(c => c.id === state.selected.id);
+        if (!comp) return null;
+        const p = projectPoint(comp.point);
+        if (Math.hypot(screenX - p.x, screenY - p.y) <= threshold + 2) {
+          return { kind: 'component', id: comp.id, handle: 'move' };
+        }
+        return null;
+      }
+
+      function sortedEntities() {
+        const items = [];
+        state.pipes.forEach(pipe => {
+          const depth = pipe.start.x + pipe.start.y + pipe.end.x + pipe.end.y + pipe.start.z + pipe.end.z;
+          items.push({ type: 'pipe', depth, item: pipe });
+        });
+        state.components.forEach(comp => {
+          const depth = comp.point.x + comp.point.y + comp.point.z * 2;
+          items.push({ type: 'component', depth, item: comp });
+        });
+        return items.sort((a, b) => a.depth - b.depth);
+      }
+
+      function render() {
+        const width = els.workspace.clientWidth || 1400;
+        const height = els.workspace.clientHeight || 800;
+        els.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        els.svg.innerHTML = '<defs><filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" /></filter></defs>';
+
+        drawGrid();
+        const world = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        world.setAttribute('filter', 'url(#softShadow)');
+        els.svg.appendChild(world);
+
+        for (const entry of sortedEntities()) {
+          if (entry.type === 'pipe') drawPipe(world, entry.item);
+          else drawComponent(world, entry.item);
+        }
+
+        for (const autoFit of computeAutoFittings()) {
+          drawComponent(world, autoFit);
+        }
+
+        drawPreview(world);
+        drawSelectionOverlay(world);
+        drawWorkingPlaneCursor(world);
+        drawSnapCandidate(world);
+        refreshSelectionInfo();
+
+        if (state.mode === 'pipe') {
+          els.statusRight.textContent = state.drawingStart
+            ? `Auto axis: ${state.axis.toUpperCase()} · Click to place segment · [ ] changes Z`
+            : 'Pipe mode · First click sets start · Axis follows cursor · [ ] changes Z';
+        } else {
+          els.statusRight.textContent = 'Tip: library items and projects persist in this browser.';
+        }
+      }
+
+      function drawGrid() {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const span = 30;
+        for (let i = -span; i <= span; i++) {
+          line3D(g, { x: -span, y: i, z: state.workingZ }, { x: span, y: i, z: state.workingZ }, i % 5 === 0 ? 'var(--grid-strong)' : 'var(--grid)', 1);
+          line3D(g, { x: i, y: -span, z: state.workingZ }, { x: i, y: span, z: state.workingZ }, i % 5 === 0 ? 'var(--grid-strong)' : 'var(--grid)', 1);
+        }
+        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 5, y: 0, z: state.workingZ }, 'rgba(239,68,68,0.9)', 2.2);
+        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 0, y: 5, z: state.workingZ }, 'rgba(34,197,94,0.9)', 2.2);
+        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 0, y: 0, z: state.workingZ + 5 }, 'rgba(59,130,246,0.9)', 2.2);
+        els.svg.appendChild(g);
+      }
+
+      function line3D(parent, a3, b3, stroke, width, dash = '') {
+        const a = projectPoint(a3);
+        const b = projectPoint(b3);
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', a.x);
+        line.setAttribute('y1', a.y);
+        line.setAttribute('x2', b.x);
+        line.setAttribute('y2', b.y);
+        line.setAttribute('stroke', stroke);
+        line.setAttribute('stroke-width', width);
+        line.setAttribute('stroke-linecap', 'round');
+        if (dash) line.setAttribute('stroke-dasharray', dash);
+        parent.appendChild(line);
+        return line;
+      }
+
+      function drawEllipse(cx, cy, rx, ry, angleDeg, fill, stroke, opacity = '1') {
+        const ell = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        ell.setAttribute('cx', cx);
+        ell.setAttribute('cy', cy);
+        ell.setAttribute('rx', rx);
+        ell.setAttribute('ry', ry);
+        ell.setAttribute('fill', fill);
+        ell.setAttribute('fill-opacity', opacity);
+        ell.setAttribute('stroke', stroke);
+        ell.setAttribute('stroke-width', 1.1);
+        ell.setAttribute('transform', `rotate(${angleDeg} ${cx} ${cy})`);
+        return ell;
+      }
+
+      function drawPipe(parent, pipe, isPreview = false) {
+        const a = projectPoint(pipe.start);
+        const b = projectPoint(pipe.end);
+        const d = normalize({ x: b.x - a.x, y: b.y - a.y });
+        const n = { x: -d.y, y: d.x };
+        const r = Math.max(4, (pipe.diameter * state.grid * state.zoom) / 2);
+        const p1 = { x: a.x + n.x * r, y: a.y + n.y * r };
+        const p2 = { x: a.x - n.x * r, y: a.y - n.y * r };
+        const p3 = { x: b.x - n.x * r, y: b.y - n.y * r };
+        const p4 = { x: b.x + n.x * r, y: b.y + n.y * r };
+
+        const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        body.setAttribute('d', `M ${p1.x} ${p1.y} L ${p4.x} ${p4.y} L ${p3.x} ${p3.y} L ${p2.x} ${p2.y} Z`);
+        body.setAttribute('fill', shadeColor(pipe.color, isPreview ? -25 : -10));
+        body.setAttribute('fill-opacity', isPreview ? '0.65' : '0.95');
+        body.setAttribute('stroke', state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? 'var(--selected)' : shadeColor(pipe.color, -60));
+        body.setAttribute('stroke-width', state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? '2.2' : '1.2');
+        parent.appendChild(body);
+
+        const centerLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        centerLine.setAttribute('x1', a.x + n.x * r * 0.35);
+        centerLine.setAttribute('y1', a.y + n.y * r * 0.35);
+        centerLine.setAttribute('x2', b.x + n.x * r * 0.35);
+        centerLine.setAttribute('y2', b.y + n.y * r * 0.35);
+        centerLine.setAttribute('stroke', 'rgba(255,255,255,0.32)');
+        centerLine.setAttribute('stroke-width', Math.max(1, r * 0.18));
+        centerLine.setAttribute('stroke-linecap', 'round');
+        parent.appendChild(centerLine);
+
+        const rx = r;
+        const ry = Math.max(2.5, r * 0.42);
+        const angle = Math.atan2(d.y, d.x) * 180 / Math.PI;
+        const startCap = drawEllipse(a.x, a.y, rx, ry, angle, shadeColor(pipe.color, 10), shadeColor(pipe.color, -55), isPreview ? '0.6' : '1');
+        const endCap = drawEllipse(b.x, b.y, rx, ry, angle, shadeColor(pipe.color, 35), state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? 'var(--selected)' : shadeColor(pipe.color, -55), isPreview ? '0.75' : '1');
+        startCap.setAttribute('fill-opacity', isPreview ? '0.55' : '0.92');
+        endCap.setAttribute('fill-opacity', isPreview ? '0.7' : '0.96');
+        parent.appendChild(startCap);
+        parent.appendChild(endCap);
+
+        if (!isPreview && state.showDimensions) drawPipeDimension(parent, pipe);
+
+        if (!isPreview) {
+          body.dataset.kind = 'pipe';
+          body.dataset.id = pipe.id;
+          endCap.dataset.kind = 'pipe';
+          endCap.dataset.id = pipe.id;
+          startCap.dataset.kind = 'pipe';
+          startCap.dataset.id = pipe.id;
+        }
+      }
+
+      function drawPipeDimension(parent, pipe) {
+        const a = projectPoint(pipe.start);
+        const b = projectPoint(pipe.end);
+        const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const dir = normalize({ x: b.x - a.x, y: b.y - a.y });
+        const n = { x: -dir.y, y: dir.x };
+        const offset = Math.max(16, pipe.diameter * state.grid * state.zoom * 0.75);
+        const tx = mid.x + n.x * offset;
+        const ty = mid.y + n.y * offset;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        line3D(g, pipe.start, pipe.end, 'rgba(248,250,252,0.18)', 1, '4 4');
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', tx);
+        text.setAttribute('y', ty);
+        text.setAttribute('fill', '#cbd5e1');
+        text.setAttribute('font-size', Math.max(10, 10 * state.zoom));
+        text.setAttribute('text-anchor', 'middle');
+        text.textContent = `${lengthOfPipe(pipe)}u`;
+        g.appendChild(text);
+        parent.appendChild(g);
+      }
+
+      function drawComponent(parent, comp) {
+        const size = Math.max(10, state.grid * 0.35 * comp.scale * state.zoom);
+        const p = projectPoint(comp.point);
+        const dir3 = axisVector(comp.axis || 'x');
+        const p2 = projectPoint({ x: comp.point.x + dir3.x, y: comp.point.y + dir3.y, z: comp.point.z + dir3.z });
+        const dir = normalize({ x: p2.x - p.x, y: p2.y - p.y });
+        const n = { x: -dir.y, y: dir.x };
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.dataset.kind = 'component';
+        group.dataset.id = comp.id;
+
+        const color = comp.color || '#f8fafc';
+        const stroke = state.selected?.kind === 'component' && state.selected.id === comp.id ? 'var(--selected)' : '#0f172a';
+
+        const helper = {
+          line(ax, ay, bx, by, sw = 2.2, colorOverride = color) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+            line.setAttribute('x2', bx); line.setAttribute('y2', by);
+            line.setAttribute('stroke', colorOverride);
+            line.setAttribute('stroke-width', sw);
+            line.setAttribute('stroke-linecap', 'round');
+            group.appendChild(line);
+          },
+          poly(points, fill = color, sw = 1.8) {
+            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            poly.setAttribute('points', points.map(pt => `${pt.x},${pt.y}`).join(' '));
+            poly.setAttribute('fill', fill);
+            poly.setAttribute('stroke', stroke);
+            poly.setAttribute('stroke-width', sw);
+            group.appendChild(poly);
+          },
+          circle(cx, cy, r, fill = color, sw = 1.8) {
+            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', cx); c.setAttribute('cy', cy);
+            c.setAttribute('r', r);
+            c.setAttribute('fill', fill);
+            c.setAttribute('stroke', stroke);
+            c.setAttribute('stroke-width', sw);
+            group.appendChild(c);
+          },
+          text(tx, ty, value) {
+            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            t.setAttribute('x', tx); t.setAttribute('y', ty);
+            t.setAttribute('fill', '#cbd5e1');
+            t.setAttribute('font-size', Math.max(10, 10 * state.zoom));
+            t.setAttribute('text-anchor', 'middle');
+            t.textContent = value;
+            group.appendChild(t);
+          }
+        };
+
+        const a = { x: p.x - dir.x * size * 0.75, y: p.y - dir.y * size * 0.75 };
+        const b = { x: p.x + dir.x * size * 0.75, y: p.y + dir.y * size * 0.75 };
+
+        switch (comp.type) {
+          case 'gate_valve': {
+            helper.line(a.x, a.y, p.x - dir.x * size * 0.25, p.y - dir.y * size * 0.25);
+            helper.line(p.x + dir.x * size * 0.25, p.y + dir.y * size * 0.25, b.x, b.y);
+            helper.poly([
+              { x: p.x - dir.x * size * 0.25 - n.x * size * 0.45, y: p.y - dir.y * size * 0.25 - n.y * size * 0.45 },
+              { x: p.x - dir.x * size * 0.25 + n.x * size * 0.45, y: p.y - dir.y * size * 0.25 + n.y * size * 0.45 },
+              { x: p.x + dir.x * size * 0.25 + n.x * size * 0.45, y: p.y + dir.y * size * 0.25 + n.y * size * 0.45 },
+              { x: p.x + dir.x * size * 0.25 - n.x * size * 0.45, y: p.y + dir.y * size * 0.25 - n.y * size * 0.45 }
+            ], shadeColor(color, 0));
+            helper.line(p.x, p.y, p.x, p.y - size * 0.95, 1.8);
+            helper.line(p.x - size * 0.25, p.y - size * 0.95, p.x + size * 0.25, p.y - size * 0.95, 1.8);
+            break;
+          }
+          case 'ball_valve': {
+            helper.line(a.x, a.y, p.x - dir.x * size * 0.35, p.y - dir.y * size * 0.35);
+            helper.line(p.x + dir.x * size * 0.35, p.y + dir.y * size * 0.35, b.x, b.y);
+            helper.circle(p.x, p.y, size * 0.42, shadeColor(color, -8));
+            helper.line(p.x, p.y, p.x, p.y - size * 0.9, 1.8);
+            helper.line(p.x - size * 0.25, p.y - size * 0.9, p.x + size * 0.25, p.y - size * 0.9, 1.8);
+            break;
+          }
+          case 'globe_valve': {
+            helper.line(a.x, a.y, p.x - dir.x * size * 0.25, p.y - dir.y * size * 0.25);
+            helper.line(p.x + dir.x * size * 0.25, p.y + dir.y * size * 0.25, b.x, b.y);
+            helper.circle(p.x, p.y, size * 0.36, shadeColor(color, -12));
+            helper.line(p.x, p.y - size * 0.36, p.x, p.y - size * 1.0, 1.8);
+            helper.circle(p.x, p.y - size * 1.07, size * 0.18, 'transparent');
+            break;
+          }
+          case 'check_valve': {
+            helper.line(a.x, a.y, b.x, b.y);
+            helper.poly([
+              { x: p.x - dir.x * size * 0.35 - n.x * size * 0.42, y: p.y - dir.y * size * 0.35 - n.y * size * 0.42 },
+              { x: p.x - dir.x * size * 0.35 + n.x * size * 0.42, y: p.y - dir.y * size * 0.35 + n.y * size * 0.42 },
+              { x: p.x + dir.x * size * 0.42, y: p.y + dir.y * size * 0.42 }
+            ], shadeColor(color, -12));
+            break;
+          }
+          case 'elbow_90': {
+            const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
+            const altP = projectPoint(addPoint(comp.point, alt3));
+            const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
+            helper.line(p.x, p.y, p.x + dir.x * size * 0.8, p.y + dir.y * size * 0.8);
+            helper.line(p.x, p.y, p.x + altDir.x * size * 0.8, p.y + altDir.y * size * 0.8);
+            helper.circle(p.x, p.y, size * 0.15, shadeColor(color, -8));
+            break;
+          }
+          case 'tee': {
+            const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
+            const altP = projectPoint(addPoint(comp.point, alt3));
+            const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
+            helper.line(a.x, a.y, b.x, b.y);
+            helper.line(p.x, p.y, p.x + altDir.x * size * 0.9, p.y + altDir.y * size * 0.9);
+            helper.circle(p.x, p.y, size * 0.12, shadeColor(color, -8));
+            break;
+          }
+          case 'reducer': {
+            helper.line(a.x, a.y, b.x, b.y);
+            helper.poly([
+              { x: p.x - dir.x * size * 0.45 - n.x * size * 0.45, y: p.y - dir.y * size * 0.45 - n.y * size * 0.45 },
+              { x: p.x - dir.x * size * 0.45 + n.x * size * 0.45, y: p.y - dir.y * size * 0.45 + n.y * size * 0.45 },
+              { x: p.x + dir.x * size * 0.45 + n.x * size * 0.2, y: p.y + dir.y * size * 0.45 + n.y * size * 0.2 },
+              { x: p.x + dir.x * size * 0.45 - n.x * size * 0.2, y: p.y + dir.y * size * 0.45 - n.y * size * 0.2 }
+            ], shadeColor(color, -10));
+            break;
+          }
+          case 'flange': {
+            helper.line(a.x, a.y, b.x, b.y);
+            helper.line(p.x - dir.x * size * 0.28 - n.x * size * 0.55, p.y - dir.y * size * 0.28 - n.y * size * 0.55, p.x - dir.x * size * 0.28 + n.x * size * 0.55, p.y - dir.y * size * 0.28 + n.y * size * 0.55, 3);
+            helper.line(p.x + dir.x * size * 0.28 - n.x * size * 0.55, p.y + dir.y * size * 0.28 - n.y * size * 0.55, p.x + dir.x * size * 0.28 + n.x * size * 0.55, p.y + dir.y * size * 0.28 + n.y * size * 0.55, 3);
+            break;
+          }
+          case 'cap': {
+            helper.line(a.x, a.y, p.x, p.y);
+            helper.line(p.x - n.x * size * 0.55, p.y - n.y * size * 0.55, p.x + n.x * size * 0.55, p.y + n.y * size * 0.55, 3);
+            break;
+          }
+          default: {
+            helper.circle(p.x, p.y, size * 0.24, shadeColor(color, -8));
+            helper.text(p.x, p.y - size * 0.65, comp.name);
+            break;
+          }
+        }
+
+        parent.appendChild(group);
+      }
+
+      function drawPreview(parent) {
+        if (state.mode === 'pipe' && state.drawingStart && state.previewEnd && !samePoint(state.drawingStart, state.previewEnd)) {
+          drawPipe(parent, {
+            id: 'preview',
+            start: state.drawingStart,
+            end: state.previewEnd,
+            diameter: state.defaultDiameter,
+            color: state.defaultPipeColor
+          }, true);
+        }
+
+        if (state.drawingStart) {
+          const p = projectPoint(state.drawingStart);
+          const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          dot.setAttribute('cx', p.x);
+          dot.setAttribute('cy', p.y);
+          dot.setAttribute('r', 6);
+          dot.setAttribute('fill', '#f59e0b');
+          dot.setAttribute('stroke', '#ffffff');
+          dot.setAttribute('stroke-width', '1.5');
+          parent.appendChild(dot);
+        }
+      }
+
+      function drawHandle(parent, point, r = 6, fill = '#f59e0b') {
+        const p = projectPoint(point);
+        const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        handle.setAttribute('cx', p.x);
+        handle.setAttribute('cy', p.y);
+        handle.setAttribute('r', r);
+        handle.setAttribute('fill', fill);
+        handle.setAttribute('stroke', '#ffffff');
+        handle.setAttribute('stroke-width', '1.4');
+        parent.appendChild(handle);
+      }
+
+      function drawSelectionOverlay(parent) {
+        if (!state.selected) return;
+        if (state.selected.kind === 'component') {
+          const comp = state.components.find(item => item.id === state.selected.id);
+          if (!comp) return;
+          const p = projectPoint(comp.point);
+          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          ring.setAttribute('cx', p.x);
+          ring.setAttribute('cy', p.y);
+          ring.setAttribute('r', Math.max(10, state.grid * 0.35 * comp.scale * state.zoom));
+          ring.setAttribute('fill', 'none');
+          ring.setAttribute('stroke', '#f59e0b');
+          ring.setAttribute('stroke-width', '1.8');
+          ring.setAttribute('stroke-dasharray', '5 4');
+          parent.appendChild(ring);
+          drawHandle(parent, comp.point, 6, '#f59e0b');
+          return;
+        }
+
+        const pipe = state.pipes.find(item => item.id === state.selected.id);
+        if (!pipe) return;
+        drawHandle(parent, pipe.start, 6, '#f59e0b');
+        drawHandle(parent, pipe.end, 6, '#f59e0b');
+        drawHandle(parent, midpoint(pipe.start, pipe.end), 5, '#22c55e');
+      }
+
+      function drawWorkingPlaneCursor(parent) {
+        const point = screenToGridOnWorkingPlane(state.pointerScreen.x, state.pointerScreen.y, state.workingZ);
+        const p = projectPoint(point);
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line1.setAttribute('x1', p.x - 8); line1.setAttribute('y1', p.y);
+        line1.setAttribute('x2', p.x + 8); line1.setAttribute('y2', p.y);
+        line2.setAttribute('x1', p.x); line2.setAttribute('y1', p.y - 8);
+        line2.setAttribute('x2', p.x); line2.setAttribute('y2', p.y + 8);
+        [line1, line2].forEach(line => {
+          line.setAttribute('stroke', 'rgba(248,250,252,0.5)');
+          line.setAttribute('stroke-width', '1');
+          g.appendChild(line);
+        });
+        parent.appendChild(g);
+      }
+
+      function drawSnapCandidate(parent) {
+        if (!state.snapCandidate) return;
+        const p = projectPoint(state.snapCandidate);
+        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ring.setAttribute('cx', p.x);
+        ring.setAttribute('cy', p.y);
+        ring.setAttribute('r', 8);
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', '#38bdf8');
+        ring.setAttribute('stroke-width', '1.5');
+        ring.setAttribute('stroke-dasharray', '4 3');
+        parent.appendChild(ring);
+      }
+
+      function canvasPoint(evt) {
+        const rect = els.svg.getBoundingClientRect();
+        return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+      }
+
+      function startPan(evt) {
+        const pt = canvasPoint(evt);
+        state.isPanning = true;
+        state.panOrigin = pt;
+        els.svg.style.cursor = 'grabbing';
+      }
+
+      function endPan() {
+        state.isPanning = false;
+        state.panOrigin = null;
+        if (state.mode === 'pan') els.svg.style.cursor = 'grab';
+        else if (state.mode === 'select') els.svg.style.cursor = 'default';
+        else els.svg.style.cursor = 'crosshair';
+      }
+
+      function centerView() {
+        state.originX = Math.max(400, els.workspace.clientWidth * 0.52);
+        state.originY = Math.max(260, els.workspace.clientHeight * 0.52);
+        render();
+        updateStatus('View centered.');
+      }
+
+      function handleWheel(evt) {
+        evt.preventDefault();
+        const factor = evt.deltaY < 0 ? 1.08 : 0.92;
+        state.zoom = clamp(state.zoom * factor, 0.35, 3.25);
+        render();
+      }
+
+      function beginDragFromHandle(handle, pointer = null) {
+        if (handle.kind === 'component') {
+          const comp = state.components.find(c => c.id === handle.id);
+          if (!comp) return;
+          state.dragState = {
+            type: 'component-move',
+            id: comp.id,
+            originalPoint: clonePoint(comp.point)
+          };
+          return;
+        }
+
+        const pipe = state.pipes.find(p => p.id === handle.id);
+        if (!pipe) return;
+        if (handle.handle === 'start') {
+          state.dragState = { type: 'pipe-start', id: pipe.id, fixedPoint: clonePoint(pipe.end) };
+        } else if (handle.handle === 'end') {
+          state.dragState = { type: 'pipe-end', id: pipe.id, fixedPoint: clonePoint(pipe.start) };
+        } else {
+          state.dragState = {
+            type: 'pipe-move',
+            id: pipe.id,
+            originalStart: clonePoint(pipe.start),
+            originalEnd: clonePoint(pipe.end),
+            grabGrid: pointer ? screenToGridOnWorkingPlane(pointer.x, pointer.y, pipe.start.z) : clonePoint(pipe.start)
+          };
+        }
+      }
+
+      function handlePointerDown(evt) {
+        if (evt.button === 1 || state.mode === 'pan') {
+          startPan(evt);
+          return;
+        }
+
+        const pt = canvasPoint(evt);
+        state.pointerScreen = pt;
+
+        if (state.mode === 'select') {
+          const handle = selectedHandleHit(pt.x, pt.y);
+          if (handle) {
+            beginDragFromHandle(handle, pt);
+            render();
+            return;
+          }
+
+          const hit = hitTest(pt.x, pt.y);
+          state.selected = hit;
+          refreshSelectionInfo();
+
+          if (hit && hit.kind === 'component') {
+            state.dragState = {
+              type: 'component-move',
+              id: hit.id,
+              originalPoint: clonePoint(state.components.find(c => c.id === hit.id).point)
+            };
+          } else {
+            state.dragState = null;
+          }
+
+          render();
+          updateStatus(hit ? `Selected ${hit.kind}.` : 'Nothing selected.');
+          return;
+        }
+
+        if (state.mode === 'component') {
+          const point = snapGeneralPoint(pt.x, pt.y, state.workingZ);
+          addPlacedComponent(point);
+          render();
+          return;
+        }
+
+        if (state.mode === 'pipe') {
+          if (!state.drawingStart) {
+            state.drawingStart = snapGeneralPoint(pt.x, pt.y, state.workingZ);
+            state.previewEnd = clonePoint(state.drawingStart);
+            updateStatus(`Pipe start set at (${state.drawingStart.x}, ${state.drawingStart.y}, ${state.drawingStart.z}).`);
+          } else {
+            const end = autoAxisPoint(state.drawingStart, pt.x, pt.y);
+            if (end && !samePoint(state.drawingStart, end)) {
+              addPipeSegment(state.drawingStart, end);
+              state.drawingStart = clonePoint(end);
+              state.previewEnd = clonePoint(end);
+              state.workingZ = end.z;
+              els.workingZ.value = String(state.workingZ);
+              updateStatus(`Added segment. Continuing run from (${end.x}, ${end.y}, ${end.z}).`);
+            }
+          }
+          render();
+        }
+      }
+
+      function handleDragMove(pt) {
+        if (!state.dragState) return;
+        const drag = state.dragState;
+
+        if (drag.type === 'component-move') {
+          const comp = state.components.find(c => c.id === drag.id);
+          if (!comp) return;
+          comp.point = snapGeneralPoint(pt.x, pt.y, drag.originalPoint.z, { kind: 'component', id: comp.id });
+          return;
+        }
+
+        if (drag.type === 'pipe-start' || drag.type === 'pipe-end') {
+          const pipe = state.pipes.find(p => p.id === drag.id);
+          if (!pipe) return;
+          const next = autoAxisPoint(drag.fixedPoint, pt.x, pt.y, { kind: 'pipe', id: pipe.id });
+          if (samePoint(next, drag.fixedPoint)) return;
+          if (drag.type === 'pipe-start') pipe.start = next;
+          else pipe.end = next;
+          return;
+        }
+
+        if (drag.type === 'pipe-move') {
+          const pipe = state.pipes.find(p => p.id === drag.id);
+          if (!pipe) return;
+          const base = screenToGridOnWorkingPlane(pt.x, pt.y, drag.grabGrid.z);
+          const delta = subPoint(base, drag.grabGrid);
+          pipe.start = addPoint(drag.originalStart, delta);
+          pipe.end = addPoint(drag.originalEnd, delta);
+        }
+      }
+
+      function handlePointerMove(evt) {
+        const pt = canvasPoint(evt);
+        state.pointerScreen = pt;
+
+        if (state.isPanning) {
+          const dx = pt.x - state.panOrigin.x;
+          const dy = pt.y - state.panOrigin.y;
+          state.originX += dx;
+          state.originY += dy;
+          state.panOrigin = pt;
+          render();
+          return;
+        }
+
+        if (state.dragState) {
+          handleDragMove(pt);
+          refreshSelectionInfo();
+          render();
+          return;
+        }
+
+        if (state.mode === 'pipe' && state.drawingStart) {
+          state.previewEnd = autoAxisPoint(state.drawingStart, pt.x, pt.y);
+        } else if (state.mode === 'component' || state.mode === 'select') {
+          const general = nearestConnection(pt.x, pt.y);
+          state.snapCandidate = general ? clonePoint(general.point) : null;
+        } else {
+          state.snapCandidate = null;
+        }
+
+        render();
+      }
+
+      function handlePointerUp() {
+        if (state.dragState) {
+          refreshSelectionInfo();
+          updateStatus('Edit applied.');
+        }
+        state.dragState = null;
+        endPan();
+      }
+
+      function saveProjectToBrowser() {
+        state.projectName = els.projectName.value.trim() || 'Untitled Project';
+        const projects = loadProjectsMap();
+        projects[state.projectName] = serializeProject();
+        persistProjectsMap(projects);
+        updateStatus(`Saved project ${state.projectName} in browser.`);
+      }
+
+      function loadProjectFromBrowser() {
+        const projects = loadProjectsMap();
+        const names = Object.keys(projects);
+        if (!names.length) {
+          updateStatus('No saved projects found in this browser.');
+          return;
+        }
+        const requested = prompt(`Saved projects:\n\n${names.join('\n')}\n\nEnter project name to load:`, state.projectName);
+        if (!requested) return;
+        if (!projects[requested]) {
+          updateStatus(`Project ${requested} was not found.`);
+          return;
+        }
+        applyProject(projects[requested]);
+        updateStatus(`Loaded project ${requested}.`);
+      }
+
+      function resetProject() {
+        state.pipes = [];
+        state.components = [];
+        state.selected = null;
+        state.drawingStart = null;
+        state.previewEnd = null;
+        state.dragState = null;
+        state.projectName = 'My Isometric Layout';
+        state.defaultDiameter = 0.45;
+        state.axis = 'x';
+        state.defaultPipeColor = '#7dd3fc';
+        state.workingZ = 0;
+        state.grid = 36;
+        state.zoom = 1;
+        state.snapEnabled = true;
+        state.showDimensions = true;
+        centerView();
+        syncInputs();
+        render();
+        updateStatus('Started new project.');
+      }
+
+      function downloadText(filename, text, type = 'text/plain') {
+        const blob = new Blob([text], { type });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function exportJson() {
+        const payload = {
+          version: 3,
+          exportedAt: new Date().toISOString(),
+          project: serializeProject(),
+          library: state.library
+        };
+        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}.json`, JSON.stringify(payload, null, 2), 'application/json');
+        updateStatus('Exported JSON file.');
+      }
+
+      function importJsonFile(file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            if (parsed.library && Array.isArray(parsed.library)) {
+              state.library = parsed.library;
+              saveStateToBrowser();
+              renderLibrary();
+            }
+            if (parsed.project) {
+              applyProject(parsed.project);
+            }
+            updateStatus('Imported JSON data.');
+          } catch (err) {
+            console.error(err);
+            updateStatus('Could not import JSON.');
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function buildBomCsv() {
+        const rows = [['Section', 'Item', 'Type', 'Qty', 'Total Length', 'Diameter', 'Axis', 'Color', 'Notes']];
+
+        const pipeGroups = new Map();
+        for (const pipe of state.pipes) {
+          const key = [pipeAxis(pipe), Number(pipe.diameter).toFixed(2), pipe.color].join('|');
+          const current = pipeGroups.get(key) || { qty: 0, totalLength: 0, axis: pipeAxis(pipe), diameter: Number(pipe.diameter).toFixed(2), color: pipe.color };
+          current.qty += 1;
+          current.totalLength += lengthOfPipe(pipe);
+          pipeGroups.set(key, current);
+        }
+
+        for (const [, grp] of [...pipeGroups.entries()].sort()) {
+          rows.push(['Pipe', 'Pipe Segment Group', 'Pipe', String(grp.qty), String(grp.totalLength), grp.diameter, grp.axis.toUpperCase(), grp.color, 'Grouped by axis, diameter, and color']);
+        }
+
+        const compGroups = new Map();
+        for (const comp of state.components) {
+          const key = [comp.name, comp.type, comp.axis, comp.color, comp.notes || ''].join('|');
+          const current = compGroups.get(key) || { qty: 0, name: comp.name, type: comp.type, axis: comp.axis, color: comp.color, notes: comp.notes || '' };
+          current.qty += 1;
+          compGroups.set(key, current);
+        }
+
+        for (const [, grp] of [...compGroups.entries()].sort()) {
+          rows.push(['Component', grp.name, labelType(grp.type), String(grp.qty), '', '', grp.axis.toUpperCase(), grp.color, grp.notes]);
+        }
+
+        return rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n');
+      }
+
+      function exportBomCsv() {
+        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}_BOM.csv`, buildBomCsv(), 'text/csv');
+        updateStatus('Exported BOM CSV.');
+      }
+
+      function buildDxfLikeText() {
+        const lines = [];
+        const add = (...vals) => vals.forEach(v => lines.push(String(v)));
+
+        add('0', 'SECTION', '2', 'HEADER');
+        add('9', '$PROJECT', '1', state.projectName);
+        add('9', '$UNITS', '1', 'GRID');
+        add('0', 'ENDSEC');
+
+        add('0', 'SECTION', '2', 'ENTITIES');
+        for (const pipe of state.pipes) {
+          add('0', 'LINE');
+          add('8', 'PIPES');
+          add('5', pipe.id);
+          add('10', pipe.start.x, '20', pipe.start.y, '30', pipe.start.z);
+          add('11', pipe.end.x, '21', pipe.end.y, '31', pipe.end.z);
+          add('39', Number(pipe.diameter).toFixed(2));
+          add('62', pipe.color);
+          add('999', `LEN=${lengthOfPipe(pipe)}`);
+        }
+        for (const comp of state.components) {
+          add('0', 'INSERT');
+          add('8', 'COMPONENTS');
+          add('5', comp.id);
+          add('2', comp.name);
+          add('10', comp.point.x, '20', comp.point.y, '30', comp.point.z);
+          add('41', comp.scale, '42', comp.scale, '43', comp.scale);
+          add('50', comp.axis.toUpperCase());
+          add('62', comp.color);
+          add('999', `TYPE=${comp.type}`);
+          add('999', `NOTES=${(comp.notes || '').replace(/\n/g, ' ')}`);
+        }
+        add('0', 'ENDSEC', '0', 'EOF');
+        return lines.join('\n');
+      }
+
+      function exportCadText() {
+        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}.dxf`, buildDxfLikeText(), 'application/dxf');
+        updateStatus('Exported DXF-like text file.');
+      }
+
+
+      function projectionUV(point, view) {
+        const c = Math.cos(Math.PI / 6);
+        const s = Math.sin(Math.PI / 6);
+        if (view === 'iso') return { u: (point.x - point.y) * c, v: (point.x + point.y) * s - point.z };
+        if (view === 'top') return { u: point.x, v: -point.y };
+        if (view === 'front') return { u: point.x, v: -point.z };
+        return { u: point.y, v: -point.z };
+      }
+
+      function getScenePointsForSheet() {
+        const pts = [];
+        for (const pipe of state.pipes) {
+          pts.push(clonePoint(pipe.start), clonePoint(pipe.end));
+        }
+        for (const comp of state.components) {
+          pts.push(clonePoint(comp.point));
+          componentConnectionPoints(comp).forEach(p => pts.push(clonePoint(p)));
+        }
+        for (const comp of computeAutoFittings()) {
+          pts.push(clonePoint(comp.point));
+          componentConnectionPoints(comp).forEach(p => pts.push(clonePoint(p)));
+        }
+        if (!pts.length) pts.push({ x: 0, y: 0, z: 0 }, { x: 10, y: 10, z: 0 });
+        return pts;
+      }
+
+      function buildSheetViewSvg(view, width, height) {
+        const pts = getScenePointsForSheet();
+        const projected = pts.map(point => projectionUV(point, view));
+        let minU = Math.min(...projected.map(p => p.u));
+        let maxU = Math.max(...projected.map(p => p.u));
+        let minV = Math.min(...projected.map(p => p.v));
+        let maxV = Math.max(...projected.map(p => p.v));
+
+        if (minU === maxU) { minU -= 1; maxU += 1; }
+        if (minV === maxV) { minV -= 1; maxV += 1; }
+
+        const pad = 24;
+        const scale = Math.min((width - pad * 2) / (maxU - minU), (height - pad * 2) / (maxV - minV));
+
+        function mapPoint(point) {
+          const p = projectionUV(point, view);
+          return {
+            x: pad + (p.u - minU) * scale,
+            y: height - pad - (p.v - minV) * scale
+          };
+        }
+
+        function projectedDir(axis) {
+          const origin = mapPoint({ x: 0, y: 0, z: 0 });
+          const vec = mapPoint(axisVector(axis));
+          const dx = vec.x - origin.x;
+          const dy = vec.y - origin.y;
+          const len = Math.hypot(dx, dy) || 1;
+          return { x: dx / len, y: dy / len };
+        }
+
+        function nextBranchAxis(axis, branchAxis) {
+          return branchAxis || nextAxis(axis || 'x');
+        }
+
+        const parts = [];
+        parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`);
+        parts.push(`<rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff" stroke="#111827" stroke-width="1"/>`);
+        parts.push(`<rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="#cbd5e1" stroke-width="1"/>`);
+
+        for (const pipe of state.pipes) {
+          const a = mapPoint(pipe.start);
+          const b = mapPoint(pipe.end);
+          const strokeWidth = Math.max(2, pipe.diameter * scale * 0.18);
+          parts.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
+          const mx = (a.x + b.x) / 2;
+          const my = (a.y + b.y) / 2;
+          parts.push(`<text x="${mx}" y="${my - 8}" font-size="10" text-anchor="middle" fill="#334155">${lengthOfPipe(pipe)}u</text>`);
+        }
+
+        function drawInlineSymbol(comp, color) {
+          const center = mapPoint(comp.point);
+          const dir = projectedDir(comp.axis || 'x');
+          const branch = projectedDir(nextBranchAxis(comp.axis, comp.branchAxis));
+          const n = { x: -dir.y, y: dir.x };
+          const size = 12 * (comp.scale || 1);
+          const lineA = { x: center.x - dir.x * size, y: center.y - dir.y * size };
+          const lineB = { x: center.x + dir.x * size, y: center.y + dir.y * size };
+          const add = s => parts.push(s);
+
+          if (comp.type === 'elbow_90') {
+            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + dir.x * size}" y2="${center.y + dir.y * size}" stroke="${color}" stroke-width="2"/>`);
+            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2"/>`);
+            add(`<circle cx="${center.x}" cy="${center.y}" r="2.6" fill="${color}"/>`);
+            return;
+          }
+
+          if (comp.type === 'tee') {
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
+            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2"/>`);
+            add(`<circle cx="${center.x}" cy="${center.y}" r="2.2" fill="${color}"/>`);
+            return;
+          }
+
+          if (comp.type === 'reducer') {
+            const p1 = { x: center.x - dir.x * size * 0.75 - n.x * size * 0.42, y: center.y - dir.y * size * 0.75 - n.y * size * 0.42 };
+            const p2 = { x: center.x - dir.x * size * 0.75 + n.x * size * 0.42, y: center.y - dir.y * size * 0.75 + n.y * size * 0.42 };
+            const p3 = { x: center.x + dir.x * size * 0.75 + n.x * size * 0.18, y: center.y + dir.y * size * 0.75 + n.y * size * 0.18 };
+            const p4 = { x: center.x + dir.x * size * 0.75 - n.x * size * 0.18, y: center.y + dir.y * size * 0.75 - n.y * size * 0.18 };
+            add(`<polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}" fill="none" stroke="${color}" stroke-width="2"/>`);
+            return;
+          }
+
+          if (comp.type === 'flange') {
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
+            add(`<line x1="${center.x - dir.x * size * 0.25 - n.x * size * 0.55}" y1="${center.y - dir.y * size * 0.25 - n.y * size * 0.55}" x2="${center.x - dir.x * size * 0.25 + n.x * size * 0.55}" y2="${center.y - dir.y * size * 0.25 + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
+            add(`<line x1="${center.x + dir.x * size * 0.25 - n.x * size * 0.55}" y1="${center.y + dir.y * size * 0.25 - n.y * size * 0.55}" x2="${center.x + dir.x * size * 0.25 + n.x * size * 0.55}" y2="${center.y + dir.y * size * 0.25 + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
+            return;
+          }
+
+          if (comp.type === 'cap') {
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${center.x}" y2="${center.y}" stroke="${color}" stroke-width="2"/>`);
+            add(`<line x1="${center.x - n.x * size * 0.55}" y1="${center.y - n.y * size * 0.55}" x2="${center.x + n.x * size * 0.55}" y2="${center.y + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
+            return;
+          }
+
+          if (comp.type === 'ball_valve' || comp.type === 'globe_valve') {
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
+            add(`<circle cx="${center.x}" cy="${center.y}" r="${size * 0.36}" fill="none" stroke="${color}" stroke-width="2"/>`);
+            return;
+          }
+
+          if (comp.type === 'gate_valve' || comp.type === 'check_valve') {
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
+            const q1 = { x: center.x - dir.x * size * 0.3 - n.x * size * 0.42, y: center.y - dir.y * size * 0.3 - n.y * size * 0.42 };
+            const q2 = { x: center.x - dir.x * size * 0.3 + n.x * size * 0.42, y: center.y - dir.y * size * 0.3 + n.y * size * 0.42 };
+            const q3 = { x: center.x + dir.x * size * 0.3 + n.x * size * 0.42, y: center.y + dir.y * size * 0.3 + n.y * size * 0.42 };
+            const q4 = { x: center.x + dir.x * size * 0.3 - n.x * size * 0.42, y: center.y + dir.y * size * 0.3 - n.y * size * 0.42 };
+            add(`<polygon points="${q1.x},${q1.y} ${q2.x},${q2.y} ${q3.x},${q3.y} ${q4.x},${q4.y}" fill="none" stroke="${color}" stroke-width="2"/>`);
+            return;
+          }
+
+          add(`<circle cx="${center.x}" cy="${center.y}" r="4" fill="${color}"/>`);
+        }
+
+        for (const comp of computeAutoFittings()) {
+          drawInlineSymbol(comp, '#b45309');
+        }
+
+        for (const comp of state.components) {
+          drawInlineSymbol(comp, '#1f2937');
+        }
+
+        parts.push('</svg>');
+        return parts.join('');
+      }
+
+      function buildBomHtmlTable(limit = 14) {
+        const rows = buildBomCsv().split('\n').map(line =>
+          line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(cell => String(cell).replace(/^"|"$/g, '').replaceAll('""', '"'))
+        );
+        const header = rows.shift() || [];
+        const bodyRows = rows.slice(0, limit);
+        const htmlRows = bodyRows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('');
+        return `
+          <table class="bom-table">
+            <thead><tr>${header.map(cell => `<th>${escapeHtml(cell)}</th>`).join('')}</tr></thead>
+            <tbody>${htmlRows}</tbody>
+          </table>
+        `;
+      }
+
+      function buildPrintSheetHtml() {
+        const now = new Date();
+        const dateStamp = now.toLocaleString();
+        const autoCount = computeAutoFittings().length;
+        const isoSvg = buildSheetViewSvg('iso', 740, 440);
+        const topSvg = buildSheetViewSvg('top', 360, 240);
+        const frontSvg = buildSheetViewSvg('front', 360, 240);
+        const rightSvg = buildSheetViewSvg('right', 360, 240);
+
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>${escapeHtml(state.projectName)} - Print Sheet</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #dbe2ea; color: #0f172a; }
+  .toolbar { position: sticky; top: 0; display: flex; gap: 10px; padding: 10px 14px; background: #0f172a; color: #fff; z-index: 5; }
+  .toolbar button { padding: 10px 14px; border: 0; border-radius: 6px; font-weight: 700; cursor: pointer; }
+  .toolbar .print { background: #2563eb; color: #fff; }
+  .toolbar .close { background: #475569; color: #fff; }
+  .sheet { width: 1100px; min-height: 850px; margin: 18px auto; background: #fff; border: 1px solid #64748b; box-shadow: 0 12px 40px rgba(15,23,42,0.18); padding: 18px; }
+  .sheet-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  .panel { border: 1px solid #64748b; padding: 8px; background: #fff; }
+  .panel h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ortho-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .title-block { margin-top: 14px; border: 1px solid #0f172a; display: grid; grid-template-columns: 2fr 1fr 1fr; }
+  .title-cell { min-height: 72px; border-right: 1px solid #0f172a; padding: 8px 10px; font-size: 12px; }
+  .title-cell:last-child { border-right: 0; }
+  .title-main { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; font-size: 12px; }
+  .bom-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+  .bom-table th, .bom-table td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; vertical-align: top; }
+  .bom-table th { background: #e2e8f0; }
+  .small { font-size: 11px; color: #334155; }
+  @page { size: landscape; margin: 0.35in; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none; }
+    .sheet { margin: 0; border: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; }
+  }
+</style>
+</head>
+<body>
+  <div class="toolbar">
+    <button class="print" onclick="window.print()">Print</button>
+    <button class="close" onclick="window.close()">Close</button>
+  </div>
+  <div class="sheet">
+    <div class="sheet-grid">
+      <div class="panel">
+        <h3>Isometric View</h3>
+        ${isoSvg}
+      </div>
+      <div class="panel">
+        <h3>Material Summary</h3>
+        ${buildBomHtmlTable(16)}
+        <div class="small" style="margin-top:8px;">Auto fittings shown on this sheet are derived from shared pipe endpoints when auto-join is enabled.</div>
+      </div>
+    </div>
+
+    <div class="ortho-grid" style="margin-top:14px;">
+      <div class="panel">
+        <h3>Top View (X-Y)</h3>
+        ${topSvg}
+      </div>
+      <div class="panel">
+        <h3>Front View (X-Z)</h3>
+        ${frontSvg}
+      </div>
+      <div class="panel">
+        <h3>Right View (Y-Z)</h3>
+        ${rightSvg}
+      </div>
+      <div class="panel">
+        <h3>Notes</h3>
+        <div class="small">Pipe dimensions are centerline grid units. Pipe thickness in the print views is diagrammatic. Use exported JSON or DXF-like output for data exchange and the BOM CSV for tabular material summaries.</div>
+      </div>
+    </div>
+
+    <div class="title-block">
+      <div class="title-cell">
+        <div class="title-main">${escapeHtml(state.projectName)}</div>
+        <div class="small">Browser-only piping isometric sheet generated from the current layout.</div>
+      </div>
+      <div class="title-cell">
+        <div class="meta">
+          <div><strong>Date</strong></div><div>${escapeHtml(dateStamp)}</div>
+          <div><strong>Pipes</strong></div><div>${state.pipes.length}</div>
+          <div><strong>Components</strong></div><div>${state.components.length}</div>
+          <div><strong>Auto fittings</strong></div><div>${autoCount}</div>
+        </div>
+      </div>
+      <div class="title-cell">
+        <div class="meta">
+          <div><strong>Scale</strong></div><div>Not to scale</div>
+          <div><strong>Units</strong></div><div>Grid</div>
+          <div><strong>Diameter default</strong></div><div>${Number(state.defaultDiameter).toFixed(2)}</div>
+          <div><strong>Grid px</strong></div><div>${state.grid}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+      }
+
+      function openPrintSheet() {
+        const win = window.open('', '_blank');
+        if (!win) {
+          updateStatus('Pop-up blocked. Allow pop-ups for this page to open the print sheet.');
+          return;
+        }
+        win.document.open();
+        win.document.write(buildPrintSheetHtml());
+        win.document.close();
+        updateStatus('Opened print sheet layout in a new tab/window.');
+      }
+
+      function attachEvents() {
+        els.modeButtons.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
+
+        els.pipeDiameter.addEventListener('input', () => {
+          state.defaultDiameter = Number(els.pipeDiameter.value);
+          els.pipeDiameterValue.textContent = `${state.defaultDiameter.toFixed(2)} grid`;
+          render();
+        });
+
+        els.gridScale.addEventListener('input', () => {
+          state.grid = Number(els.gridScale.value);
+          els.gridScaleValue.textContent = `${state.grid} px`;
+          render();
+        });
+
+        els.pipeColor.addEventListener('change', () => {
+          state.defaultPipeColor = els.pipeColor.value.trim() || '#7dd3fc';
+          render();
+        });
+
+        els.workingZ.addEventListener('change', () => {
+          state.workingZ = Math.round(Number(els.workingZ.value) || 0);
+          els.workingZ.value = String(state.workingZ);
+          render();
+        });
+
+        els.snapToggle.addEventListener('change', () => {
+          state.snapEnabled = !!els.snapToggle.checked;
+          render();
+        });
+
+        els.dimensionsToggle.addEventListener('change', () => {
+          state.showDimensions = !!els.dimensionsToggle.checked;
+          render();
+        });
+
+        els.autoJoinToggle.addEventListener('change', () => {
+          state.autoJoinEnabled = !!els.autoJoinToggle.checked;
+          render();
+        });
+
+        els.endRunBtn.addEventListener('click', () => {
+          state.drawingStart = null;
+          state.previewEnd = null;
+          render();
+          updateStatus('Pipe run ended.');
+        });
+
+        els.deleteSelectionBtn.addEventListener('click', deleteSelection);
+        els.applySelectionBtn.addEventListener('click', applySelectionChanges);
+        els.clearSelectionBtn.addEventListener('click', () => {
+          state.selected = null;
+          state.dragState = null;
+          refreshSelectionInfo();
+          render();
+          updateStatus('Selection cleared.');
+        });
+
+        els.saveComponentBtn.addEventListener('click', () => saveComponent(false));
+        els.updateComponentBtn.addEventListener('click', () => saveComponent(true));
+        els.deleteComponentBtn.addEventListener('click', deleteActiveLibraryItem);
+
+        els.projectName.addEventListener('change', () => state.projectName = els.projectName.value.trim() || 'Untitled Project');
+        els.saveProjectBtn.addEventListener('click', saveProjectToBrowser);
+        els.loadProjectBtn.addEventListener('click', loadProjectFromBrowser);
+        els.newProjectBtn.addEventListener('click', resetProject);
+        els.exportJsonBtn.addEventListener('click', exportJson);
+        els.importJsonBtn.addEventListener('click', () => els.importJsonInput.click());
+        els.importJsonInput.addEventListener('change', evt => {
+          const file = evt.target.files?.[0];
+          if (file) importJsonFile(file);
+          evt.target.value = '';
+        });
+        els.exportBomBtn.addEventListener('click', exportBomCsv);
+        els.exportCadBtn.addEventListener('click', exportCadText);
+        els.printSheetBtn.addEventListener('click', openPrintSheet);
+
+        els.svg.addEventListener('pointerdown', handlePointerDown);
+        window.addEventListener('pointermove', handlePointerMove);
+        window.addEventListener('pointerup', handlePointerUp);
+        els.svg.addEventListener('wheel', handleWheel, { passive: false });
+        els.svg.addEventListener('dblclick', evt => {
+          const hit = hitTest(canvasPoint(evt).x, canvasPoint(evt).y);
+          if (!hit) centerView();
+        });
+
+        window.addEventListener('keydown', evt => {
+          if (evt.key === 'Escape') {
+            state.drawingStart = null;
+            state.previewEnd = null;
+            state.dragState = null;
+            render();
+            updateStatus('Cancelled current draw action.');
+          }
+          if ((evt.key === 'Delete' || evt.key === 'Backspace') && state.selected) {
+            evt.preventDefault();
+            deleteSelection();
+          }
+          if (evt.key.toLowerCase() === 'v') setMode('select');
+          if (evt.key.toLowerCase() === 'p') setMode('pipe');
+          if (evt.key.toLowerCase() === 'c') setMode('component');
+          if (evt.key.toLowerCase() === 'h') setMode('pan');
+          if (evt.key === '[') {
+            state.workingZ -= 1;
+            syncInputs();
+            render();
+          }
+          if (evt.key === ']') {
+            state.workingZ += 1;
+            syncInputs();
+            render();
+          }
+        });
+
+        window.addEventListener('resize', () => render());
+      }
+
+      function init() {
+        loadStoredState();
+        if (!state.activeLibraryId && state.library.length) {
+          state.activeLibraryId = state.library[0].id;
+          populateComponentEditor(state.library[0]);
+        }
+        state.originX = Math.max(420, els.workspace.clientWidth * 0.54);
+        state.originY = Math.max(260, els.workspace.clientHeight * 0.55);
+        syncInputs();
+        renderLibrary();
+        attachEvents();
+        render();
+      }
+
+      init();
+    })();
+  
+  </script>
+</body>
+</html>
