@@ -359,9 +359,18 @@
           <div class="toggle-row">
             <label><input id="snapToggle" type="checkbox" checked /> Snap to connections</label>
             <label><input id="dimensionsToggle" type="checkbox" checked /> Show dimensions</label>
-            <label><input id="autoJoinToggle" type="checkbox" checked /> Auto-join elbows/tees</label>
+            <label><input id="autoJoinToggle" type="checkbox" checked /> Auto-join fittings</label>
           </div>
         </div>
+
+        <div class="field inline">
+          <label for="occlusionGapScale">Behind-pipe gap</label>
+          <div id="occlusionGapScaleValue" class="badge">1.35x</div>
+        </div>
+        <div class="field">
+          <input id="occlusionGapScale" type="range" min="0.8" max="2.4" step="0.1" value="1.35" />
+        </div>
+        <div class="small">Adjusts the break used to show when one pipe runs behind another.</div>
 
         <div class="button-row">
           <button id="endRunBtn" class="ghost">End Pipe Run</button>
@@ -444,6 +453,13 @@
           <button id="newProjectBtn" class="ghost">New Project</button>
         </div>
         <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
+        <div class="field">
+          <span class="field-title">Print sheet options</span>
+          <div class="toggle-row">
+            <label><input id="printMaterialSummaryToggle" type="checkbox" checked /> Material summary</label>
+            <label><input id="printDimensionsToggle" type="checkbox" checked /> Dimensions</label>
+          </div>
+        </div>
         <div class="button-row">
           <button id="exportJsonBtn" class="ghost">Export JSON</button>
           <button id="importJsonBtn" class="ghost">Import JSON</button>
@@ -497,7 +513,7 @@
     <div class="section">
       <h3>How to Use</h3>
       <div class="section-body">
-        <p class="small">Choose <span class="kbd">Pipe</span>, pick an axis, then click to place the start and end of each segment. The run stays chained until you press <span class="kbd">End Pipe Run</span>.</p>
+        <p class="small">Choose <span class="kbd">Pipe</span>, then click to place the start and end of each segment. The axis follows your cursor movement automatically. The run stays chained until you press <span class="kbd">End Pipe Run</span>.</p>
         <p class="small">In <span class="kbd">Select</span> mode, drag the orange end handles on a selected pipe to edit geometry. Drag a component to reposition it. Midpoint handles move the whole pipe.</p>
         <p class="small">Snapping uses pipe endpoints and component connection points. Dimensions show centerline lengths in grid units.</p>
         <p class="small">Mouse wheel zooms. Middle mouse or <span class="kbd">Pan</span> mode drags the view. Double-click empty space centers the view. Use <span class="kbd">Print Sheet Layout</span> for an isometric + orthographic printable sheet.</p>
@@ -511,7 +527,7 @@
         <h1>Isometric Piping Designer</h1>
         <span class="badge">Single-file browser app</span>
         <span class="badge">No dependencies</span>
-        <span class="badge">Auto elbows/tees + print sheet</span>
+        <span class="badge">Auto fittings + print sheet</span>
       </div>
       <div class="legend">
         <span><span class="color-dot" style="background:#7dd3fc"></span>Pipes</span>
@@ -568,6 +584,9 @@
         snapEnabled: true,
         showDimensions: true,
         autoJoinEnabled: true,
+        occlusionGapScale: 1.35,
+        printShowMaterialSummary: true,
+        printShowDimensions: true,
         pipes: [],
         components: [],
         library: [],
@@ -598,6 +617,10 @@
         snapToggle: document.getElementById('snapToggle'),
         dimensionsToggle: document.getElementById('dimensionsToggle'),
         autoJoinToggle: document.getElementById('autoJoinToggle'),
+        occlusionGapScale: document.getElementById('occlusionGapScale'),
+        occlusionGapScaleValue: document.getElementById('occlusionGapScaleValue'),
+        printMaterialSummaryToggle: document.getElementById('printMaterialSummaryToggle'),
+        printDimensionsToggle: document.getElementById('printDimensionsToggle'),
         endRunBtn: document.getElementById('endRunBtn'),
         deleteSelectionBtn: document.getElementById('deleteSelectionBtn'),
         clearSelectionBtn: document.getElementById('clearSelectionBtn'),
@@ -801,7 +824,10 @@
           zoom: state.zoom,
           snapEnabled: state.snapEnabled,
           showDimensions: state.showDimensions,
-          autoJoinEnabled: state.autoJoinEnabled
+          autoJoinEnabled: state.autoJoinEnabled,
+          occlusionGapScale: state.occlusionGapScale,
+          printShowMaterialSummary: state.printShowMaterialSummary,
+          printShowDimensions: state.printShowDimensions
         };
       }
 
@@ -819,6 +845,9 @@
         state.snapEnabled = project.snapEnabled ?? true;
         state.showDimensions = project.showDimensions ?? true;
         state.autoJoinEnabled = project.autoJoinEnabled ?? true;
+        state.occlusionGapScale = Number(project.occlusionGapScale ?? 1.35);
+        state.printShowMaterialSummary = project.printShowMaterialSummary ?? true;
+        state.printShowDimensions = project.printShowDimensions ?? true;
         state.selected = null;
         state.drawingStart = null;
         state.previewEnd = null;
@@ -838,6 +867,10 @@
         els.snapToggle.checked = state.snapEnabled;
         els.dimensionsToggle.checked = state.showDimensions;
         els.autoJoinToggle.checked = state.autoJoinEnabled;
+        els.occlusionGapScale.value = String(state.occlusionGapScale);
+        els.occlusionGapScaleValue.textContent = `${Number(state.occlusionGapScale).toFixed(2)}x`;
+        els.printMaterialSummaryToggle.checked = state.printShowMaterialSummary;
+        els.printDimensionsToggle.checked = state.printShowDimensions;
         updateActiveComponentLabel();
         refreshSelectionInfo();
       }
@@ -1199,6 +1232,104 @@
         return { x, y, z };
       }
 
+      function buildPipeNodeMap() {
+        const nodes = new Map();
+        for (const pipe of state.pipes) {
+          const axis = pipeAxis(pipe);
+          for (const endName of ['start', 'end']) {
+            const point = pipe[endName];
+            const key = pointKey(point);
+            if (!nodes.has(key)) nodes.set(key, []);
+            nodes.get(key).push({ pipeId: pipe.id, axis, endName, point: clonePoint(point) });
+          }
+        }
+        return nodes;
+      }
+
+      function endpointJoinedInMap(point, pipeId, nodeMap = null) {
+        const map = nodeMap || buildPipeNodeMap();
+        const entries = map.get(pointKey(point)) || [];
+        return entries.some(entry => entry.pipeId !== pipeId);
+      }
+
+      function sharesPipeEndpoint(pipeA, pipeB) {
+        return samePoint(pipeA.start, pipeB.start) || samePoint(pipeA.start, pipeB.end)
+          || samePoint(pipeA.end, pipeB.start) || samePoint(pipeA.end, pipeB.end);
+      }
+
+      function interpolatePoint3D(a, b, t) {
+        return {
+          x: a.x + (b.x - a.x) * t,
+          y: a.y + (b.y - a.y) * t,
+          z: a.z + (b.z - a.z) * t
+        };
+      }
+
+      function pointDepth(point) {
+        return point.x + point.y + point.z;
+      }
+
+      function segmentIntersection2D(a, b, c, d) {
+        const r = { x: b.x - a.x, y: b.y - a.y };
+        const s = { x: d.x - c.x, y: d.y - c.y };
+        const denom = r.x * s.y - r.y * s.x;
+        if (Math.abs(denom) < 1e-7) return null;
+        const diff = { x: c.x - a.x, y: c.y - a.y };
+        const t = (diff.x * s.y - diff.y * s.x) / denom;
+        const u = (diff.x * r.y - diff.y * r.x) / denom;
+        if (t <= 0.06 || t >= 0.94 || u <= 0.06 || u >= 0.94) return null;
+        return {
+          t,
+          u,
+          x: a.x + r.x * t,
+          y: a.y + r.y * t
+        };
+      }
+
+      function computeOcclusionBreaks(mapPointFn, widthFn) {
+        const breaks = [];
+        const gapScale = Math.max(0.8, Number(state.occlusionGapScale) || 1);
+        for (let i = 0; i < state.pipes.length; i += 1) {
+          for (let j = i + 1; j < state.pipes.length; j += 1) {
+            const pipeA = state.pipes[i];
+            const pipeB = state.pipes[j];
+            if (sharesPipeEndpoint(pipeA, pipeB)) continue;
+
+            const a1 = mapPointFn(pipeA.start);
+            const a2 = mapPointFn(pipeA.end);
+            const b1 = mapPointFn(pipeB.start);
+            const b2 = mapPointFn(pipeB.end);
+            const hit = segmentIntersection2D(a1, a2, b1, b2);
+            if (!hit) continue;
+
+            const pointA = interpolatePoint3D(pipeA.start, pipeA.end, hit.t);
+            const pointB = interpolatePoint3D(pipeB.start, pipeB.end, hit.u);
+            const depthA = pointDepth(pointA);
+            const depthB = pointDepth(pointB);
+            if (Math.abs(depthA - depthB) < 0.01) continue;
+
+            const behindPipe = depthA < depthB ? pipeA : pipeB;
+            const start2 = mapPointFn(behindPipe.start);
+            const end2 = mapPointFn(behindPipe.end);
+            const dir = normalize({ x: end2.x - start2.x, y: end2.y - start2.y });
+            const width = widthFn(behindPipe);
+            const gapLength = Math.max(width * (1.75 + gapScale * 0.9), 16 + gapScale * 8);
+            const haloWidth = width + 8 + gapScale * 6;
+            const maskWidth = width + 4 + gapScale * 4;
+            breaks.push({
+              x: hit.x,
+              y: hit.y,
+              dir,
+              width,
+              gapLength,
+              haloWidth,
+              maskWidth
+            });
+          }
+        }
+        return breaks;
+      }
+
       function hasManualComponentAt(point, types = []) {
         return state.components.some(comp => samePoint(comp.point, point) && (!types.length || types.includes(comp.type)));
       }
@@ -1206,20 +1337,11 @@
       function computeAutoFittings() {
         if (!state.autoJoinEnabled) return [];
 
-        const nodes = new Map();
-        for (const pipe of state.pipes) {
-          const axis = pipeAxis(pipe);
-          for (const endName of ['start', 'end']) {
-            const p = pipe[endName];
-            const key = pointKey(p);
-            if (!nodes.has(key)) nodes.set(key, []);
-            nodes.get(key).push({ pipeId: pipe.id, axis });
-          }
-        }
-
+        const nodes = buildPipeNodeMap();
         const fittings = [];
         for (const [key, entries] of nodes.entries()) {
-          if (entries.length < 2) continue;
+          if (entries.length < 3) continue;
+
           const counts = { x: 0, y: 0, z: 0 };
           entries.forEach(entry => counts[entry.axis] += 1);
           const uniqueAxes = ['x', 'y', 'z'].filter(axis => counts[axis] > 0);
@@ -1227,40 +1349,23 @@
 
           const point = parsePointKey(key);
           const sortedAxes = ['x', 'y', 'z'].sort((a, b) => counts[b] - counts[a]);
-          let type = '';
-          let axis = sortedAxes[0];
-          let branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
-          let name = '';
-          let notes = '';
+          const axis = sortedAxes[0];
+          const branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
 
-          if (entries.length === 2 && uniqueAxes.length === 2) {
-            type = 'elbow_90';
-            axis = uniqueAxes[0];
-            branchAxis = uniqueAxes[1];
-            name = 'Auto Elbow';
-            notes = 'Derived from two non-collinear connected pipe segments';
-          } else {
-            type = 'tee';
-            axis = sortedAxes[0];
-            branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
-            name = counts[axis] >= 2 ? 'Auto Tee' : 'Auto Branch Tee';
-            notes = entries.length >= 4
-              ? 'Derived from multi-branch pipe junction'
-              : 'Derived from three-way pipe junction';
-          }
-
-          if (hasManualComponentAt(point, ['elbow_90', 'tee'])) continue;
+          if (hasManualComponentAt(point, ['tee'])) continue;
 
           fittings.push({
-            id: `auto_${type}_${key.replaceAll(',', '_')}`,
-            name,
-            type,
+            id: `auto_tee_${key.replaceAll(',', '_')}`,
+            name: counts[axis] >= 2 ? 'Auto Tee' : 'Auto Branch Tee',
+            type: 'tee',
             point,
             axis,
             branchAxis,
-            scale: 0.95,
-            color: '#fbbf24',
-            notes,
+            scale: 1.05,
+            color: state.defaultPipeColor,
+            notes: entries.length >= 4
+              ? 'Derived from multi-branch pipe junction'
+              : 'Derived from three-way pipe junction',
             auto: true
           });
         }
@@ -1345,10 +1450,13 @@
         world.setAttribute('filter', 'url(#softShadow)');
         els.svg.appendChild(world);
 
+        const nodeMap = buildPipeNodeMap();
         for (const entry of sortedEntities()) {
-          if (entry.type === 'pipe') drawPipe(world, entry.item);
+          if (entry.type === 'pipe') drawPipe(world, entry.item, false, nodeMap);
           else drawComponent(world, entry.item);
         }
+
+        drawOcclusionBreaks(world);
 
         for (const autoFit of computeAutoFittings()) {
           drawComponent(world, autoFit);
@@ -1398,6 +1506,41 @@
         return line;
       }
 
+      function drawOcclusionBreaks(parent) {
+        const breaks = computeOcclusionBreaks(
+          point => projectPoint(point),
+          pipe => Math.max(8, pipe.diameter * state.grid * state.zoom)
+        );
+
+        for (const gap of breaks) {
+          const half = gap.gapLength / 2;
+          const x1 = gap.x - gap.dir.x * half;
+          const y1 = gap.y - gap.dir.y * half;
+          const x2 = gap.x + gap.dir.x * half;
+          const y2 = gap.y + gap.dir.y * half;
+
+          const halo = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          halo.setAttribute('x1', x1);
+          halo.setAttribute('y1', y1);
+          halo.setAttribute('x2', x2);
+          halo.setAttribute('y2', y2);
+          halo.setAttribute('stroke', 'rgba(248,250,252,0.92)');
+          halo.setAttribute('stroke-width', gap.haloWidth);
+          halo.setAttribute('stroke-linecap', 'round');
+          parent.appendChild(halo);
+
+          const mask = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          mask.setAttribute('x1', x1);
+          mask.setAttribute('y1', y1);
+          mask.setAttribute('x2', x2);
+          mask.setAttribute('y2', y2);
+          mask.setAttribute('stroke', '#0b1220');
+          mask.setAttribute('stroke-width', gap.maskWidth);
+          mask.setAttribute('stroke-linecap', 'round');
+          parent.appendChild(mask);
+        }
+      }
+
       function drawEllipse(cx, cy, rx, ry, angleDeg, fill, stroke, opacity = '1') {
         const ell = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
         ell.setAttribute('cx', cx);
@@ -1412,7 +1555,7 @@
         return ell;
       }
 
-      function drawPipe(parent, pipe, isPreview = false) {
+      function drawPipe(parent, pipe, isPreview = false, nodeMap = null) {
         const a = projectPoint(pipe.start);
         const b = projectPoint(pipe.end);
         const d = normalize({ x: b.x - a.x, y: b.y - a.y });
@@ -1444,22 +1587,28 @@
         const rx = r;
         const ry = Math.max(2.5, r * 0.42);
         const angle = Math.atan2(d.y, d.x) * 180 / Math.PI;
+        const startJoined = !isPreview && endpointJoinedInMap(pipe.start, pipe.id, nodeMap);
+        const endJoined = !isPreview && endpointJoinedInMap(pipe.end, pipe.id, nodeMap);
         const startCap = drawEllipse(a.x, a.y, rx, ry, angle, shadeColor(pipe.color, 10), shadeColor(pipe.color, -55), isPreview ? '0.6' : '1');
         const endCap = drawEllipse(b.x, b.y, rx, ry, angle, shadeColor(pipe.color, 35), state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? 'var(--selected)' : shadeColor(pipe.color, -55), isPreview ? '0.75' : '1');
         startCap.setAttribute('fill-opacity', isPreview ? '0.55' : '0.92');
         endCap.setAttribute('fill-opacity', isPreview ? '0.7' : '0.96');
-        parent.appendChild(startCap);
-        parent.appendChild(endCap);
+        if (!startJoined) parent.appendChild(startCap);
+        if (!endJoined) parent.appendChild(endCap);
 
         if (!isPreview && state.showDimensions) drawPipeDimension(parent, pipe);
 
         if (!isPreview) {
           body.dataset.kind = 'pipe';
           body.dataset.id = pipe.id;
-          endCap.dataset.kind = 'pipe';
-          endCap.dataset.id = pipe.id;
-          startCap.dataset.kind = 'pipe';
-          startCap.dataset.id = pipe.id;
+          if (!endJoined) {
+            endCap.dataset.kind = 'pipe';
+            endCap.dataset.id = pipe.id;
+          }
+          if (!startJoined) {
+            startCap.dataset.kind = 'pipe';
+            startCap.dataset.id = pipe.id;
+          }
         }
       }
 
@@ -1526,6 +1675,16 @@
             c.setAttribute('stroke-width', sw);
             group.appendChild(c);
           },
+          path(d, fill = 'none', sw = 2.2, colorOverride = color) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', d);
+            path.setAttribute('fill', fill);
+            path.setAttribute('stroke', colorOverride);
+            path.setAttribute('stroke-width', sw);
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            group.appendChild(path);
+          },
           text(tx, ty, value) {
             const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             t.setAttribute('x', tx); t.setAttribute('y', ty);
@@ -1583,18 +1742,22 @@
             const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
             const altP = projectPoint(addPoint(comp.point, alt3));
             const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
-            helper.line(p.x, p.y, p.x + dir.x * size * 0.8, p.y + dir.y * size * 0.8);
-            helper.line(p.x, p.y, p.x + altDir.x * size * 0.8, p.y + altDir.y * size * 0.8);
-            helper.circle(p.x, p.y, size * 0.15, shadeColor(color, -8));
+            const leg1 = { x: p.x + dir.x * size * 0.95, y: p.y + dir.y * size * 0.95 };
+            const leg2 = { x: p.x + altDir.x * size * 0.95, y: p.y + altDir.y * size * 0.95 };
+            const inner1 = { x: p.x + dir.x * size * 0.25, y: p.y + dir.y * size * 0.25 };
+            const inner2 = { x: p.x + altDir.x * size * 0.25, y: p.y + altDir.y * size * 0.25 };
+            helper.line(inner1.x, inner1.y, leg1.x, leg1.y, 2.6);
+            helper.line(inner2.x, inner2.y, leg2.x, leg2.y, 2.6);
+            helper.path(`M ${inner1.x} ${inner1.y} Q ${p.x} ${p.y} ${inner2.x} ${inner2.y}`, 'none', 3);
             break;
           }
           case 'tee': {
             const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
             const altP = projectPoint(addPoint(comp.point, alt3));
             const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
-            helper.line(a.x, a.y, b.x, b.y);
-            helper.line(p.x, p.y, p.x + altDir.x * size * 0.9, p.y + altDir.y * size * 0.9);
-            helper.circle(p.x, p.y, size * 0.12, shadeColor(color, -8));
+            helper.line(a.x, a.y, b.x, b.y, 2.8);
+            helper.line(p.x, p.y, p.x + altDir.x * size * 0.95, p.y + altDir.y * size * 0.95, 2.8);
+            helper.circle(p.x, p.y, size * 0.16, '#111827', 1.4);
             break;
           }
           case 'reducer': {
@@ -2115,7 +2278,7 @@
         return pts;
       }
 
-      function buildSheetViewSvg(view, width, height) {
+      function buildSheetViewSvg(view, width, height, options = {}) {
         const pts = getScenePointsForSheet();
         const projected = pts.map(point => projectionUV(point, view));
         let minU = Math.min(...projected.map(p => p.u));
@@ -2136,6 +2299,8 @@
             y: height - pad - (p.v - minV) * scale
           };
         }
+
+        const showDimensions = options.showDimensions ?? true;
 
         function projectedDir(axis) {
           const origin = mapPoint({ x: 0, y: 0, z: 0 });
@@ -2160,9 +2325,20 @@
           const b = mapPoint(pipe.end);
           const strokeWidth = Math.max(2, pipe.diameter * scale * 0.18);
           parts.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
-          const mx = (a.x + b.x) / 2;
-          const my = (a.y + b.y) / 2;
-          parts.push(`<text x="${mx}" y="${my - 8}" font-size="10" text-anchor="middle" fill="#334155">${lengthOfPipe(pipe)}u</text>`);
+          if (showDimensions) {
+            const mx = (a.x + b.x) / 2;
+            const my = (a.y + b.y) / 2;
+            parts.push(`<text x="${mx}" y="${my - 8}" font-size="10" text-anchor="middle" fill="#334155">${lengthOfPipe(pipe)}u</text>`);
+          }
+        }
+
+        for (const gap of computeOcclusionBreaks(point => mapPoint(point), pipe => Math.max(2, pipe.diameter * scale * 0.18))) {
+          const half = gap.gapLength / 2;
+          const x1 = gap.x - gap.dir.x * half;
+          const y1 = gap.y - gap.dir.y * half;
+          const x2 = gap.x + gap.dir.x * half;
+          const y2 = gap.y + gap.dir.y * half;
+          parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="${gap.maskWidth}" stroke-linecap="round"/>`);
         }
 
         function drawInlineSymbol(comp, color) {
@@ -2176,16 +2352,20 @@
           const add = s => parts.push(s);
 
           if (comp.type === 'elbow_90') {
-            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + dir.x * size}" y2="${center.y + dir.y * size}" stroke="${color}" stroke-width="2"/>`);
-            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2"/>`);
-            add(`<circle cx="${center.x}" cy="${center.y}" r="2.6" fill="${color}"/>`);
+            const inner1 = { x: center.x + dir.x * size * 0.25, y: center.y + dir.y * size * 0.25 };
+            const inner2 = { x: center.x + branch.x * size * 0.25, y: center.y + branch.y * size * 0.25 };
+            const leg1 = { x: center.x + dir.x * size * 0.95, y: center.y + dir.y * size * 0.95 };
+            const leg2 = { x: center.x + branch.x * size * 0.95, y: center.y + branch.y * size * 0.95 };
+            add(`<line x1="${inner1.x}" y1="${inner1.y}" x2="${leg1.x}" y2="${leg1.y}" stroke="${color}" stroke-width="2.2"/>`);
+            add(`<line x1="${inner2.x}" y1="${inner2.y}" x2="${leg2.x}" y2="${leg2.y}" stroke="${color}" stroke-width="2.2"/>`);
+            add(`<path d="M ${inner1.x} ${inner1.y} Q ${center.x} ${center.y} ${inner2.x} ${inner2.y}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`);
             return;
           }
 
           if (comp.type === 'tee') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
-            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2"/>`);
-            add(`<circle cx="${center.x}" cy="${center.y}" r="2.2" fill="${color}"/>`);
+            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2.3"/>`);
+            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2.3"/>`);
+            add(`<circle cx="${center.x}" cy="${center.y}" r="2.4" fill="#ffffff" stroke="${color}" stroke-width="1.6"/>`);
             return;
           }
 
@@ -2261,10 +2441,12 @@
         const now = new Date();
         const dateStamp = now.toLocaleString();
         const autoCount = computeAutoFittings().length;
-        const isoSvg = buildSheetViewSvg('iso', 740, 440);
-        const topSvg = buildSheetViewSvg('top', 360, 240);
-        const frontSvg = buildSheetViewSvg('front', 360, 240);
-        const rightSvg = buildSheetViewSvg('right', 360, 240);
+        const sheetDimensions = !!state.printShowDimensions;
+        const showMaterialSummary = !!state.printShowMaterialSummary;
+        const isoSvg = buildSheetViewSvg('iso', 740, 440, { showDimensions: sheetDimensions });
+        const topSvg = buildSheetViewSvg('top', 360, 240, { showDimensions: sheetDimensions });
+        const frontSvg = buildSheetViewSvg('front', 360, 240, { showDimensions: sheetDimensions });
+        const rightSvg = buildSheetViewSvg('right', 360, 240, { showDimensions: sheetDimensions });
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -2279,7 +2461,7 @@
   .toolbar .print { background: #2563eb; color: #fff; }
   .toolbar .close { background: #475569; color: #fff; }
   .sheet { width: 1100px; min-height: 850px; margin: 18px auto; background: #fff; border: 1px solid #64748b; box-shadow: 0 12px 40px rgba(15,23,42,0.18); padding: 18px; }
-  .sheet-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; }
+  .sheet-grid { display: grid; grid-template-columns: ${showMaterialSummary ? '2fr 1fr' : '1fr'}; gap: 14px; }
   .panel { border: 1px solid #64748b; padding: 8px; background: #fff; }
   .panel h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
   .ortho-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -2311,11 +2493,11 @@
         <h3>Isometric View</h3>
         ${isoSvg}
       </div>
-      <div class="panel">
+      ${showMaterialSummary ? `<div class="panel">
         <h3>Material Summary</h3>
         ${buildBomHtmlTable(16)}
-        <div class="small" style="margin-top:8px;">Auto fittings shown on this sheet are derived from shared pipe endpoints when auto-join is enabled.</div>
-      </div>
+        <div class="small" style="margin-top:8px;">Auto branch fittings shown on this sheet are derived from shared pipe endpoints when auto-join is enabled.</div>
+      </div>` : ''}
     </div>
 
     <div class="ortho-grid" style="margin-top:14px;">
@@ -2333,7 +2515,7 @@
       </div>
       <div class="panel">
         <h3>Notes</h3>
-        <div class="small">Pipe dimensions are centerline grid units. Pipe thickness in the print views is diagrammatic. Use exported JSON or DXF-like output for data exchange and the BOM CSV for tabular material summaries.</div>
+        <div class="small">${sheetDimensions ? 'Pipe dimensions are centerline grid units. ' : 'Pipe dimensions are hidden on this print sheet. '}Pipe thickness in the print views is diagrammatic. Use exported JSON or DXF-like output for data exchange and the BOM CSV for tabular material summaries.</div>
       </div>
     </div>
 
@@ -2415,6 +2597,20 @@
         els.autoJoinToggle.addEventListener('change', () => {
           state.autoJoinEnabled = !!els.autoJoinToggle.checked;
           render();
+        });
+
+        els.occlusionGapScale.addEventListener('input', () => {
+          state.occlusionGapScale = Number(els.occlusionGapScale.value);
+          els.occlusionGapScaleValue.textContent = `${Number(state.occlusionGapScale).toFixed(2)}x`;
+          render();
+        });
+
+        els.printMaterialSummaryToggle.addEventListener('change', () => {
+          state.printShowMaterialSummary = !!els.printMaterialSummaryToggle.checked;
+        });
+
+        els.printDimensionsToggle.addEventListener('change', () => {
+          state.printShowDimensions = !!els.printDimensionsToggle.checked;
         });
 
         els.endRunBtn.addEventListener('click', () => {
