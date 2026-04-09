@@ -1,2711 +1,1145 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Isometric Piping Designer v4</title>
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isometric Piping Draft</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --panel-2: #1f2937;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-2: #22c55e;
-      --danger: #ef4444;
-      --warning: #f59e0b;
-      --border: #334155;
-      --grid: rgba(148, 163, 184, 0.22);
-      --grid-strong: rgba(148, 163, 184, 0.42);
-      --pipe-fill: #7dd3fc;
-      --selected: #f59e0b;
-      --surface: #0b1220;
+      --bg: #181818;
+      --panel: #232323;
+      --panel-2: #2b2b2b;
+      --panel-3: #343434;
+      --line: #4c4c4c;
+      --text: #e3e3e3;
+      --muted: #b2b2b2;
+      --accent: #cfcfcf;
+      --danger: #9b9b9b;
+      --canvas: #141414;
+      --grid: rgba(255,255,255,0.06);
+      --grid-strong: rgba(255,255,255,0.14);
     }
 
     * { box-sizing: border-box; }
-
-    html, body {
-      margin: 0;
-      height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
+    html, body { height: 100%; margin: 0; font-family: Inter, Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--text); }
 
     body {
       display: grid;
-      grid-template-columns: 360px 1fr;
-      min-height: 100vh;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
     }
 
-    aside {
-      border-right: 1px solid var(--border);
-      background: linear-gradient(180deg, rgba(17,24,39,1) 0%, rgba(15,23,42,1) 100%);
-      padding: 16px;
-      overflow-y: auto;
+    .sidebar {
+      background: linear-gradient(180deg, #212121 0%, #191919 100%);
+      border-right: 1px solid #3c3c3c;
+      padding: 14px;
+      overflow: auto;
     }
 
-    main {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-width: 0;
-      min-height: 0;
-    }
-
-    .topbar, .statusbar {
-      border-bottom: 1px solid var(--border);
-      background: rgba(15, 23, 42, 0.92);
-      padding: 10px 14px;
+    .brand {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 14px;
     }
 
-    .statusbar {
-      border-top: 1px solid var(--border);
-      border-bottom: 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .workspace {
-      position: relative;
-      min-height: 0;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at top, rgba(56,189,248,0.08), transparent 30%),
-        linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
-    }
-
-    #svgCanvas {
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: crosshair;
-      user-select: none;
-      touch-action: none;
-    }
-
-    .section {
-      margin-bottom: 16px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      background: rgba(15,23,42,0.85);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.2);
-    }
-
-    .section h3 {
-      margin: 0;
-      font-size: 14px;
-      letter-spacing: 0.04em;
+    .brand h1 {
+      font-size: 15px;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #cbd5e1;
-      padding: 12px 14px;
-      background: rgba(31,41,55,0.9);
-      border-bottom: 1px solid var(--border);
+      margin: 0;
     }
 
-    .section-body { padding: 12px 14px 14px; }
-    .field { display: grid; gap: 6px; margin-bottom: 10px; }
-    .field.inline { grid-template-columns: 1fr 100px; align-items: center; gap: 10px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-
-    label, .field-title {
-      font-size: 12px;
+    .brand small {
       color: var(--muted);
+      display: block;
+      margin-top: 3px;
+      letter-spacing: 0.08em;
     }
 
-    input[type="text"], input[type="number"], select, textarea {
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      font-size: 12px;
+      margin: 0 0 10px;
+      color: #f0f0f0;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .row.single { grid-template-columns: 1fr; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    input, button, select {
       width: 100%;
-      padding: 9px 10px;
       border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #0b1220;
+      border: 1px solid #4b4b4b;
+      background: var(--panel-2);
       color: var(--text);
+      padding: 9px 10px;
+      font-size: 13px;
       outline: none;
     }
 
-    textarea { min-height: 66px; resize: vertical; }
-    input[type="range"] { width: 100%; }
-
-    .button-row, .tool-row, .toggle-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .toggle-row label {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 10px;
-      border-radius: 9px;
-      border: 1px solid var(--border);
-      background: rgba(11,18,32,0.75);
-      cursor: pointer;
-      color: var(--text);
+    input[type="range"] {
+      padding: 0;
+      background: transparent;
+      border: none;
     }
 
     button {
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 9px 12px;
-      border-radius: 9px;
       cursor: pointer;
-      transition: 0.15s ease;
-      font-weight: 600;
+      background: linear-gradient(180deg, #3a3a3a 0%, #2e2e2e 100%);
+      transition: transform 0.05s ease, filter 0.15s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+
+    .primary {
+      background: linear-gradient(180deg, #565656 0%, #404040 100%);
+      color: #fff;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      border-color: #60a5fa;
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
 
-    button.primary {
-      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
-      border-color: #0ea5e9;
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
-    button.success {
-      background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
-      border-color: #22c55e;
+    .stat:last-child { border-bottom: none; }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 8px;
     }
 
-    button.danger {
-      background: linear-gradient(180deg, #dc2626 0%, #b91c1c 100%);
-      border-color: #ef4444;
+    .main {
+      position: relative;
+      background: radial-gradient(circle at 30% 20%, #1f1f1f 0%, #151515 55%, #111 100%);
+      overflow: hidden;
     }
 
-    button.ghost { background: #0b1220; }
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: var(--canvas);
+      cursor: crosshair;
+    }
 
-    button.active {
-      outline: 2px solid rgba(56,189,248,0.55);
-      border-color: #38bdf8;
-      background: rgba(2,132,199,0.22);
+    .overlay {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
     }
 
     .badge {
+      background: rgba(25,25,25,0.85);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #efefef;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.24);
+    }
+
+    .north-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: rgba(56,189,248,0.12);
-      border: 1px solid rgba(56,189,248,0.35);
-      color: #bae6fd;
-      font-size: 12px;
+      gap: 8px;
     }
 
-    .small {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.45;
+    .north-indicator svg {
+      width: 68px;
+      height: 68px;
+      overflow: visible;
     }
 
-    .library-list {
+    .status-bar {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      background: rgba(25,25,25,0.85);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: #efefef;
+      letter-spacing: 0.04em;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.24);
+      max-width: min(780px, calc(100vw - 380px));
+      line-height: 1.5;
+    }
+
+    .mono { font-family: Consolas, Menlo, monospace; }
+
+    #printSheet {
+      display: none;
+      background: white;
+      color: black;
+    }
+
+    .print-page {
+      width: 11in;
+      height: 8.5in;
+      position: relative;
+      margin: 0 auto;
+      background: white;
+      overflow: hidden;
+      color: #111;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .print-border {
+      position: absolute;
+      inset: 0.25in;
+      border: 1.5px solid #111;
+    }
+
+    .print-title {
+      position: absolute;
+      right: 0.25in;
+      bottom: 0.25in;
+      width: 4.35in;
+      height: 1.25in;
+      border: 1.5px solid #111;
       display: grid;
-      gap: 8px;
-      max-height: 240px;
-      overflow-y: auto;
-      padding-right: 4px;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 0.42in 0.42in 0.41in;
+      font-size: 10px;
+      background: white;
     }
 
-    .lib-item {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px;
-      background: rgba(11,18,32,0.9);
-      cursor: pointer;
-    }
-
-    .lib-item.selected {
-      border-color: var(--accent);
-      box-shadow: inset 0 0 0 1px rgba(56,189,248,0.45);
-      background: rgba(2,132,199,0.14);
-    }
-
-    .lib-item strong {
-      display: block;
-      margin-bottom: 2px;
-      font-size: 13px;
-    }
-
-    .kbd {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 11px;
-      border: 1px solid var(--border);
-      background: #0b1220;
-      border-bottom-width: 2px;
-      padding: 2px 6px;
-      border-radius: 6px;
-      color: #cbd5e1;
-    }
-
-    .legend {
+    .print-title > div {
+      border-right: 1px solid #111;
+      border-bottom: 1px solid #111;
+      padding: 5px 6px;
       display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 3px;
+    }
+
+    .print-title > div:nth-child(3n) { border-right: none; }
+    .print-title > div:nth-last-child(-n+3) { border-bottom: none; }
+
+    .title-label {
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .title-value {
+      font-weight: 700;
+      font-size: 10px;
+      word-break: break-word;
+    }
+
+    .drawing-field {
+      grid-column: span 2;
+    }
+
+    .sheet-header {
+      position: absolute;
+      left: 0.45in;
+      top: 0.33in;
       font-size: 12px;
-      color: var(--muted);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
     }
 
-    .color-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 5px;
+    .sheet-sub {
+      position: absolute;
+      left: 0.45in;
+      top: 0.58in;
+      font-size: 9px;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .hidden-file-input { display: none; }
-
-    .title-wrap {
+    #printSvgWrap {
+      position: absolute;
+      left: 0.42in;
+      right: 0.42in;
+      top: 0.9in;
+      bottom: 1.7in;
       display: flex;
-      gap: 10px;
       align-items: center;
-      flex-wrap: wrap;
+      justify-content: center;
+      overflow: hidden;
     }
 
-    .title-wrap h1 {
-      margin: 0;
-      font-size: 18px;
+    #printSvgWrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: white;
     }
 
-    .selection-box {
-      display: grid;
-      gap: 6px;
-      padding: 10px;
-      border-radius: 10px;
-      background: rgba(11,18,32,0.7);
-      border: 1px dashed var(--border);
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
-    .selection-box strong { color: #fcd34d; }
-
-    .mono {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 11px;
-    }
-
-    @media (max-width: 1100px) {
-      body {
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr;
+    @media (max-width: 980px) {
+      body { grid-template-columns: 1fr; }
+      .sidebar {
+        position: absolute;
+        z-index: 5;
+        width: min(92vw, 340px);
+        max-height: calc(100vh - 16px);
+        left: 8px;
+        top: 8px;
+        border-radius: 12px;
+        border: 1px solid #434343;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.4);
       }
-      aside {
-        max-height: 48vh;
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-      }
+      .status-bar { max-width: calc(100vw - 30px); }
+    }
+
+    @media print {
+      body { display: block; background: white !important; }
+      .sidebar, .main { display: none !important; }
+      #printSheet { display: block !important; }
+      @page { size: landscape letter; margin: 0; }
     }
   </style>
 </head>
 <body>
-  <aside>
-    <div class="section">
-      <h3>Drawing Tools</h3>
-      <div class="section-body">
-        <div class="field">
-          <label>Mode</label>
-          <div class="tool-row">
-            <button class="active" data-mode="select">Select</button>
-            <button data-mode="pipe">Pipe</button>
-            <button data-mode="component">Component</button>
-            <button data-mode="pan">Pan</button>
-          </div>
-        </div>
-
-        <div class="field">
-          <label>Pipe direction</label>
-          <div class="small">In pipe mode, the X, Y, or Z axis is chosen automatically from your cursor movement.</div>
-        </div>
-
-        <div class="field inline">
-          <label for="workingZ">Working elevation (Z)</label>
-          <input id="workingZ" type="number" step="1" value="0" />
-        </div>
-
-        <div class="field inline">
-          <label for="pipeDiameter">Pipe diameter</label>
-          <div id="pipeDiameterValue" class="badge">0.45 grid</div>
-        </div>
-        <div class="field">
-          <input id="pipeDiameter" type="range" min="0.15" max="1.25" step="0.05" value="0.45" />
-        </div>
-
-        <div class="field inline">
-          <label for="gridScale">Grid scale</label>
-          <div id="gridScaleValue" class="badge">36 px</div>
-        </div>
-        <div class="field">
-          <input id="gridScale" type="range" min="24" max="60" step="2" value="36" />
-        </div>
-
-        <div class="field">
-          <label for="pipeColor">Pipe color</label>
-          <input id="pipeColor" type="text" value="#7dd3fc" />
-        </div>
-
-        <div class="field">
-          <span class="field-title">Display and snapping</span>
-          <div class="toggle-row">
-            <label><input id="snapToggle" type="checkbox" checked /> Snap to connections</label>
-            <label><input id="dimensionsToggle" type="checkbox" checked /> Show dimensions</label>
-            <label><input id="autoJoinToggle" type="checkbox" checked /> Auto-join fittings</label>
-          </div>
-        </div>
-
-        <div class="field inline">
-          <label for="occlusionGapScale">Behind-pipe gap</label>
-          <div id="occlusionGapScaleValue" class="badge">1.35x</div>
-        </div>
-        <div class="field">
-          <input id="occlusionGapScale" type="range" min="0.8" max="2.4" step="0.1" value="1.35" />
-        </div>
-        <div class="small">Adjusts the break used to show when one pipe runs behind another.</div>
-
-        <div class="button-row">
-          <button id="endRunBtn" class="ghost">End Pipe Run</button>
-          <button id="clearSelectionBtn" class="ghost">Clear Selection</button>
-          <button id="deleteSelectionBtn" class="danger">Delete Selected</button>
-        </div>
+  <aside class="sidebar">
+    <div class="brand">
+      <div>
+        <h1>Isometric Piping Draft</h1>
+        <small>Dark engineering sketch environment</small>
       </div>
     </div>
 
-    <div class="section">
-      <h3>Component Library</h3>
-      <div class="section-body">
-        <div class="field">
-          <label for="componentName">Name</label>
-          <input id="componentName" type="text" placeholder="Example: 2in Gate Valve" />
-        </div>
-        <div class="grid-2">
-          <div class="field">
-            <label for="componentType">Type</label>
-            <select id="componentType">
-              <option value="gate_valve">Gate Valve</option>
-              <option value="ball_valve">Ball Valve</option>
-              <option value="globe_valve">Globe Valve</option>
-              <option value="check_valve">Check Valve</option>
-              <option value="elbow_90">90° Elbow</option>
-              <option value="tee">Tee</option>
-              <option value="reducer">Reducer</option>
-              <option value="flange">Flange</option>
-              <option value="cap">Cap</option>
-              <option value="generic">Generic Marker</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="componentScale">Scale</label>
-            <input id="componentScale" type="number" step="0.1" min="0.4" max="3" value="1" />
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="field">
-            <label for="componentAxis">Default axis</label>
-            <select id="componentAxis">
-              <option value="x">X</option>
-              <option value="y">Y</option>
-              <option value="z">Z</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="componentColor">Color</label>
-            <input id="componentColor" type="text" value="#f8fafc" />
-          </div>
-        </div>
-        <div class="field">
-          <label for="componentNotes">Notes</label>
-          <textarea id="componentNotes" placeholder="Optional description or tag"></textarea>
-        </div>
-        <div class="button-row">
-          <button id="saveComponentBtn" class="success">Save Component</button>
-          <button id="updateComponentBtn" class="primary">Update Selected</button>
-          <button id="deleteComponentBtn" class="danger">Delete Library Item</button>
-        </div>
-        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
-        <div class="field inline">
-          <label>Selected library item</label>
-          <div id="activeComponentLabel" class="badge">None</div>
-        </div>
-        <div id="libraryList" class="library-list"></div>
+    <section class="card">
+      <h2>Controls</h2>
+      <div class="toolbar-grid">
+        <button class="primary" id="startBtn">Start Polyline</button>
+        <button id="finishBtn">Finish Polyline</button>
+        <button id="undoBtn">Undo</button>
+        <button id="clearBtn">Clear</button>
+        <button id="centerBtn">Recenter</button>
+        <button id="printBtn">Print Sheet</button>
       </div>
-    </div>
+      <div class="hint">
+        Click to start drawing. Each click adds another continuous pipe segment. The software automatically snaps to the nearest isometric axis. Double-click, <span class="mono">Enter</span>, or <span class="mono">Esc</span> ends the current polyline.
+      </div>
+    </section>
 
-    <div class="section">
-      <h3>Project</h3>
-      <div class="section-body">
-        <div class="field">
-          <label for="projectName">Project name</label>
-          <input id="projectName" type="text" value="My Isometric Layout" />
+    <section class="card">
+      <h2>Pipe Settings</h2>
+      <div class="row single">
+        <div>
+          <label for="pipeSize">Current Pipe Size (screen weight)</label>
+          <input type="range" id="pipeSize" min="8" max="42" step="1" value="18">
         </div>
-        <div class="button-row">
-          <button id="saveProjectBtn" class="success">Save in Browser</button>
-          <button id="loadProjectBtn" class="primary">Load from Browser</button>
-          <button id="newProjectBtn" class="ghost">New Project</button>
-        </div>
-        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
-        <div class="field">
-          <span class="field-title">Print sheet options</span>
-          <div class="toggle-row">
-            <label><input id="printMaterialSummaryToggle" type="checkbox" checked /> Material summary</label>
-            <label><input id="printDimensionsToggle" type="checkbox" checked /> Dimensions</label>
-          </div>
-        </div>
-        <div class="button-row">
-          <button id="exportJsonBtn" class="ghost">Export JSON</button>
-          <button id="importJsonBtn" class="ghost">Import JSON</button>
-          <button id="exportBomBtn" class="ghost">Export BOM CSV</button>
-          <button id="exportCadBtn" class="ghost">Export DXF-like</button>
-          <button id="printSheetBtn" class="primary">Print Sheet Layout</button>
-          <input id="importJsonInput" class="hidden-file-input" type="file" accept="application/json" />
-        </div>
-        <p class="small">Everything stays browser-only. Projects and saved component definitions are stored with local storage on the same device/browser.</p>
       </div>
-    </div>
+      <div class="row">
+        <div>
+          <label for="pipeSizeValue">Pipe Size</label>
+          <input id="pipeSizeValue" type="number" min="8" max="42" step="1" value="18">
+        </div>
+        <div>
+          <label for="gridStep">Grid Step</label>
+          <input id="gridStep" type="number" min="8" max="80" step="1" value="24">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="zoomInfo">Zoom</label>
+          <input id="zoomInfo" type="text" value="100%" readonly="">
+        </div>
+        <div>
+          <label for="segmentCount">Segments</label>
+          <input id="segmentCount" type="text" value="0" readonly="">
+        </div>
+      </div>
+      <div class="hint">
+        Mouse wheel zooms. Hold the middle mouse button to pan. Pipe segments keep the size that was active when they were drawn.
+      </div>
+    </section>
 
-    <div class="section">
-      <h3>Selection</h3>
-      <div class="section-body">
-        <div id="selectionInfo" class="selection-box">
-          <div><strong>Nothing selected</strong></div>
-          <div>Select a pipe or component to inspect it.</div>
+    <section class="card">
+      <h2>Drawing Sheet</h2>
+      <div class="row">
+        <div>
+          <label for="projectTitle">Project</label>
+          <input id="projectTitle" type="text" value="ISOMETRIC PIPING">
         </div>
-        <hr style="border:0;border-top:1px solid var(--border);margin:14px 0;">
-        <div class="grid-2">
-          <div class="field">
-            <label for="selectedDiameter">Selected pipe diameter</label>
-            <input id="selectedDiameter" type="number" step="0.05" min="0.1" value="0.45" />
-          </div>
-          <div class="field">
-            <label for="selectedScale">Selected component scale</label>
-            <input id="selectedScale" type="number" step="0.1" min="0.2" value="1" />
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="field">
-            <label for="selectedColor">Selected object color</label>
-            <input id="selectedColor" type="text" value="#7dd3fc" />
-          </div>
-          <div class="field">
-            <label for="selectedAxis">Selected component axis</label>
-            <select id="selectedAxis">
-              <option value="x">X</option>
-              <option value="y">Y</option>
-              <option value="z">Z</option>
-            </select>
-          </div>
-        </div>
-        <div class="button-row">
-          <button id="applySelectionBtn" class="primary">Apply Selection Changes</button>
+        <div>
+          <label for="drawingNumber">Drawing No.</label>
+          <input id="drawingNumber" type="text" value="ISO-001">
         </div>
       </div>
-    </div>
+      <div class="row">
+        <div>
+          <label for="revision">Revision</label>
+          <input id="revision" type="text" value="0">
+        </div>
+        <div>
+          <label for="sheetScale">Scale</label>
+          <input id="sheetScale" type="text" value="NTS">
+        </div>
+      </div>
+      <div class="row single">
+        <div>
+          <label for="drawnBy">Drawn By</label>
+          <input id="drawnBy" type="text" value="USER">
+        </div>
+      </div>
+    </section>
 
-    <div class="section">
-      <h3>How to Use</h3>
-      <div class="section-body">
-        <p class="small">Choose <span class="kbd">Pipe</span>, then click to place the start and end of each segment. The axis follows your cursor movement automatically. The run stays chained until you press <span class="kbd">End Pipe Run</span>.</p>
-        <p class="small">In <span class="kbd">Select</span> mode, drag the orange end handles on a selected pipe to edit geometry. Drag a component to reposition it. Midpoint handles move the whole pipe.</p>
-        <p class="small">Snapping uses pipe endpoints and component connection points. Dimensions show centerline lengths in grid units.</p>
-        <p class="small">Mouse wheel zooms. Middle mouse or <span class="kbd">Pan</span> mode drags the view. Double-click empty space centers the view. Use <span class="kbd">Print Sheet Layout</span> for an isometric + orthographic printable sheet.</p>
+    <section class="card">
+      <h2>Status</h2>
+      <div class="stat"><span>Mode</span><strong id="modeText">Idle</strong></div>
+      <div class="stat"><span>North</span><strong>Fixed to top-right</strong></div>
+      <div class="stat"><span>Theme</span><strong>Dark grayscale</strong></div>
+      <div class="stat"><span>Polyline</span><strong>Continuous</strong></div>
+      <div class="hint">
+        This first build is focused on continuous isometric piping. A future piping component library can be layered on top of this data model without changing the drawing workflow.
       </div>
-    </div>
+    </section>
   </aside>
 
-  <main>
-    <div class="topbar">
-      <div class="title-wrap">
-        <h1>Isometric Piping Designer</h1>
-        <span class="badge">Single-file browser app</span>
-        <span class="badge">No dependencies</span>
-        <span class="badge">Auto fittings + print sheet</span>
+  <main class="main">
+    <canvas id="canvas" width="1125" height="1905"></canvas>
+
+    <div class="overlay">
+      <div class="badge north-indicator">
+        <svg viewBox="0 0 80 80" aria-hidden="true">
+          <defs>
+            <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#f1f1f1"></path>
+            </marker>
+          </defs>
+          <circle cx="40" cy="40" r="26" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"></circle>
+          <path d="M24 50 L57 31" stroke="#f1f1f1" stroke-width="2" marker-end="url(#arrowHead)"></path>
+          <text x="58" y="24" fill="#f1f1f1" font-size="11" font-weight="700" text-anchor="middle">N</text>
+        </svg>
+        <div>
+          <div>North</div>
+          <div class="mono" style="color:#bdbdbd; margin-top:2px;">Top-right fixed</div>
+        </div>
       </div>
-      <div class="legend">
-        <span><span class="color-dot" style="background:#7dd3fc"></span>Pipes</span>
-        <span><span class="color-dot" style="background:#f8fafc"></span>Components</span>
-        <span><span class="color-dot" style="background:#f59e0b"></span>Selection / handles</span>
-      </div>
+      <div class="badge mono" id="cursorReadout">N-GRID: 0  E-GRID: 0  AXIS: N</div>
     </div>
 
-    <div class="workspace" id="workspace">
-      <svg id="svgCanvas" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" />
-          </filter>
-        </defs>
-      </svg>
-    </div>
-
-    <div class="statusbar">
-      <div id="statusLeft">Ready.</div>
-      <div id="statusRight">Pipe mode auto-detects X, Y, and Z direction from cursor movement.</div>
+    <div class="status-bar" id="statusBar">
+      Ready. Click <span class="mono">Start Polyline</span> or click directly on the canvas to begin. Continuous drawing stays active until you finish the run.
     </div>
   </main>
 
+  <section id="printSheet">
+    <div class="print-page">
+      <div class="print-border"></div>
+      <div class="sheet-header">Isometric Piping Drawing</div>
+      <div class="sheet-sub">Professional engineering print format</div>
+      <div id="printSvgWrap"></div>
+      <div class="print-title">
+        <div class="drawing-field">
+          <span class="title-label">Project</span>
+          <span class="title-value" id="tbProject">ISOMETRIC PIPING</span>
+        </div>
+        <div>
+          <span class="title-label">Rev</span>
+          <span class="title-value" id="tbRev">0</span>
+        </div>
+        <div>
+          <span class="title-label">Drawing No.</span>
+          <span class="title-value" id="tbDwg">ISO-001</span>
+        </div>
+        <div>
+          <span class="title-label">Scale</span>
+          <span class="title-value" id="tbScale">NTS</span>
+        </div>
+        <div>
+          <span class="title-label">Date</span>
+          <span class="title-value" id="tbDate">-</span>
+        </div>
+        <div>
+          <span class="title-label">Drawn By</span>
+          <span class="title-value" id="tbBy">USER</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-    (() => {
-      const STORAGE_KEY = 'isoPipingDesignerState_v2';
-      const LEGACY_STORAGE_KEY = 'isoPipingDesignerState_v1';
+    const axes = {
+      north: { x: Math.cos(Math.PI / 6), y: -Math.sin(Math.PI / 6), label: 'N' },
+      east:  { x: Math.cos(Math.PI / 6), y:  Math.sin(Math.PI / 6), label: 'E' },
+      up:    { x: 0, y: -1, label: 'Z' }
+    };
+    const axisList = [axes.north, axes.east, axes.up];
 
-      function uid() {
-        return Math.random().toString(36).slice(2, 10);
-      }
+    const state = {
+      segments: [],
+      isDrawing: false,
+      currentPolylineStart: null,
+      previewEnd: null,
+      camera: { x: 0, y: 0, zoom: 1 },
+      panning: false,
+      lastPan: null,
+      gridStep: 24,
+      defaultPipeSize: 18,
+      hoverWorld: { x: 0, y: 0 },
+      snappedHover: { x: 0, y: 0 },
+      lastSnapAxis: axes.north,
+      polylineStartIndex: 0,
+      polylineSeedPoint: null
+    };
 
-      const DEFAULT_COMPONENTS = [
-        { id: uid(), name: 'Gate Valve', type: 'gate_valve', scale: 1, axis: 'x', color: '#f8fafc', notes: 'Default valve' },
-        { id: uid(), name: 'Ball Valve', type: 'ball_valve', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
-        { id: uid(), name: '90° Elbow', type: 'elbow_90', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
-        { id: uid(), name: 'Tee', type: 'tee', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
-        { id: uid(), name: 'Reducer', type: 'reducer', scale: 1, axis: 'x', color: '#f8fafc', notes: '' },
-        { id: uid(), name: 'Flange', type: 'flange', scale: 1, axis: 'x', color: '#f8fafc', notes: '' }
-      ];
+    const els = {
+      startBtn: document.getElementById('startBtn'),
+      finishBtn: document.getElementById('finishBtn'),
+      undoBtn: document.getElementById('undoBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      centerBtn: document.getElementById('centerBtn'),
+      printBtn: document.getElementById('printBtn'),
+      pipeSize: document.getElementById('pipeSize'),
+      pipeSizeValue: document.getElementById('pipeSizeValue'),
+      gridStep: document.getElementById('gridStep'),
+      zoomInfo: document.getElementById('zoomInfo'),
+      segmentCount: document.getElementById('segmentCount'),
+      modeText: document.getElementById('modeText'),
+      statusBar: document.getElementById('statusBar'),
+      cursorReadout: document.getElementById('cursorReadout'),
+      projectTitle: document.getElementById('projectTitle'),
+      drawingNumber: document.getElementById('drawingNumber'),
+      revision: document.getElementById('revision'),
+      sheetScale: document.getElementById('sheetScale'),
+      drawnBy: document.getElementById('drawnBy'),
+      printSvgWrap: document.getElementById('printSvgWrap'),
+      tbProject: document.getElementById('tbProject'),
+      tbRev: document.getElementById('tbRev'),
+      tbDwg: document.getElementById('tbDwg'),
+      tbScale: document.getElementById('tbScale'),
+      tbDate: document.getElementById('tbDate'),
+      tbBy: document.getElementById('tbBy')
+    };
 
-      const state = {
-        mode: 'select',
-        axis: 'x',
-        grid: 36,
-        originX: 800,
-        originY: 360,
-        zoom: 1,
-        workingZ: 0,
-        defaultDiameter: 0.45,
-        defaultPipeColor: '#7dd3fc',
-        snapEnabled: true,
-        showDimensions: true,
-        autoJoinEnabled: true,
-        occlusionGapScale: 1.35,
-        printShowMaterialSummary: true,
-        printShowDimensions: true,
-        pipes: [],
-        components: [],
-        library: [],
-        activeLibraryId: null,
-        selected: null,
-        drawingStart: null,
-        previewEnd: null,
-        pointerScreen: { x: 0, y: 0 },
-        projectName: 'My Isometric Layout',
-        isPanning: false,
-        panOrigin: null,
-        dragState: null,
-        snapCandidate: null
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      render();
+    }
+
+    function worldToScreen(p) {
+      return {
+        x: canvas.clientWidth / 2 + (p.x + state.camera.x) * state.camera.zoom,
+        y: canvas.clientHeight / 2 + (p.y + state.camera.y) * state.camera.zoom
       };
+    }
 
-      const els = {
-        svg: document.getElementById('svgCanvas'),
-        workspace: document.getElementById('workspace'),
-        statusLeft: document.getElementById('statusLeft'),
-        statusRight: document.getElementById('statusRight'),
-        modeButtons: [...document.querySelectorAll('[data-mode]')],
-        pipeDiameter: document.getElementById('pipeDiameter'),
-        pipeDiameterValue: document.getElementById('pipeDiameterValue'),
-        gridScale: document.getElementById('gridScale'),
-        gridScaleValue: document.getElementById('gridScaleValue'),
-        pipeColor: document.getElementById('pipeColor'),
-        workingZ: document.getElementById('workingZ'),
-        snapToggle: document.getElementById('snapToggle'),
-        dimensionsToggle: document.getElementById('dimensionsToggle'),
-        autoJoinToggle: document.getElementById('autoJoinToggle'),
-        occlusionGapScale: document.getElementById('occlusionGapScale'),
-        occlusionGapScaleValue: document.getElementById('occlusionGapScaleValue'),
-        printMaterialSummaryToggle: document.getElementById('printMaterialSummaryToggle'),
-        printDimensionsToggle: document.getElementById('printDimensionsToggle'),
-        endRunBtn: document.getElementById('endRunBtn'),
-        deleteSelectionBtn: document.getElementById('deleteSelectionBtn'),
-        clearSelectionBtn: document.getElementById('clearSelectionBtn'),
-        libraryList: document.getElementById('libraryList'),
-        componentName: document.getElementById('componentName'),
-        componentType: document.getElementById('componentType'),
-        componentScale: document.getElementById('componentScale'),
-        componentAxis: document.getElementById('componentAxis'),
-        componentColor: document.getElementById('componentColor'),
-        componentNotes: document.getElementById('componentNotes'),
-        saveComponentBtn: document.getElementById('saveComponentBtn'),
-        updateComponentBtn: document.getElementById('updateComponentBtn'),
-        deleteComponentBtn: document.getElementById('deleteComponentBtn'),
-        activeComponentLabel: document.getElementById('activeComponentLabel'),
-        selectionInfo: document.getElementById('selectionInfo'),
-        selectedDiameter: document.getElementById('selectedDiameter'),
-        selectedScale: document.getElementById('selectedScale'),
-        selectedColor: document.getElementById('selectedColor'),
-        selectedAxis: document.getElementById('selectedAxis'),
-        applySelectionBtn: document.getElementById('applySelectionBtn'),
-        projectName: document.getElementById('projectName'),
-        saveProjectBtn: document.getElementById('saveProjectBtn'),
-        loadProjectBtn: document.getElementById('loadProjectBtn'),
-        newProjectBtn: document.getElementById('newProjectBtn'),
-        exportJsonBtn: document.getElementById('exportJsonBtn'),
-        importJsonBtn: document.getElementById('importJsonBtn'),
-        importJsonInput: document.getElementById('importJsonInput'),
-        exportBomBtn: document.getElementById('exportBomBtn'),
-        exportCadBtn: document.getElementById('exportCadBtn'),
-        printSheetBtn: document.getElementById('printSheetBtn')
+    function screenToWorld(p) {
+      return {
+        x: (p.x - canvas.clientWidth / 2) / state.camera.zoom - state.camera.x,
+        y: (p.y - canvas.clientHeight / 2) / state.camera.zoom - state.camera.y
       };
+    }
 
-      function clamp(val, min, max) {
-        return Math.min(max, Math.max(min, val));
+    function dot(a, b) { return a.x * b.x + a.y * b.y; }
+    function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
+    function add(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
+    function mul(a, s) { return { x: a.x * s, y: a.y * s }; }
+    function len(v) { return Math.hypot(v.x, v.y); }
+    function norm(v) { const l = len(v) || 1; return { x: v.x / l, y: v.y / l }; }
+    function perp(v) { return { x: -v.y, y: v.x }; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function solvePlaneCoefficients(world) {
+      const det = axes.north.x * axes.east.y - axes.north.y * axes.east.x;
+      const nCoeff = (world.x * axes.east.y - world.y * axes.east.x) / det;
+      const eCoeff = (-world.x * axes.north.y + world.y * axes.north.x) / det;
+      return { nCoeff, eCoeff };
+    }
+
+    function snapPointToIsoGrid(world) {
+      const step = state.gridStep;
+      const { nCoeff, eCoeff } = solvePlaneCoefficients(world);
+      const n = Math.round(nCoeff / step) * step;
+      const e = Math.round(eCoeff / step) * step;
+      return add(mul(axes.north, n), mul(axes.east, e));
+    }
+
+    function inferIsoCoordinates(world) {
+      const { nCoeff, eCoeff } = solvePlaneCoefficients(world);
+      return {
+        n: Math.round(nCoeff / state.gridStep),
+        e: Math.round(eCoeff / state.gridStep)
+      };
+    }
+
+    function snapAlongNearestAxis(anchor, world) {
+      const raw = sub(world, anchor);
+      let bestAxis = axisList[0];
+      let bestProj = 0;
+      let bestAbs = -Infinity;
+      for (const axis of axisList) {
+        const projection = dot(raw, axis);
+        const mag = Math.abs(projection);
+        if (mag > bestAbs) {
+          bestAbs = mag;
+          bestProj = projection;
+          bestAxis = axis;
+        }
+      }
+      const step = state.gridStep;
+      const snappedLength = Math.round(bestProj / step) * step;
+      const end = add(anchor, mul(bestAxis, snappedLength));
+      state.lastSnapAxis = bestAxis;
+      return end;
+    }
+
+    function setStatus(text) {
+      els.statusBar.innerHTML = text;
+    }
+
+    function updateUi() {
+      els.pipeSize.value = state.defaultPipeSize;
+      els.pipeSizeValue.value = state.defaultPipeSize;
+      els.gridStep.value = state.gridStep;
+      els.zoomInfo.value = Math.round(state.camera.zoom * 100) + '%';
+      els.segmentCount.value = String(state.segments.length);
+      els.modeText.textContent = state.isDrawing ? 'Drawing Polyline' : 'Idle';
+      const c = inferIsoCoordinates(state.snappedHover || { x: 0, y: 0 });
+      els.cursorReadout.textContent = `N-GRID: ${c.n}  E-GRID: ${c.e}  AXIS: ${state.lastSnapAxis.label}`;
+    }
+
+    function drawGrid() {
+      const extent = 220;
+      const step = state.gridStep;
+      const center = { x: 0, y: 0 };
+
+      for (let i = -extent; i <= extent; i++) {
+        const offset = i * step;
+        drawInfiniteGridLine(add(center, mul(axes.north, offset)), axes.east, i % 5 === 0);
+        drawInfiniteGridLine(add(center, mul(axes.east, offset)), axes.north, i % 5 === 0);
+        drawInfiniteGridLine(add(center, mul(axes.up, offset)), axes.north, false);
+      }
+    }
+
+    function drawInfiniteGridLine(point, dir, strong = false) {
+      const a = add(point, mul(dir, -20000));
+      const b = add(point, mul(dir, 20000));
+      const A = worldToScreen(a);
+      const B = worldToScreen(b);
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.lineWidth = strong ? 1.1 : 0.8;
+      ctx.strokeStyle = strong ? 'rgba(255,255,255,0.11)' : 'rgba(255,255,255,0.05)';
+      ctx.stroke();
+    }
+
+    function drawPipeSegment(segment, alpha = 1) {
+      const a = worldToScreen(segment.start);
+      const b = worldToScreen(segment.end);
+      const v = sub(b, a);
+      const L = len(v);
+      if (L < 0.001) return;
+
+      const t = norm(v);
+      const n = perp(t);
+      const r = (segment.size * state.camera.zoom) / 2;
+
+      const p1 = add(a, mul(n, r));
+      const p2 = add(b, mul(n, r));
+      const p3 = add(b, mul(n, -r));
+      const p4 = add(a, mul(n, -r));
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      // Tube body
+      const body = ctx.createLinearGradient(p1.x, p1.y, p4.x, p4.y);
+      body.addColorStop(0, 'rgba(235,235,235,0.92)');
+      body.addColorStop(0.3, 'rgba(198,198,198,0.95)');
+      body.addColorStop(0.7, 'rgba(150,150,150,0.98)');
+      body.addColorStop(1, 'rgba(88,88,88,1)');
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.lineTo(p4.x, p4.y);
+      ctx.closePath();
+      ctx.fillStyle = body;
+      ctx.fill();
+
+      // Outline edges for crisp engineering look
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * 0.9);
+      ctx.strokeStyle = 'rgba(18,18,18,0.72)';
+      ctx.stroke();
+
+      // Highlight edge
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineWidth = Math.max(1.2, state.camera.zoom * 0.9);
+      ctx.strokeStyle = 'rgba(255,255,255,0.62)';
+      ctx.stroke();
+
+      // Shadow edge
+      ctx.beginPath();
+      ctx.moveTo(p4.x, p4.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.lineWidth = Math.max(1.2, state.camera.zoom * 0.9);
+      ctx.strokeStyle = 'rgba(0,0,0,0.42)';
+      ctx.stroke();
+
+      // End caps
+      drawEndCap(a, t, r, alpha);
+      drawEndCap(b, t, r, alpha);
+
+      ctx.restore();
+    }
+
+    function drawEndCap(center, tangent, radius, alpha = 1) {
+      const angle = Math.atan2(tangent.y, tangent.x);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(center.x, center.y);
+      ctx.rotate(angle);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, radius, Math.max(3, radius * 0.45), 0, 0, Math.PI * 2);
+      const cap = ctx.createLinearGradient(0, -radius, 0, radius);
+      cap.addColorStop(0, 'rgba(250,250,250,0.75)');
+      cap.addColorStop(0.55, 'rgba(170,170,170,0.95)');
+      cap.addColorStop(1, 'rgba(90,90,90,1)');
+      ctx.fillStyle = cap;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(18,18,18,0.68)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawJointBubble(point, size) {
+      const p = worldToScreen(point);
+      const r = (size * state.camera.zoom) * 0.44;
+      if (r < 2) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      const fill = ctx.createRadialGradient(p.x - r * 0.25, p.y - r * 0.35, r * 0.2, p.x, p.y, r);
+      fill.addColorStop(0, 'rgba(245,245,245,0.95)');
+      fill.addColorStop(0.5, 'rgba(170,170,170,0.96)');
+      fill.addColorStop(1, 'rgba(88,88,88,1)');
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(18,18,18,0.72)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      // Background wash
+      const bg = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight);
+      bg.addColorStop(0, '#1a1a1a');
+      bg.addColorStop(1, '#111');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      drawGrid();
+
+      // Axes marker at drawing origin
+      drawOriginMarker();
+
+      // Pipes
+      for (const seg of state.segments) drawPipeSegment(seg, 1);
+
+      // joints
+      for (let i = 1; i < state.segments.length; i++) {
+        const prev = state.segments[i - 1];
+        const curr = state.segments[i];
+        if (prev.end.x === curr.start.x && prev.end.y === curr.start.y) {
+          drawJointBubble(curr.start, Math.max(prev.size, curr.size));
+        }
       }
 
-      function projectPoint(p) {
-        const c = Math.cos(Math.PI / 6);
-        const s = Math.sin(Math.PI / 6);
-        return {
-          x: state.originX + ((p.x - p.y) * c * state.grid * state.zoom),
-          y: state.originY + ((p.x + p.y) * s * state.grid * state.zoom) - (p.z * state.grid * state.zoom)
-        };
+      // Preview
+      if (state.isDrawing && state.currentPolylineStart && state.previewEnd) {
+        drawPipeSegment({
+          start: state.currentPolylineStart,
+          end: state.previewEnd,
+          size: state.defaultPipeSize
+        }, 0.72);
+        const anchor = worldToScreen(state.currentPolylineStart);
+        ctx.beginPath();
+        ctx.arc(anchor.x, anchor.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fill();
+      } else if (!state.isDrawing && state.snappedHover) {
+        const p = worldToScreen(state.snappedHover);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.fill();
       }
 
-      function screenToGridOnWorkingPlane(screenX, screenY, z = state.workingZ) {
-        const c = Math.cos(Math.PI / 6);
-        const s = Math.sin(Math.PI / 6);
-        const dx = (screenX - state.originX) / (c * state.grid * state.zoom);
-        const dy = (screenY - state.originY + z * state.grid * state.zoom) / (s * state.grid * state.zoom);
-        const x = Math.round((dx + dy) / 2);
-        const y = Math.round((dy - dx) / 2);
-        return { x, y, z };
-      }
+      updateUi();
+    }
 
-      function normalize(v) {
-        const len = Math.hypot(v.x, v.y) || 1;
-        return { x: v.x / len, y: v.y / len };
+    function drawOriginMarker() {
+      const o = worldToScreen({ x: 0, y: 0 });
+      const lengthPx = 54;
+      ctx.save();
+      ctx.translate(o.x, o.y);
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = 'rgba(255,255,255,0.38)';
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      for (const axis of axisList) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(axis.x * lengthPx, axis.y * lengthPx);
+        ctx.stroke();
       }
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
 
-      function axisVector(axis) {
-        if (axis === 'x') return { x: 1, y: 0, z: 0 };
-        if (axis === 'y') return { x: 0, y: 1, z: 0 };
-        return { x: 0, y: 0, z: 1 };
-      }
+    function beginPolyline(atWorld) {
+      state.isDrawing = true;
+      state.currentPolylineStart = snapPointToIsoGrid(atWorld);
+      state.polylineSeedPoint = { ...state.currentPolylineStart };
+      state.polylineStartIndex = state.segments.length;
+      state.previewEnd = state.currentPolylineStart;
+      setStatus('Drawing active. Move the cursor and click to add continuous pipe segments. Double-click, <span class="mono">Enter</span>, or <span class="mono">Esc</span> ends the current run.');
+      render();
+    }
 
-      function pipeAxis(pipe) {
-        if (pipe.start.x !== pipe.end.x) return 'x';
-        if (pipe.start.y !== pipe.end.y) return 'y';
-        return 'z';
-      }
+    function finishPolyline() {
+      state.isDrawing = false;
+      state.currentPolylineStart = null;
+      state.previewEnd = null;
+      state.polylineSeedPoint = null;
+      setStatus('Polyline finished. Start another run at any time. The print sheet will center the completed geometry automatically.');
+      render();
+    }
 
-      function lengthOfPipe(pipe) {
-        return Math.abs(pipe.start.x - pipe.end.x) + Math.abs(pipe.start.y - pipe.end.y) + Math.abs(pipe.start.z - pipe.end.z);
-      }
+    function addSegment(endWorld) {
+      if (!state.currentPolylineStart) return;
+      const snappedEnd = snapAlongNearestAxis(state.currentPolylineStart, endWorld);
+      if (snappedEnd.x === state.currentPolylineStart.x && snappedEnd.y === state.currentPolylineStart.y) return;
+      state.segments.push({
+        start: { ...state.currentPolylineStart },
+        end: { ...snappedEnd },
+        size: state.defaultPipeSize
+      });
+      state.currentPolylineStart = snappedEnd;
+      state.previewEnd = snappedEnd;
+      setStatus(`Segment added along ${state.lastSnapAxis.label === 'Z' ? 'vertical' : state.lastSnapAxis.label === 'N' ? 'north' : 'east'} isometric axis. Continue clicking to extend the pipe run.`);
+      render();
+    }
 
-      function samePoint(a, b) {
-        return !!a && !!b && a.x === b.x && a.y === b.y && a.z === b.z;
-      }
-
-      function clonePoint(p) {
-        return { x: p.x, y: p.y, z: p.z };
-      }
-
-      function addPoint(a, b) {
-        return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z };
-      }
-
-      function subPoint(a, b) {
-        return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z };
-      }
-
-      function midpoint(a, b) {
-        return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, z: (a.z + b.z) / 2 };
-      }
-
-      function nextAxis(axis) {
-        if (axis === 'x') return 'y';
-        if (axis === 'y') return 'z';
-        return 'x';
-      }
-
-      function shadeColor(hex, amount) {
-        const clean = String(hex || '#7dd3fc').replace('#', '');
-        const full = clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean;
-        const num = parseInt(full, 16);
-        const r = clamp(((num >> 16) & 255) + amount, 0, 255);
-        const g = clamp(((num >> 8) & 255) + amount, 0, 255);
-        const b = clamp((num & 255) + amount, 0, 255);
-        return `rgb(${r}, ${g}, ${b})`;
-      }
-
-      function updateStatus(msg, rightMsg) {
-        els.statusLeft.textContent = msg;
-        if (rightMsg) els.statusRight.textContent = rightMsg;
-      }
-
-      function setMode(mode) {
-        state.mode = mode;
-        state.drawingStart = null;
-        state.previewEnd = null;
-        state.dragState = null;
-        els.modeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.mode === mode));
-        if (mode === 'pan') els.svg.style.cursor = 'grab';
-        else if (mode === 'select') els.svg.style.cursor = 'default';
-        else els.svg.style.cursor = 'crosshair';
-        updateStatus(`Mode: ${mode}.`);
+    function recenter() {
+      if (!state.segments.length) {
+        state.camera.x = 0;
+        state.camera.y = 0;
+        state.camera.zoom = 1;
         render();
+        return;
       }
+      const pts = [];
+      for (const s of state.segments) { pts.push(s.start, s.end); }
+      const minX = Math.min(...pts.map(p => p.x));
+      const maxX = Math.max(...pts.map(p => p.x));
+      const minY = Math.min(...pts.map(p => p.y));
+      const maxY = Math.max(...pts.map(p => p.y));
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      const width = Math.max(100, maxX - minX);
+      const height = Math.max(100, maxY - minY);
+      const zoomX = (canvas.clientWidth * 0.72) / width;
+      const zoomY = (canvas.clientHeight * 0.72) / height;
+      state.camera.zoom = clamp(Math.min(zoomX, zoomY), 0.25, 3.8);
+      state.camera.x = -cx;
+      state.camera.y = -cy;
+      render();
+    }
 
-      function setAxis(axis, announce = false) {
-        state.axis = axis;
-        if (announce) updateStatus(`Axis: ${axis.toUpperCase()}.`);
+    function updatePreviewFromPointer(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const world = screenToWorld({ x: clientX - rect.left, y: clientY - rect.top });
+      state.hoverWorld = world;
+      state.snappedHover = snapPointToIsoGrid(world);
+      if (state.isDrawing && state.currentPolylineStart) {
+        state.previewEnd = snapAlongNearestAxis(state.currentPolylineStart, world);
+      }
+      render();
+    }
+
+    function pointerPosition(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+
+    canvas.addEventListener('mousemove', (evt) => {
+      if (state.panning && state.lastPan) {
+        const now = { x: evt.clientX, y: evt.clientY };
+        const dx = now.x - state.lastPan.x;
+        const dy = now.y - state.lastPan.y;
+        state.camera.x += dx / state.camera.zoom;
+        state.camera.y += dy / state.camera.zoom;
+        state.lastPan = now;
         render();
+        return;
       }
+      updatePreviewFromPointer(evt.clientX, evt.clientY);
+    });
 
-      function activeLibraryItem() {
-        return state.library.find(item => item.id === state.activeLibraryId) || null;
-      }
-
-      function updateActiveComponentLabel() {
-        const item = activeLibraryItem();
-        els.activeComponentLabel.textContent = item ? item.name : 'None';
-      }
-
-      function loadStorageRoot() {
-        try {
-          const current = localStorage.getItem(STORAGE_KEY);
-          if (current) return JSON.parse(current || '{}');
-          const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-          if (legacy) {
-            const parsed = JSON.parse(legacy || '{}');
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
-            return parsed;
-          }
-          return {};
-        } catch {
-          return {};
-        }
-      }
-
-      function saveStorageRoot(root) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(root));
-      }
-
-      function saveStateToBrowser() {
-        const root = loadStorageRoot();
-        root.library = state.library;
-        root.projects = root.projects || {};
-        saveStorageRoot(root);
-      }
-
-      function loadStoredState() {
-        const raw = loadStorageRoot();
-        state.library = Array.isArray(raw.library) && raw.library.length ? raw.library : DEFAULT_COMPONENTS.map(item => ({ ...item }));
-      }
-
-      function loadProjectsMap() {
-        const root = loadStorageRoot();
-        return root.projects || {};
-      }
-
-      function persistProjectsMap(projects) {
-        const root = loadStorageRoot();
-        root.library = state.library;
-        root.projects = projects;
-        saveStorageRoot(root);
-      }
-
-      function serializeProject() {
-        return {
-          projectName: state.projectName,
-          pipes: state.pipes,
-          components: state.components,
-          defaultDiameter: state.defaultDiameter,
-          defaultPipeColor: state.defaultPipeColor,
-          grid: state.grid,
-          workingZ: state.workingZ,
-          originX: state.originX,
-          originY: state.originY,
-          zoom: state.zoom,
-          snapEnabled: state.snapEnabled,
-          showDimensions: state.showDimensions,
-          autoJoinEnabled: state.autoJoinEnabled,
-          occlusionGapScale: state.occlusionGapScale,
-          printShowMaterialSummary: state.printShowMaterialSummary,
-          printShowDimensions: state.printShowDimensions
-        };
-      }
-
-      function applyProject(project) {
-        state.projectName = project.projectName || 'Imported Project';
-        state.pipes = Array.isArray(project.pipes) ? project.pipes : [];
-        state.components = Array.isArray(project.components) ? project.components : [];
-        state.defaultDiameter = project.defaultDiameter ?? 0.45;
-        state.defaultPipeColor = project.defaultPipeColor || '#7dd3fc';
-        state.grid = project.grid || 36;
-        state.workingZ = Number.isFinite(project.workingZ) ? project.workingZ : 0;
-        state.originX = project.originX || Math.max(420, els.workspace.clientWidth * 0.54);
-        state.originY = project.originY || Math.max(260, els.workspace.clientHeight * 0.55);
-        state.zoom = project.zoom || 1;
-        state.snapEnabled = project.snapEnabled ?? true;
-        state.showDimensions = project.showDimensions ?? true;
-        state.autoJoinEnabled = project.autoJoinEnabled ?? true;
-        state.occlusionGapScale = Number(project.occlusionGapScale ?? 1.35);
-        state.printShowMaterialSummary = project.printShowMaterialSummary ?? true;
-        state.printShowDimensions = project.printShowDimensions ?? true;
-        state.selected = null;
-        state.drawingStart = null;
-        state.previewEnd = null;
-        state.dragState = null;
-        syncInputs();
-        render();
-      }
-
-      function syncInputs() {
-        els.projectName.value = state.projectName;
-        els.pipeDiameter.value = String(state.defaultDiameter);
-        els.pipeDiameterValue.textContent = `${Number(state.defaultDiameter).toFixed(2)} grid`;
-        els.gridScale.value = String(state.grid);
-        els.gridScaleValue.textContent = `${state.grid} px`;
-        els.pipeColor.value = state.defaultPipeColor;
-        els.workingZ.value = String(state.workingZ);
-        els.snapToggle.checked = state.snapEnabled;
-        els.dimensionsToggle.checked = state.showDimensions;
-        els.autoJoinToggle.checked = state.autoJoinEnabled;
-        els.occlusionGapScale.value = String(state.occlusionGapScale);
-        els.occlusionGapScaleValue.textContent = `${Number(state.occlusionGapScale).toFixed(2)}x`;
-        els.printMaterialSummaryToggle.checked = state.printShowMaterialSummary;
-        els.printDimensionsToggle.checked = state.printShowDimensions;
-        updateActiveComponentLabel();
-        refreshSelectionInfo();
-      }
-
-      function labelType(type) {
-        return String(type || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-      }
-
-      function escapeHtml(text) {
-        return String(text)
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#39;');
-      }
-
-      function renderLibrary() {
-        els.libraryList.innerHTML = '';
-        state.library.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'lib-item' + (item.id === state.activeLibraryId ? ' selected' : '');
-          div.innerHTML = `
-            <strong>${escapeHtml(item.name)}</strong>
-            <div class="small">${labelType(item.type)} · axis ${item.axis.toUpperCase()} · scale ${item.scale}</div>
-            <div class="small">${escapeHtml(item.notes || 'No notes')}</div>
-          `;
-          div.addEventListener('click', () => {
-            state.activeLibraryId = item.id;
-            populateComponentEditor(item);
-            updateActiveComponentLabel();
-            renderLibrary();
-            updateStatus(`Active component: ${item.name}.`);
-          });
-          els.libraryList.appendChild(div);
-        });
-      }
-
-      function populateComponentEditor(item) {
-        els.componentName.value = item.name;
-        els.componentType.value = item.type;
-        els.componentScale.value = item.scale;
-        els.componentAxis.value = item.axis;
-        els.componentColor.value = item.color;
-        els.componentNotes.value = item.notes || '';
-      }
-
-      function saveComponent(updateExisting = false) {
-        const payload = {
-          id: updateExisting && state.activeLibraryId ? state.activeLibraryId : uid(),
-          name: els.componentName.value.trim() || 'Unnamed Component',
-          type: els.componentType.value,
-          scale: Number(els.componentScale.value) || 1,
-          axis: els.componentAxis.value,
-          color: els.componentColor.value.trim() || '#f8fafc',
-          notes: els.componentNotes.value.trim()
-        };
-        if (updateExisting && state.activeLibraryId) {
-          const idx = state.library.findIndex(item => item.id === state.activeLibraryId);
-          if (idx >= 0) state.library[idx] = payload;
-        } else {
-          state.library.push(payload);
-          state.activeLibraryId = payload.id;
-        }
-        saveStateToBrowser();
-        renderLibrary();
-        updateActiveComponentLabel();
-        updateStatus(`${updateExisting ? 'Updated' : 'Saved'} component ${payload.name}.`);
-      }
-
-      function deleteActiveLibraryItem() {
-        if (!state.activeLibraryId) return;
-        const item = activeLibraryItem();
-        state.library = state.library.filter(entry => entry.id !== state.activeLibraryId);
-        state.activeLibraryId = state.library[0]?.id || null;
-        saveStateToBrowser();
-        renderLibrary();
-        updateActiveComponentLabel();
-        if (state.activeLibraryId) populateComponentEditor(activeLibraryItem());
-        updateStatus(`Deleted component ${item?.name || ''}.`);
-      }
-
-      function refreshSelectionInfo() {
-        const sel = state.selected;
-        if (!sel) {
-          els.selectionInfo.innerHTML = '<div><strong>Nothing selected</strong></div><div>Select a pipe segment or component to inspect it.</div><div>Use Select mode to drag orange handles for editing.</div>';
-          els.selectedDiameter.value = state.defaultDiameter;
-          els.selectedScale.value = '1';
-          els.selectedColor.value = state.defaultPipeColor;
-          els.selectedAxis.value = state.axis;
-          return;
-        }
-
-        if (sel.kind === 'pipe') {
-          const item = state.pipes.find(p => p.id === sel.id);
-          if (!item) return;
-          const axis = pipeAxis(item).toUpperCase();
-          els.selectionInfo.innerHTML = `
-            <div><strong>Pipe Segment</strong></div>
-            <div class="mono">ID: ${item.id}</div>
-            <div>Axis: ${axis}</div>
-            <div>Start: (${item.start.x}, ${item.start.y}, ${item.start.z})</div>
-            <div>End: (${item.end.x}, ${item.end.y}, ${item.end.z})</div>
-            <div>Length: ${lengthOfPipe(item)} grid units</div>
-            <div>Diameter: ${Number(item.diameter).toFixed(2)} grid</div>
-            <div>Drag the end handles to resize. Drag the middle handle to move the full segment.</div>
-          `;
-          els.selectedDiameter.value = Number(item.diameter).toFixed(2);
-          els.selectedScale.value = '1';
-          els.selectedColor.value = item.color;
-          els.selectedAxis.value = pipeAxis(item);
-          return;
-        }
-
-        const item = state.components.find(c => c.id === sel.id);
-        if (!item) return;
-        els.selectionInfo.innerHTML = `
-          <div><strong>Component</strong></div>
-          <div>Name: ${escapeHtml(item.name)}</div>
-          <div>Type: ${labelType(item.type)}</div>
-          <div>Point: (${item.point.x}, ${item.point.y}, ${item.point.z})</div>
-          <div>Axis: ${item.axis.toUpperCase()}</div>
-          <div>Scale: ${item.scale}</div>
-          <div>Drag the component to move it. Snapping targets pipe ends and other component connectors.</div>
-        `;
-        els.selectedDiameter.value = state.defaultDiameter;
-        els.selectedScale.value = Number(item.scale).toFixed(1);
-        els.selectedColor.value = item.color;
-        els.selectedAxis.value = item.axis;
-      }
-
-      function addPipeSegment(start, end) {
-        if (samePoint(start, end)) return;
-        const segment = {
-          id: uid(),
-          start: clonePoint(start),
-          end: clonePoint(end),
-          diameter: Number(state.defaultDiameter),
-          color: state.defaultPipeColor
-        };
-        state.pipes.push(segment);
-        state.selected = { kind: 'pipe', id: segment.id };
-        refreshSelectionInfo();
-      }
-
-      function addPlacedComponent(point) {
-        const tpl = activeLibraryItem();
-        if (!tpl) {
-          updateStatus('Select or create a component library item first.');
-          return;
-        }
-        const comp = {
-          id: uid(),
-          name: tpl.name,
-          type: tpl.type,
-          scale: tpl.scale,
-          axis: tpl.axis || 'x',
-          color: tpl.color || '#f8fafc',
-          notes: tpl.notes || '',
-          point: clonePoint(point)
-        };
-        state.components.push(comp);
-        state.selected = { kind: 'component', id: comp.id };
-        refreshSelectionInfo();
-        updateStatus(`Placed ${comp.name}.`);
-      }
-
-      function deleteSelection() {
-        if (!state.selected) return;
-        if (state.selected.kind === 'pipe') {
-          state.pipes = state.pipes.filter(item => item.id !== state.selected.id);
-        } else {
-          state.components = state.components.filter(item => item.id !== state.selected.id);
-        }
-        state.selected = null;
-        state.dragState = null;
-        refreshSelectionInfo();
-        render();
-        updateStatus('Deleted selection.');
-      }
-
-      function applySelectionChanges() {
-        if (!state.selected) {
-          updateStatus('Nothing selected to update.');
-          return;
-        }
-        if (state.selected.kind === 'pipe') {
-          const item = state.pipes.find(p => p.id === state.selected.id);
-          if (!item) return;
-          item.diameter = clamp(Number(els.selectedDiameter.value) || item.diameter, 0.1, 4);
-          item.color = els.selectedColor.value.trim() || item.color;
-          updateStatus(`Updated pipe ${item.id}.`);
-        } else {
-          const item = state.components.find(c => c.id === state.selected.id);
-          if (!item) return;
-          item.scale = clamp(Number(els.selectedScale.value) || item.scale, 0.2, 5);
-          item.color = els.selectedColor.value.trim() || item.color;
-          item.axis = els.selectedAxis.value || item.axis;
-          updateStatus(`Updated component ${item.name}.`);
-        }
-        refreshSelectionInfo();
-        render();
-      }
-
-      function pointToSegmentDistance(px, py, x1, y1, x2, y2) {
-        const dx = x2 - x1;
-        const dy = y2 - y1;
-        if (dx === 0 && dy === 0) return Math.hypot(px - x1, py - y1);
-        const t = clamp(((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy), 0, 1);
-        const cx = x1 + t * dx;
-        const cy = y1 + t * dy;
-        return Math.hypot(px - cx, py - cy);
-      }
-
-      function componentConnectionPoints(comp) {
-        const len = Math.max(0.8, comp.scale || 1);
-        const dir = axisVector(comp.axis || 'x');
-        const alt = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
-        const inline = [
-          addPoint(comp.point, { x: -dir.x * len, y: -dir.y * len, z: -dir.z * len }),
-          addPoint(comp.point, { x: dir.x * len, y: dir.y * len, z: dir.z * len })
-        ];
-
-        switch (comp.type) {
-          case 'elbow_90':
-            return [
-              clonePoint(comp.point),
-              addPoint(comp.point, { x: dir.x * len, y: dir.y * len, z: dir.z * len }),
-              addPoint(comp.point, { x: alt.x * len, y: alt.y * len, z: alt.z * len })
-            ];
-          case 'tee':
-            return [
-              ...inline,
-              addPoint(comp.point, { x: alt.x * len, y: alt.y * len, z: alt.z * len })
-            ];
-          case 'cap':
-            return [addPoint(comp.point, { x: -dir.x * len, y: -dir.y * len, z: -dir.z * len })];
-          case 'generic':
-            return [clonePoint(comp.point)];
-          default:
-            return inline;
-        }
-      }
-
-      function getAllConnectionPoints(exclude = null) {
-        const pts = [];
-        for (const pipe of state.pipes) {
-          if (exclude && exclude.kind === 'pipe' && exclude.id === pipe.id) continue;
-          pts.push({ point: clonePoint(pipe.start), source: { kind: 'pipe', id: pipe.id, end: 'start' } });
-          pts.push({ point: clonePoint(pipe.end), source: { kind: 'pipe', id: pipe.id, end: 'end' } });
-        }
-        for (const comp of state.components) {
-          if (exclude && exclude.kind === 'component' && exclude.id === comp.id) continue;
-          for (const p of componentConnectionPoints(comp)) {
-            pts.push({ point: clonePoint(p), source: { kind: 'component', id: comp.id } });
-          }
-        }
-        return pts;
-      }
-
-      function nearestConnection(screenX, screenY, exclude = null, threshold = 18) {
-        if (!state.snapEnabled) return null;
-        let best = null;
-        for (const entry of getAllConnectionPoints(exclude)) {
-          const p = projectPoint(entry.point);
-          const dist = Math.hypot(screenX - p.x, screenY - p.y);
-          if (dist <= threshold && (!best || dist < best.dist)) {
-            best = { ...entry, dist };
-          }
-        }
-        return best;
-      }
-
-      function compatibleOnAxis(anchor, point, axis) {
-        if (axis === 'x') return point.y === anchor.y && point.z === anchor.z;
-        if (axis === 'y') return point.x === anchor.x && point.z === anchor.z;
-        return point.x === anchor.x && point.y === anchor.y;
-      }
-
-      function projectedAxisDirection(axis, anchor) {
-        const origin = projectPoint(anchor);
-        const tip = projectPoint(addPoint(anchor, axisVector(axis)));
-        return normalize({ x: tip.x - origin.x, y: tip.y - origin.y });
-      }
-
-      function inferDominantAxis(anchor, screenX, screenY, exclude = null) {
-        const snapped = state.snapEnabled ? nearestConnection(screenX, screenY, exclude) : null;
-        if (snapped && !samePoint(anchor, snapped.point)) {
-          const axes = ['x', 'y', 'z'].filter(axis => compatibleOnAxis(anchor, snapped.point, axis));
-          if (axes.length === 1) return axes[0];
-        }
-
-        const start = projectPoint(anchor);
-        const dx = screenX - start.x;
-        const dy = screenY - start.y;
-        const mag = Math.hypot(dx, dy);
-        if (mag < 4) return state.axis || 'x';
-
-        let bestAxis = state.axis || 'x';
-        let bestScore = -Infinity;
-        for (const axis of ['x', 'y', 'z']) {
-          const dir = projectedAxisDirection(axis, anchor);
-          const score = Math.abs((dx * dir.x) + (dy * dir.y)) / mag;
-          if (score > bestScore) {
-            bestScore = score;
-            bestAxis = axis;
-          }
-        }
-        return bestAxis;
-      }
-
-      function autoAxisPoint(anchor, screenX, screenY, exclude = null) {
-        const axis = inferDominantAxis(anchor, screenX, screenY, exclude);
-        state.axis = axis;
-        return constrainedAxisPoint(anchor, screenX, screenY, axis, exclude);
-      }
-
-      function constrainedAxisPoint(anchor, screenX, screenY, axis, exclude = null) {
-        let proposed;
-        if (axis === 'z') {
-          const deltaZ = Math.round((projectPoint(anchor).y - screenY) / (state.grid * state.zoom));
-          proposed = { x: anchor.x, y: anchor.y, z: anchor.z + deltaZ };
-        } else {
-          const pt = screenToGridOnWorkingPlane(screenX, screenY, anchor.z);
-          proposed = axis === 'x'
-            ? { x: pt.x, y: anchor.y, z: anchor.z }
-            : { x: anchor.x, y: pt.y, z: anchor.z };
-        }
-
-        if (!state.snapEnabled) return proposed;
-
-        let best = null;
-        for (const entry of getAllConnectionPoints(exclude)) {
-          if (!compatibleOnAxis(anchor, entry.point, axis)) continue;
-          const projected = projectPoint(entry.point);
-          const dist = Math.hypot(screenX - projected.x, screenY - projected.y);
-          if (dist <= 18 && (!best || dist < best.dist)) {
-            best = { point: entry.point, dist };
-          }
-        }
-        if (best) return clonePoint(best.point);
-        return proposed;
-      }
-
-      function snapGeneralPoint(screenX, screenY, z = state.workingZ, exclude = null) {
-        const base = screenToGridOnWorkingPlane(screenX, screenY, z);
-        const conn = nearestConnection(screenX, screenY, exclude);
-        state.snapCandidate = conn ? clonePoint(conn.point) : null;
-        return conn ? clonePoint(conn.point) : base;
-      }
-
-
-      function pointKey(p) {
-        return `${p.x},${p.y},${p.z}`;
-      }
-
-      function parsePointKey(key) {
-        const [x, y, z] = key.split(',').map(Number);
-        return { x, y, z };
-      }
-
-      function buildPipeNodeMap() {
-        const nodes = new Map();
-        for (const pipe of state.pipes) {
-          const axis = pipeAxis(pipe);
-          for (const endName of ['start', 'end']) {
-            const point = pipe[endName];
-            const key = pointKey(point);
-            if (!nodes.has(key)) nodes.set(key, []);
-            nodes.get(key).push({ pipeId: pipe.id, axis, endName, point: clonePoint(point) });
-          }
-        }
-        return nodes;
-      }
-
-      function endpointJoinedInMap(point, pipeId, nodeMap = null) {
-        const map = nodeMap || buildPipeNodeMap();
-        const entries = map.get(pointKey(point)) || [];
-        return entries.some(entry => entry.pipeId !== pipeId);
-      }
-
-      function sharesPipeEndpoint(pipeA, pipeB) {
-        return samePoint(pipeA.start, pipeB.start) || samePoint(pipeA.start, pipeB.end)
-          || samePoint(pipeA.end, pipeB.start) || samePoint(pipeA.end, pipeB.end);
-      }
-
-      function interpolatePoint3D(a, b, t) {
-        return {
-          x: a.x + (b.x - a.x) * t,
-          y: a.y + (b.y - a.y) * t,
-          z: a.z + (b.z - a.z) * t
-        };
-      }
-
-      function pointDepth(point) {
-        return point.x + point.y + point.z;
-      }
-
-      function segmentIntersection2D(a, b, c, d) {
-        const r = { x: b.x - a.x, y: b.y - a.y };
-        const s = { x: d.x - c.x, y: d.y - c.y };
-        const denom = r.x * s.y - r.y * s.x;
-        if (Math.abs(denom) < 1e-7) return null;
-        const diff = { x: c.x - a.x, y: c.y - a.y };
-        const t = (diff.x * s.y - diff.y * s.x) / denom;
-        const u = (diff.x * r.y - diff.y * r.x) / denom;
-        if (t <= 0.06 || t >= 0.94 || u <= 0.06 || u >= 0.94) return null;
-        return {
-          t,
-          u,
-          x: a.x + r.x * t,
-          y: a.y + r.y * t
-        };
-      }
-
-      function computeOcclusionBreaks(mapPointFn, widthFn) {
-        const breaks = [];
-        const gapScale = Math.max(0.8, Number(state.occlusionGapScale) || 1);
-        for (let i = 0; i < state.pipes.length; i += 1) {
-          for (let j = i + 1; j < state.pipes.length; j += 1) {
-            const pipeA = state.pipes[i];
-            const pipeB = state.pipes[j];
-            if (sharesPipeEndpoint(pipeA, pipeB)) continue;
-
-            const a1 = mapPointFn(pipeA.start);
-            const a2 = mapPointFn(pipeA.end);
-            const b1 = mapPointFn(pipeB.start);
-            const b2 = mapPointFn(pipeB.end);
-            const hit = segmentIntersection2D(a1, a2, b1, b2);
-            if (!hit) continue;
-
-            const pointA = interpolatePoint3D(pipeA.start, pipeA.end, hit.t);
-            const pointB = interpolatePoint3D(pipeB.start, pipeB.end, hit.u);
-            const depthA = pointDepth(pointA);
-            const depthB = pointDepth(pointB);
-            if (Math.abs(depthA - depthB) < 0.01) continue;
-
-            const behindPipe = depthA < depthB ? pipeA : pipeB;
-            const start2 = mapPointFn(behindPipe.start);
-            const end2 = mapPointFn(behindPipe.end);
-            const dir = normalize({ x: end2.x - start2.x, y: end2.y - start2.y });
-            const width = widthFn(behindPipe);
-            const gapLength = Math.max(width * (1.75 + gapScale * 0.9), 16 + gapScale * 8);
-            const haloWidth = width + 8 + gapScale * 6;
-            const maskWidth = width + 4 + gapScale * 4;
-            breaks.push({
-              x: hit.x,
-              y: hit.y,
-              dir,
-              width,
-              gapLength,
-              haloWidth,
-              maskWidth
-            });
-          }
-        }
-        return breaks;
-      }
-
-      function hasManualComponentAt(point, types = []) {
-        return state.components.some(comp => samePoint(comp.point, point) && (!types.length || types.includes(comp.type)));
-      }
-
-      function computeAutoFittings() {
-        if (!state.autoJoinEnabled) return [];
-
-        const nodes = buildPipeNodeMap();
-        const fittings = [];
-        for (const [key, entries] of nodes.entries()) {
-          if (entries.length < 3) continue;
-
-          const counts = { x: 0, y: 0, z: 0 };
-          entries.forEach(entry => counts[entry.axis] += 1);
-          const uniqueAxes = ['x', 'y', 'z'].filter(axis => counts[axis] > 0);
-          if (uniqueAxes.length < 2) continue;
-
-          const point = parsePointKey(key);
-          const sortedAxes = ['x', 'y', 'z'].sort((a, b) => counts[b] - counts[a]);
-          const axis = sortedAxes[0];
-          const branchAxis = uniqueAxes.find(a => a !== axis) || nextAxis(axis);
-
-          if (hasManualComponentAt(point, ['tee'])) continue;
-
-          fittings.push({
-            id: `auto_tee_${key.replaceAll(',', '_')}`,
-            name: counts[axis] >= 2 ? 'Auto Tee' : 'Auto Branch Tee',
-            type: 'tee',
-            point,
-            axis,
-            branchAxis,
-            scale: 1.05,
-            color: state.defaultPipeColor,
-            notes: entries.length >= 4
-              ? 'Derived from multi-branch pipe junction'
-              : 'Derived from three-way pipe junction',
-            auto: true
-          });
-        }
-
-        return fittings;
-      }
-
-      function hitTest(screenX, screenY) {
-        let best = null;
-        const threshold = 16;
-
-        for (const comp of state.components) {
-          const p = projectPoint(comp.point);
-          const dist = Math.hypot(screenX - p.x, screenY - p.y);
-          if (dist < threshold && (!best || dist < best.dist)) {
-            best = { kind: 'component', id: comp.id, dist };
-          }
-        }
-
-        for (const pipe of state.pipes) {
-          const a = projectPoint(pipe.start);
-          const b = projectPoint(pipe.end);
-          const dist = pointToSegmentDistance(screenX, screenY, a.x, a.y, b.x, b.y);
-          const rad = (pipe.diameter * state.grid * state.zoom) / 2 + 8;
-          if (dist < Math.max(rad, threshold) && (!best || dist < best.dist)) {
-            best = { kind: 'pipe', id: pipe.id, dist };
-          }
-        }
-        return best ? { kind: best.kind, id: best.id } : null;
-      }
-
-      function selectedHandleHit(screenX, screenY) {
-        if (!state.selected) return null;
-        const threshold = 11;
-        if (state.selected.kind === 'pipe') {
-          const pipe = state.pipes.find(p => p.id === state.selected.id);
-          if (!pipe) return null;
-          const points = [
-            { handle: 'start', point: pipe.start },
-            { handle: 'end', point: pipe.end },
-            { handle: 'mid', point: midpoint(pipe.start, pipe.end) }
-          ];
-          for (const entry of points) {
-            const p = projectPoint(entry.point);
-            if (Math.hypot(screenX - p.x, screenY - p.y) <= threshold) {
-              return { kind: 'pipe', id: pipe.id, handle: entry.handle };
-            }
-          }
-          return null;
-        }
-
-        const comp = state.components.find(c => c.id === state.selected.id);
-        if (!comp) return null;
-        const p = projectPoint(comp.point);
-        if (Math.hypot(screenX - p.x, screenY - p.y) <= threshold + 2) {
-          return { kind: 'component', id: comp.id, handle: 'move' };
-        }
-        return null;
-      }
-
-      function sortedEntities() {
-        const items = [];
-        state.pipes.forEach(pipe => {
-          const depth = pipe.start.x + pipe.start.y + pipe.end.x + pipe.end.y + pipe.start.z + pipe.end.z;
-          items.push({ type: 'pipe', depth, item: pipe });
-        });
-        state.components.forEach(comp => {
-          const depth = comp.point.x + comp.point.y + comp.point.z * 2;
-          items.push({ type: 'component', depth, item: comp });
-        });
-        return items.sort((a, b) => a.depth - b.depth);
-      }
-
-      function render() {
-        const width = els.workspace.clientWidth || 1400;
-        const height = els.workspace.clientHeight || 800;
-        els.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        els.svg.innerHTML = '<defs><filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.25" /></filter></defs>';
-
-        drawGrid();
-        const world = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        world.setAttribute('filter', 'url(#softShadow)');
-        els.svg.appendChild(world);
-
-        const nodeMap = buildPipeNodeMap();
-        for (const entry of sortedEntities()) {
-          if (entry.type === 'pipe') drawPipe(world, entry.item, false, nodeMap);
-          else drawComponent(world, entry.item);
-        }
-
-        drawOcclusionBreaks(world);
-
-        for (const autoFit of computeAutoFittings()) {
-          drawComponent(world, autoFit);
-        }
-
-        drawPreview(world);
-        drawSelectionOverlay(world);
-        drawWorkingPlaneCursor(world);
-        drawSnapCandidate(world);
-        refreshSelectionInfo();
-
-        if (state.mode === 'pipe') {
-          els.statusRight.textContent = state.drawingStart
-            ? `Auto axis: ${state.axis.toUpperCase()} · Click to place segment · [ ] changes Z`
-            : 'Pipe mode · First click sets start · Axis follows cursor · [ ] changes Z';
-        } else {
-          els.statusRight.textContent = 'Tip: library items and projects persist in this browser.';
-        }
-      }
-
-      function drawGrid() {
-        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const span = 30;
-        for (let i = -span; i <= span; i++) {
-          line3D(g, { x: -span, y: i, z: state.workingZ }, { x: span, y: i, z: state.workingZ }, i % 5 === 0 ? 'var(--grid-strong)' : 'var(--grid)', 1);
-          line3D(g, { x: i, y: -span, z: state.workingZ }, { x: i, y: span, z: state.workingZ }, i % 5 === 0 ? 'var(--grid-strong)' : 'var(--grid)', 1);
-        }
-        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 5, y: 0, z: state.workingZ }, 'rgba(239,68,68,0.9)', 2.2);
-        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 0, y: 5, z: state.workingZ }, 'rgba(34,197,94,0.9)', 2.2);
-        line3D(g, { x: 0, y: 0, z: state.workingZ }, { x: 0, y: 0, z: state.workingZ + 5 }, 'rgba(59,130,246,0.9)', 2.2);
-        els.svg.appendChild(g);
-      }
-
-      function line3D(parent, a3, b3, stroke, width, dash = '') {
-        const a = projectPoint(a3);
-        const b = projectPoint(b3);
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', a.x);
-        line.setAttribute('y1', a.y);
-        line.setAttribute('x2', b.x);
-        line.setAttribute('y2', b.y);
-        line.setAttribute('stroke', stroke);
-        line.setAttribute('stroke-width', width);
-        line.setAttribute('stroke-linecap', 'round');
-        if (dash) line.setAttribute('stroke-dasharray', dash);
-        parent.appendChild(line);
-        return line;
-      }
-
-      function drawOcclusionBreaks(parent) {
-        const breaks = computeOcclusionBreaks(
-          point => projectPoint(point),
-          pipe => Math.max(8, pipe.diameter * state.grid * state.zoom)
-        );
-
-        for (const gap of breaks) {
-          const half = gap.gapLength / 2;
-          const x1 = gap.x - gap.dir.x * half;
-          const y1 = gap.y - gap.dir.y * half;
-          const x2 = gap.x + gap.dir.x * half;
-          const y2 = gap.y + gap.dir.y * half;
-
-          const halo = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          halo.setAttribute('x1', x1);
-          halo.setAttribute('y1', y1);
-          halo.setAttribute('x2', x2);
-          halo.setAttribute('y2', y2);
-          halo.setAttribute('stroke', 'rgba(248,250,252,0.92)');
-          halo.setAttribute('stroke-width', gap.haloWidth);
-          halo.setAttribute('stroke-linecap', 'round');
-          parent.appendChild(halo);
-
-          const mask = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          mask.setAttribute('x1', x1);
-          mask.setAttribute('y1', y1);
-          mask.setAttribute('x2', x2);
-          mask.setAttribute('y2', y2);
-          mask.setAttribute('stroke', '#0b1220');
-          mask.setAttribute('stroke-width', gap.maskWidth);
-          mask.setAttribute('stroke-linecap', 'round');
-          parent.appendChild(mask);
-        }
-      }
-
-      function drawEllipse(cx, cy, rx, ry, angleDeg, fill, stroke, opacity = '1') {
-        const ell = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
-        ell.setAttribute('cx', cx);
-        ell.setAttribute('cy', cy);
-        ell.setAttribute('rx', rx);
-        ell.setAttribute('ry', ry);
-        ell.setAttribute('fill', fill);
-        ell.setAttribute('fill-opacity', opacity);
-        ell.setAttribute('stroke', stroke);
-        ell.setAttribute('stroke-width', 1.1);
-        ell.setAttribute('transform', `rotate(${angleDeg} ${cx} ${cy})`);
-        return ell;
-      }
-
-      function drawPipe(parent, pipe, isPreview = false, nodeMap = null) {
-        const a = projectPoint(pipe.start);
-        const b = projectPoint(pipe.end);
-        const d = normalize({ x: b.x - a.x, y: b.y - a.y });
-        const n = { x: -d.y, y: d.x };
-        const r = Math.max(4, (pipe.diameter * state.grid * state.zoom) / 2);
-        const p1 = { x: a.x + n.x * r, y: a.y + n.y * r };
-        const p2 = { x: a.x - n.x * r, y: a.y - n.y * r };
-        const p3 = { x: b.x - n.x * r, y: b.y - n.y * r };
-        const p4 = { x: b.x + n.x * r, y: b.y + n.y * r };
-
-        const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        body.setAttribute('d', `M ${p1.x} ${p1.y} L ${p4.x} ${p4.y} L ${p3.x} ${p3.y} L ${p2.x} ${p2.y} Z`);
-        body.setAttribute('fill', shadeColor(pipe.color, isPreview ? -25 : -10));
-        body.setAttribute('fill-opacity', isPreview ? '0.65' : '0.95');
-        body.setAttribute('stroke', state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? 'var(--selected)' : shadeColor(pipe.color, -60));
-        body.setAttribute('stroke-width', state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? '2.2' : '1.2');
-        parent.appendChild(body);
-
-        const centerLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        centerLine.setAttribute('x1', a.x + n.x * r * 0.35);
-        centerLine.setAttribute('y1', a.y + n.y * r * 0.35);
-        centerLine.setAttribute('x2', b.x + n.x * r * 0.35);
-        centerLine.setAttribute('y2', b.y + n.y * r * 0.35);
-        centerLine.setAttribute('stroke', 'rgba(255,255,255,0.32)');
-        centerLine.setAttribute('stroke-width', Math.max(1, r * 0.18));
-        centerLine.setAttribute('stroke-linecap', 'round');
-        parent.appendChild(centerLine);
-
-        const rx = r;
-        const ry = Math.max(2.5, r * 0.42);
-        const angle = Math.atan2(d.y, d.x) * 180 / Math.PI;
-        const startJoined = !isPreview && endpointJoinedInMap(pipe.start, pipe.id, nodeMap);
-        const endJoined = !isPreview && endpointJoinedInMap(pipe.end, pipe.id, nodeMap);
-        const startCap = drawEllipse(a.x, a.y, rx, ry, angle, shadeColor(pipe.color, 10), shadeColor(pipe.color, -55), isPreview ? '0.6' : '1');
-        const endCap = drawEllipse(b.x, b.y, rx, ry, angle, shadeColor(pipe.color, 35), state.selected?.kind === 'pipe' && state.selected.id === pipe.id ? 'var(--selected)' : shadeColor(pipe.color, -55), isPreview ? '0.75' : '1');
-        startCap.setAttribute('fill-opacity', isPreview ? '0.55' : '0.92');
-        endCap.setAttribute('fill-opacity', isPreview ? '0.7' : '0.96');
-        if (!startJoined) parent.appendChild(startCap);
-        if (!endJoined) parent.appendChild(endCap);
-
-        if (!isPreview && state.showDimensions) drawPipeDimension(parent, pipe);
-
-        if (!isPreview) {
-          body.dataset.kind = 'pipe';
-          body.dataset.id = pipe.id;
-          if (!endJoined) {
-            endCap.dataset.kind = 'pipe';
-            endCap.dataset.id = pipe.id;
-          }
-          if (!startJoined) {
-            startCap.dataset.kind = 'pipe';
-            startCap.dataset.id = pipe.id;
-          }
-        }
-      }
-
-      function drawPipeDimension(parent, pipe) {
-        const a = projectPoint(pipe.start);
-        const b = projectPoint(pipe.end);
-        const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
-        const dir = normalize({ x: b.x - a.x, y: b.y - a.y });
-        const n = { x: -dir.y, y: dir.x };
-        const offset = Math.max(16, pipe.diameter * state.grid * state.zoom * 0.75);
-        const tx = mid.x + n.x * offset;
-        const ty = mid.y + n.y * offset;
-        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        line3D(g, pipe.start, pipe.end, 'rgba(248,250,252,0.18)', 1, '4 4');
-        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', tx);
-        text.setAttribute('y', ty);
-        text.setAttribute('fill', '#cbd5e1');
-        text.setAttribute('font-size', Math.max(10, 10 * state.zoom));
-        text.setAttribute('text-anchor', 'middle');
-        text.textContent = `${lengthOfPipe(pipe)}u`;
-        g.appendChild(text);
-        parent.appendChild(g);
-      }
-
-      function drawComponent(parent, comp) {
-        const size = Math.max(10, state.grid * 0.35 * comp.scale * state.zoom);
-        const p = projectPoint(comp.point);
-        const dir3 = axisVector(comp.axis || 'x');
-        const p2 = projectPoint({ x: comp.point.x + dir3.x, y: comp.point.y + dir3.y, z: comp.point.z + dir3.z });
-        const dir = normalize({ x: p2.x - p.x, y: p2.y - p.y });
-        const n = { x: -dir.y, y: dir.x };
-        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        group.dataset.kind = 'component';
-        group.dataset.id = comp.id;
-
-        const color = comp.color || '#f8fafc';
-        const stroke = state.selected?.kind === 'component' && state.selected.id === comp.id ? 'var(--selected)' : '#0f172a';
-
-        const helper = {
-          line(ax, ay, bx, by, sw = 2.2, colorOverride = color) {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', ax); line.setAttribute('y1', ay);
-            line.setAttribute('x2', bx); line.setAttribute('y2', by);
-            line.setAttribute('stroke', colorOverride);
-            line.setAttribute('stroke-width', sw);
-            line.setAttribute('stroke-linecap', 'round');
-            group.appendChild(line);
-          },
-          poly(points, fill = color, sw = 1.8) {
-            const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            poly.setAttribute('points', points.map(pt => `${pt.x},${pt.y}`).join(' '));
-            poly.setAttribute('fill', fill);
-            poly.setAttribute('stroke', stroke);
-            poly.setAttribute('stroke-width', sw);
-            group.appendChild(poly);
-          },
-          circle(cx, cy, r, fill = color, sw = 1.8) {
-            const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            c.setAttribute('cx', cx); c.setAttribute('cy', cy);
-            c.setAttribute('r', r);
-            c.setAttribute('fill', fill);
-            c.setAttribute('stroke', stroke);
-            c.setAttribute('stroke-width', sw);
-            group.appendChild(c);
-          },
-          path(d, fill = 'none', sw = 2.2, colorOverride = color) {
-            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.setAttribute('d', d);
-            path.setAttribute('fill', fill);
-            path.setAttribute('stroke', colorOverride);
-            path.setAttribute('stroke-width', sw);
-            path.setAttribute('stroke-linecap', 'round');
-            path.setAttribute('stroke-linejoin', 'round');
-            group.appendChild(path);
-          },
-          text(tx, ty, value) {
-            const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            t.setAttribute('x', tx); t.setAttribute('y', ty);
-            t.setAttribute('fill', '#cbd5e1');
-            t.setAttribute('font-size', Math.max(10, 10 * state.zoom));
-            t.setAttribute('text-anchor', 'middle');
-            t.textContent = value;
-            group.appendChild(t);
-          }
-        };
-
-        const a = { x: p.x - dir.x * size * 0.75, y: p.y - dir.y * size * 0.75 };
-        const b = { x: p.x + dir.x * size * 0.75, y: p.y + dir.y * size * 0.75 };
-
-        switch (comp.type) {
-          case 'gate_valve': {
-            helper.line(a.x, a.y, p.x - dir.x * size * 0.25, p.y - dir.y * size * 0.25);
-            helper.line(p.x + dir.x * size * 0.25, p.y + dir.y * size * 0.25, b.x, b.y);
-            helper.poly([
-              { x: p.x - dir.x * size * 0.25 - n.x * size * 0.45, y: p.y - dir.y * size * 0.25 - n.y * size * 0.45 },
-              { x: p.x - dir.x * size * 0.25 + n.x * size * 0.45, y: p.y - dir.y * size * 0.25 + n.y * size * 0.45 },
-              { x: p.x + dir.x * size * 0.25 + n.x * size * 0.45, y: p.y + dir.y * size * 0.25 + n.y * size * 0.45 },
-              { x: p.x + dir.x * size * 0.25 - n.x * size * 0.45, y: p.y + dir.y * size * 0.25 - n.y * size * 0.45 }
-            ], shadeColor(color, 0));
-            helper.line(p.x, p.y, p.x, p.y - size * 0.95, 1.8);
-            helper.line(p.x - size * 0.25, p.y - size * 0.95, p.x + size * 0.25, p.y - size * 0.95, 1.8);
-            break;
-          }
-          case 'ball_valve': {
-            helper.line(a.x, a.y, p.x - dir.x * size * 0.35, p.y - dir.y * size * 0.35);
-            helper.line(p.x + dir.x * size * 0.35, p.y + dir.y * size * 0.35, b.x, b.y);
-            helper.circle(p.x, p.y, size * 0.42, shadeColor(color, -8));
-            helper.line(p.x, p.y, p.x, p.y - size * 0.9, 1.8);
-            helper.line(p.x - size * 0.25, p.y - size * 0.9, p.x + size * 0.25, p.y - size * 0.9, 1.8);
-            break;
-          }
-          case 'globe_valve': {
-            helper.line(a.x, a.y, p.x - dir.x * size * 0.25, p.y - dir.y * size * 0.25);
-            helper.line(p.x + dir.x * size * 0.25, p.y + dir.y * size * 0.25, b.x, b.y);
-            helper.circle(p.x, p.y, size * 0.36, shadeColor(color, -12));
-            helper.line(p.x, p.y - size * 0.36, p.x, p.y - size * 1.0, 1.8);
-            helper.circle(p.x, p.y - size * 1.07, size * 0.18, 'transparent');
-            break;
-          }
-          case 'check_valve': {
-            helper.line(a.x, a.y, b.x, b.y);
-            helper.poly([
-              { x: p.x - dir.x * size * 0.35 - n.x * size * 0.42, y: p.y - dir.y * size * 0.35 - n.y * size * 0.42 },
-              { x: p.x - dir.x * size * 0.35 + n.x * size * 0.42, y: p.y - dir.y * size * 0.35 + n.y * size * 0.42 },
-              { x: p.x + dir.x * size * 0.42, y: p.y + dir.y * size * 0.42 }
-            ], shadeColor(color, -12));
-            break;
-          }
-          case 'elbow_90': {
-            const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
-            const altP = projectPoint(addPoint(comp.point, alt3));
-            const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
-            const leg1 = { x: p.x + dir.x * size * 0.95, y: p.y + dir.y * size * 0.95 };
-            const leg2 = { x: p.x + altDir.x * size * 0.95, y: p.y + altDir.y * size * 0.95 };
-            const inner1 = { x: p.x + dir.x * size * 0.25, y: p.y + dir.y * size * 0.25 };
-            const inner2 = { x: p.x + altDir.x * size * 0.25, y: p.y + altDir.y * size * 0.25 };
-            helper.line(inner1.x, inner1.y, leg1.x, leg1.y, 2.6);
-            helper.line(inner2.x, inner2.y, leg2.x, leg2.y, 2.6);
-            helper.path(`M ${inner1.x} ${inner1.y} Q ${p.x} ${p.y} ${inner2.x} ${inner2.y}`, 'none', 3);
-            break;
-          }
-          case 'tee': {
-            const alt3 = axisVector(comp.branchAxis || nextAxis(comp.axis || 'x'));
-            const altP = projectPoint(addPoint(comp.point, alt3));
-            const altDir = normalize({ x: altP.x - p.x, y: altP.y - p.y });
-            helper.line(a.x, a.y, b.x, b.y, 2.8);
-            helper.line(p.x, p.y, p.x + altDir.x * size * 0.95, p.y + altDir.y * size * 0.95, 2.8);
-            helper.circle(p.x, p.y, size * 0.16, '#111827', 1.4);
-            break;
-          }
-          case 'reducer': {
-            helper.line(a.x, a.y, b.x, b.y);
-            helper.poly([
-              { x: p.x - dir.x * size * 0.45 - n.x * size * 0.45, y: p.y - dir.y * size * 0.45 - n.y * size * 0.45 },
-              { x: p.x - dir.x * size * 0.45 + n.x * size * 0.45, y: p.y - dir.y * size * 0.45 + n.y * size * 0.45 },
-              { x: p.x + dir.x * size * 0.45 + n.x * size * 0.2, y: p.y + dir.y * size * 0.45 + n.y * size * 0.2 },
-              { x: p.x + dir.x * size * 0.45 - n.x * size * 0.2, y: p.y + dir.y * size * 0.45 - n.y * size * 0.2 }
-            ], shadeColor(color, -10));
-            break;
-          }
-          case 'flange': {
-            helper.line(a.x, a.y, b.x, b.y);
-            helper.line(p.x - dir.x * size * 0.28 - n.x * size * 0.55, p.y - dir.y * size * 0.28 - n.y * size * 0.55, p.x - dir.x * size * 0.28 + n.x * size * 0.55, p.y - dir.y * size * 0.28 + n.y * size * 0.55, 3);
-            helper.line(p.x + dir.x * size * 0.28 - n.x * size * 0.55, p.y + dir.y * size * 0.28 - n.y * size * 0.55, p.x + dir.x * size * 0.28 + n.x * size * 0.55, p.y + dir.y * size * 0.28 + n.y * size * 0.55, 3);
-            break;
-          }
-          case 'cap': {
-            helper.line(a.x, a.y, p.x, p.y);
-            helper.line(p.x - n.x * size * 0.55, p.y - n.y * size * 0.55, p.x + n.x * size * 0.55, p.y + n.y * size * 0.55, 3);
-            break;
-          }
-          default: {
-            helper.circle(p.x, p.y, size * 0.24, shadeColor(color, -8));
-            helper.text(p.x, p.y - size * 0.65, comp.name);
-            break;
-          }
-        }
-
-        parent.appendChild(group);
-      }
-
-      function drawPreview(parent) {
-        if (state.mode === 'pipe' && state.drawingStart && state.previewEnd && !samePoint(state.drawingStart, state.previewEnd)) {
-          drawPipe(parent, {
-            id: 'preview',
-            start: state.drawingStart,
-            end: state.previewEnd,
-            diameter: state.defaultDiameter,
-            color: state.defaultPipeColor
-          }, true);
-        }
-
-        if (state.drawingStart) {
-          const p = projectPoint(state.drawingStart);
-          const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          dot.setAttribute('cx', p.x);
-          dot.setAttribute('cy', p.y);
-          dot.setAttribute('r', 6);
-          dot.setAttribute('fill', '#f59e0b');
-          dot.setAttribute('stroke', '#ffffff');
-          dot.setAttribute('stroke-width', '1.5');
-          parent.appendChild(dot);
-        }
-      }
-
-      function drawHandle(parent, point, r = 6, fill = '#f59e0b') {
-        const p = projectPoint(point);
-        const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        handle.setAttribute('cx', p.x);
-        handle.setAttribute('cy', p.y);
-        handle.setAttribute('r', r);
-        handle.setAttribute('fill', fill);
-        handle.setAttribute('stroke', '#ffffff');
-        handle.setAttribute('stroke-width', '1.4');
-        parent.appendChild(handle);
-      }
-
-      function drawSelectionOverlay(parent) {
-        if (!state.selected) return;
-        if (state.selected.kind === 'component') {
-          const comp = state.components.find(item => item.id === state.selected.id);
-          if (!comp) return;
-          const p = projectPoint(comp.point);
-          const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          ring.setAttribute('cx', p.x);
-          ring.setAttribute('cy', p.y);
-          ring.setAttribute('r', Math.max(10, state.grid * 0.35 * comp.scale * state.zoom));
-          ring.setAttribute('fill', 'none');
-          ring.setAttribute('stroke', '#f59e0b');
-          ring.setAttribute('stroke-width', '1.8');
-          ring.setAttribute('stroke-dasharray', '5 4');
-          parent.appendChild(ring);
-          drawHandle(parent, comp.point, 6, '#f59e0b');
-          return;
-        }
-
-        const pipe = state.pipes.find(item => item.id === state.selected.id);
-        if (!pipe) return;
-        drawHandle(parent, pipe.start, 6, '#f59e0b');
-        drawHandle(parent, pipe.end, 6, '#f59e0b');
-        drawHandle(parent, midpoint(pipe.start, pipe.end), 5, '#22c55e');
-      }
-
-      function drawWorkingPlaneCursor(parent) {
-        const point = screenToGridOnWorkingPlane(state.pointerScreen.x, state.pointerScreen.y, state.workingZ);
-        const p = projectPoint(point);
-        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        const line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        const line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line1.setAttribute('x1', p.x - 8); line1.setAttribute('y1', p.y);
-        line1.setAttribute('x2', p.x + 8); line1.setAttribute('y2', p.y);
-        line2.setAttribute('x1', p.x); line2.setAttribute('y1', p.y - 8);
-        line2.setAttribute('x2', p.x); line2.setAttribute('y2', p.y + 8);
-        [line1, line2].forEach(line => {
-          line.setAttribute('stroke', 'rgba(248,250,252,0.5)');
-          line.setAttribute('stroke-width', '1');
-          g.appendChild(line);
-        });
-        parent.appendChild(g);
-      }
-
-      function drawSnapCandidate(parent) {
-        if (!state.snapCandidate) return;
-        const p = projectPoint(state.snapCandidate);
-        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        ring.setAttribute('cx', p.x);
-        ring.setAttribute('cy', p.y);
-        ring.setAttribute('r', 8);
-        ring.setAttribute('fill', 'none');
-        ring.setAttribute('stroke', '#38bdf8');
-        ring.setAttribute('stroke-width', '1.5');
-        ring.setAttribute('stroke-dasharray', '4 3');
-        parent.appendChild(ring);
-      }
-
-      function canvasPoint(evt) {
-        const rect = els.svg.getBoundingClientRect();
-        return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
-      }
-
-      function startPan(evt) {
-        const pt = canvasPoint(evt);
-        state.isPanning = true;
-        state.panOrigin = pt;
-        els.svg.style.cursor = 'grabbing';
-      }
-
-      function endPan() {
-        state.isPanning = false;
-        state.panOrigin = null;
-        if (state.mode === 'pan') els.svg.style.cursor = 'grab';
-        else if (state.mode === 'select') els.svg.style.cursor = 'default';
-        else els.svg.style.cursor = 'crosshair';
-      }
-
-      function centerView() {
-        state.originX = Math.max(400, els.workspace.clientWidth * 0.52);
-        state.originY = Math.max(260, els.workspace.clientHeight * 0.52);
-        render();
-        updateStatus('View centered.');
-      }
-
-      function handleWheel(evt) {
+    canvas.addEventListener('mousedown', (evt) => {
+      if (evt.button === 1) {
         evt.preventDefault();
-        const factor = evt.deltaY < 0 ? 1.08 : 0.92;
-        state.zoom = clamp(state.zoom * factor, 0.35, 3.25);
-        render();
+        state.panning = true;
+        state.lastPan = { x: evt.clientX, y: evt.clientY };
       }
+    });
 
-      function beginDragFromHandle(handle, pointer = null) {
-        if (handle.kind === 'component') {
-          const comp = state.components.find(c => c.id === handle.id);
-          if (!comp) return;
-          state.dragState = {
-            type: 'component-move',
-            id: comp.id,
-            originalPoint: clonePoint(comp.point)
-          };
-          return;
-        }
-
-        const pipe = state.pipes.find(p => p.id === handle.id);
-        if (!pipe) return;
-        if (handle.handle === 'start') {
-          state.dragState = { type: 'pipe-start', id: pipe.id, fixedPoint: clonePoint(pipe.end) };
-        } else if (handle.handle === 'end') {
-          state.dragState = { type: 'pipe-end', id: pipe.id, fixedPoint: clonePoint(pipe.start) };
-        } else {
-          state.dragState = {
-            type: 'pipe-move',
-            id: pipe.id,
-            originalStart: clonePoint(pipe.start),
-            originalEnd: clonePoint(pipe.end),
-            grabGrid: pointer ? screenToGridOnWorkingPlane(pointer.x, pointer.y, pipe.start.z) : clonePoint(pipe.start)
-          };
-        }
+    canvas.addEventListener('mouseup', (evt) => {
+      if (evt.button === 1) {
+        state.panning = false;
+        state.lastPan = null;
       }
+    });
 
-      function handlePointerDown(evt) {
-        if (evt.button === 1 || state.mode === 'pan') {
-          startPan(evt);
-          return;
-        }
+    canvas.addEventListener('mouseleave', () => {
+      state.panning = false;
+      state.lastPan = null;
+    });
 
-        const pt = canvasPoint(evt);
-        state.pointerScreen = pt;
+    canvas.addEventListener('click', (evt) => {
+      if (evt.button !== 0) return;
+      const rect = canvas.getBoundingClientRect();
+      const world = screenToWorld({ x: evt.clientX - rect.left, y: evt.clientY - rect.top });
+      if (!state.isDrawing) {
+        beginPolyline(world);
+      } else {
+        addSegment(world);
+      }
+    });
 
-        if (state.mode === 'select') {
-          const handle = selectedHandleHit(pt.x, pt.y);
-          if (handle) {
-            beginDragFromHandle(handle, pt);
-            render();
-            return;
+    canvas.addEventListener('dblclick', () => finishPolyline());
+
+    canvas.addEventListener('wheel', (evt) => {
+      evt.preventDefault();
+      const mouse = pointerPosition(evt);
+      const before = screenToWorld(mouse);
+      const factor = evt.deltaY < 0 ? 1.08 : 0.92;
+      state.camera.zoom = clamp(state.camera.zoom * factor, 0.2, 5);
+      const after = screenToWorld(mouse);
+      state.camera.x += before.x - after.x;
+      state.camera.y += before.y - after.y;
+      render();
+    }, { passive: false });
+
+    document.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Escape' || evt.key === 'Enter') {
+        if (state.isDrawing) finishPolyline();
+      }
+      if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'z') {
+        evt.preventDefault();
+        els.undoBtn.click();
+      }
+    });
+
+    els.startBtn.addEventListener('click', () => beginPolyline(state.snappedHover || { x: 0, y: 0 }));
+    els.finishBtn.addEventListener('click', finishPolyline);
+    els.undoBtn.addEventListener('click', () => {
+      if (!state.segments.length) return;
+      if (state.isDrawing) {
+        if (state.segments.length > state.polylineStartIndex) {
+          state.segments.pop();
+          if (state.segments.length > state.polylineStartIndex) {
+            state.currentPolylineStart = { ...state.segments[state.segments.length - 1].end };
+          } else if (state.polylineSeedPoint) {
+            state.currentPolylineStart = { ...state.polylineSeedPoint };
           }
-
-          const hit = hitTest(pt.x, pt.y);
-          state.selected = hit;
-          refreshSelectionInfo();
-
-          if (hit && hit.kind === 'component') {
-            state.dragState = {
-              type: 'component-move',
-              id: hit.id,
-              originalPoint: clonePoint(state.components.find(c => c.id === hit.id).point)
-            };
-          } else {
-            state.dragState = null;
-          }
-
-          render();
-          updateStatus(hit ? `Selected ${hit.kind}.` : 'Nothing selected.');
-          return;
+          state.previewEnd = state.currentPolylineStart;
         }
-
-        if (state.mode === 'component') {
-          const point = snapGeneralPoint(pt.x, pt.y, state.workingZ);
-          addPlacedComponent(point);
-          render();
-          return;
-        }
-
-        if (state.mode === 'pipe') {
-          if (!state.drawingStart) {
-            state.drawingStart = snapGeneralPoint(pt.x, pt.y, state.workingZ);
-            state.previewEnd = clonePoint(state.drawingStart);
-            updateStatus(`Pipe start set at (${state.drawingStart.x}, ${state.drawingStart.y}, ${state.drawingStart.z}).`);
-          } else {
-            const end = autoAxisPoint(state.drawingStart, pt.x, pt.y);
-            if (end && !samePoint(state.drawingStart, end)) {
-              addPipeSegment(state.drawingStart, end);
-              state.drawingStart = clonePoint(end);
-              state.previewEnd = clonePoint(end);
-              state.workingZ = end.z;
-              els.workingZ.value = String(state.workingZ);
-              updateStatus(`Added segment. Continuing run from (${end.x}, ${end.y}, ${end.z}).`);
-            }
-          }
-          render();
-        }
+      } else {
+        state.segments.pop();
       }
+      render();
+    });
+    els.clearBtn.addEventListener('click', () => {
+      state.segments = [];
+      finishPolyline();
+      state.camera = { x: 0, y: 0, zoom: 1 };
+      setStatus('Drawing cleared. Ready for a new piping layout.');
+      render();
+    });
+    els.centerBtn.addEventListener('click', recenter);
+    els.printBtn.addEventListener('click', () => {
+      buildPrintSheet();
+      window.print();
+    });
 
-      function handleDragMove(pt) {
-        if (!state.dragState) return;
-        const drag = state.dragState;
+    els.pipeSize.addEventListener('input', () => {
+      state.defaultPipeSize = Number(els.pipeSize.value);
+      els.pipeSizeValue.value = state.defaultPipeSize;
+      render();
+    });
+    els.pipeSizeValue.addEventListener('input', () => {
+      state.defaultPipeSize = clamp(Number(els.pipeSizeValue.value || 18), 8, 42);
+      els.pipeSize.value = state.defaultPipeSize;
+      render();
+    });
+    els.gridStep.addEventListener('input', () => {
+      state.gridStep = clamp(Number(els.gridStep.value || 24), 8, 80);
+      render();
+    });
 
-        if (drag.type === 'component-move') {
-          const comp = state.components.find(c => c.id === drag.id);
-          if (!comp) return;
-          comp.point = snapGeneralPoint(pt.x, pt.y, drag.originalPoint.z, { kind: 'component', id: comp.id });
-          return;
-        }
+    function getBounds(segments) {
+      if (!segments.length) return null;
+      const pts = [];
+      segments.forEach(s => { pts.push(s.start, s.end); });
+      return {
+        minX: Math.min(...pts.map(p => p.x)),
+        maxX: Math.max(...pts.map(p => p.x)),
+        minY: Math.min(...pts.map(p => p.y)),
+        maxY: Math.max(...pts.map(p => p.y))
+      };
+    }
 
-        if (drag.type === 'pipe-start' || drag.type === 'pipe-end') {
-          const pipe = state.pipes.find(p => p.id === drag.id);
-          if (!pipe) return;
-          const next = autoAxisPoint(drag.fixedPoint, pt.x, pt.y, { kind: 'pipe', id: pipe.id });
-          if (samePoint(next, drag.fixedPoint)) return;
-          if (drag.type === 'pipe-start') pipe.start = next;
-          else pipe.end = next;
-          return;
-        }
+    function buildPrintSheet() {
+      els.tbProject.textContent = (els.projectTitle.value || 'ISOMETRIC PIPING').toUpperCase();
+      els.tbRev.textContent = (els.revision.value || '0').toUpperCase();
+      els.tbDwg.textContent = (els.drawingNumber.value || 'ISO-001').toUpperCase();
+      els.tbScale.textContent = (els.sheetScale.value || 'NTS').toUpperCase();
+      els.tbBy.textContent = (els.drawnBy.value || 'USER').toUpperCase();
+      els.tbDate.textContent = new Date().toLocaleDateString();
 
-        if (drag.type === 'pipe-move') {
-          const pipe = state.pipes.find(p => p.id === drag.id);
-          if (!pipe) return;
-          const base = screenToGridOnWorkingPlane(pt.x, pt.y, drag.grabGrid.z);
-          const delta = subPoint(base, drag.grabGrid);
-          pipe.start = addPoint(drag.originalStart, delta);
-          pipe.end = addPoint(drag.originalEnd, delta);
-        }
-      }
+      const w = 1200;
+      const h = 700;
+      const pad = 55;
+      const bounds = getBounds(state.segments);
 
-      function handlePointerMove(evt) {
-        const pt = canvasPoint(evt);
-        state.pointerScreen = pt;
+      let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs>
+        <linearGradient id="pipeGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#efefef" />
+          <stop offset="35%" stop-color="#cccccc" />
+          <stop offset="72%" stop-color="#9b9b9b" />
+          <stop offset="100%" stop-color="#656565" />
+        </linearGradient>
+        <marker id="printArrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+          <path d="M0,0 L8,4 L0,8 Z" fill="#111" />
+        </marker>
+      </defs>`;
 
-        if (state.isPanning) {
-          const dx = pt.x - state.panOrigin.x;
-          const dy = pt.y - state.panOrigin.y;
-          state.originX += dx;
-          state.originY += dy;
-          state.panOrigin = pt;
-          render();
-          return;
-        }
+      // frame note line
+      svg += `<text x="18" y="26" font-size="14" font-family="Arial" letter-spacing="2">NORTH FIXED TO TOP-RIGHT</text>`;
+      svg += `<circle cx="1040" cy="60" r="34" fill="none" stroke="#444" stroke-width="1.4" />`;
+      svg += `<path d="M1018 74 L1058 50" stroke="#111" stroke-width="2" marker-end="url(#printArrow)" />`;
+      svg += `<text x="1061" y="42" font-size="14" font-family="Arial" font-weight="700">N</text>`;
 
-        if (state.dragState) {
-          handleDragMove(pt);
-          refreshSelectionInfo();
-          render();
-          return;
-        }
+      if (!bounds) {
+        svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-size="28" fill="#666" font-family="Arial">NO PIPING DRAWN</text>`;
+      } else {
+        const bw = Math.max(60, bounds.maxX - bounds.minX);
+        const bh = Math.max(60, bounds.maxY - bounds.minY);
+        const scale = Math.min((w - pad * 2) / bw, (h - pad * 2) / bh);
+        const cx = (bounds.minX + bounds.maxX) / 2;
+        const cy = (bounds.minY + bounds.maxY) / 2;
 
-        if (state.mode === 'pipe' && state.drawingStart) {
-          state.previewEnd = autoAxisPoint(state.drawingStart, pt.x, pt.y);
-        } else if (state.mode === 'component' || state.mode === 'select') {
-          const general = nearestConnection(pt.x, pt.y);
-          state.snapCandidate = general ? clonePoint(general.point) : null;
-        } else {
-          state.snapCandidate = null;
-        }
-
-        render();
-      }
-
-      function handlePointerUp() {
-        if (state.dragState) {
-          refreshSelectionInfo();
-          updateStatus('Edit applied.');
-        }
-        state.dragState = null;
-        endPan();
-      }
-
-      function saveProjectToBrowser() {
-        state.projectName = els.projectName.value.trim() || 'Untitled Project';
-        const projects = loadProjectsMap();
-        projects[state.projectName] = serializeProject();
-        persistProjectsMap(projects);
-        updateStatus(`Saved project ${state.projectName} in browser.`);
-      }
-
-      function loadProjectFromBrowser() {
-        const projects = loadProjectsMap();
-        const names = Object.keys(projects);
-        if (!names.length) {
-          updateStatus('No saved projects found in this browser.');
-          return;
-        }
-        const requested = prompt(`Saved projects:\n\n${names.join('\n')}\n\nEnter project name to load:`, state.projectName);
-        if (!requested) return;
-        if (!projects[requested]) {
-          updateStatus(`Project ${requested} was not found.`);
-          return;
-        }
-        applyProject(projects[requested]);
-        updateStatus(`Loaded project ${requested}.`);
-      }
-
-      function resetProject() {
-        state.pipes = [];
-        state.components = [];
-        state.selected = null;
-        state.drawingStart = null;
-        state.previewEnd = null;
-        state.dragState = null;
-        state.projectName = 'My Isometric Layout';
-        state.defaultDiameter = 0.45;
-        state.axis = 'x';
-        state.defaultPipeColor = '#7dd3fc';
-        state.workingZ = 0;
-        state.grid = 36;
-        state.zoom = 1;
-        state.snapEnabled = true;
-        state.showDimensions = true;
-        centerView();
-        syncInputs();
-        render();
-        updateStatus('Started new project.');
-      }
-
-      function downloadText(filename, text, type = 'text/plain') {
-        const blob = new Blob([text], { type });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function exportJson() {
-        const payload = {
-          version: 3,
-          exportedAt: new Date().toISOString(),
-          project: serializeProject(),
-          library: state.library
-        };
-        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}.json`, JSON.stringify(payload, null, 2), 'application/json');
-        updateStatus('Exported JSON file.');
-      }
-
-      function importJsonFile(file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          try {
-            const parsed = JSON.parse(reader.result);
-            if (parsed.library && Array.isArray(parsed.library)) {
-              state.library = parsed.library;
-              saveStateToBrowser();
-              renderLibrary();
-            }
-            if (parsed.project) {
-              applyProject(parsed.project);
-            }
-            updateStatus('Imported JSON data.');
-          } catch (err) {
-            console.error(err);
-            updateStatus('Could not import JSON.');
-          }
-        };
-        reader.readAsText(file);
-      }
-
-      function buildBomCsv() {
-        const rows = [['Section', 'Item', 'Type', 'Qty', 'Total Length', 'Diameter', 'Axis', 'Color', 'Notes']];
-
-        const pipeGroups = new Map();
-        for (const pipe of state.pipes) {
-          const key = [pipeAxis(pipe), Number(pipe.diameter).toFixed(2), pipe.color].join('|');
-          const current = pipeGroups.get(key) || { qty: 0, totalLength: 0, axis: pipeAxis(pipe), diameter: Number(pipe.diameter).toFixed(2), color: pipe.color };
-          current.qty += 1;
-          current.totalLength += lengthOfPipe(pipe);
-          pipeGroups.set(key, current);
-        }
-
-        for (const [, grp] of [...pipeGroups.entries()].sort()) {
-          rows.push(['Pipe', 'Pipe Segment Group', 'Pipe', String(grp.qty), String(grp.totalLength), grp.diameter, grp.axis.toUpperCase(), grp.color, 'Grouped by axis, diameter, and color']);
-        }
-
-        const compGroups = new Map();
-        for (const comp of state.components) {
-          const key = [comp.name, comp.type, comp.axis, comp.color, comp.notes || ''].join('|');
-          const current = compGroups.get(key) || { qty: 0, name: comp.name, type: comp.type, axis: comp.axis, color: comp.color, notes: comp.notes || '' };
-          current.qty += 1;
-          compGroups.set(key, current);
-        }
-
-        for (const [, grp] of [...compGroups.entries()].sort()) {
-          rows.push(['Component', grp.name, labelType(grp.type), String(grp.qty), '', '', grp.axis.toUpperCase(), grp.color, grp.notes]);
-        }
-
-        return rows.map(row => row.map(value => `"${String(value).replaceAll('"', '""')}"`).join(',')).join('\n');
-      }
-
-      function exportBomCsv() {
-        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}_BOM.csv`, buildBomCsv(), 'text/csv');
-        updateStatus('Exported BOM CSV.');
-      }
-
-      function buildDxfLikeText() {
-        const lines = [];
-        const add = (...vals) => vals.forEach(v => lines.push(String(v)));
-
-        add('0', 'SECTION', '2', 'HEADER');
-        add('9', '$PROJECT', '1', state.projectName);
-        add('9', '$UNITS', '1', 'GRID');
-        add('0', 'ENDSEC');
-
-        add('0', 'SECTION', '2', 'ENTITIES');
-        for (const pipe of state.pipes) {
-          add('0', 'LINE');
-          add('8', 'PIPES');
-          add('5', pipe.id);
-          add('10', pipe.start.x, '20', pipe.start.y, '30', pipe.start.z);
-          add('11', pipe.end.x, '21', pipe.end.y, '31', pipe.end.z);
-          add('39', Number(pipe.diameter).toFixed(2));
-          add('62', pipe.color);
-          add('999', `LEN=${lengthOfPipe(pipe)}`);
-        }
-        for (const comp of state.components) {
-          add('0', 'INSERT');
-          add('8', 'COMPONENTS');
-          add('5', comp.id);
-          add('2', comp.name);
-          add('10', comp.point.x, '20', comp.point.y, '30', comp.point.z);
-          add('41', comp.scale, '42', comp.scale, '43', comp.scale);
-          add('50', comp.axis.toUpperCase());
-          add('62', comp.color);
-          add('999', `TYPE=${comp.type}`);
-          add('999', `NOTES=${(comp.notes || '').replace(/\n/g, ' ')}`);
-        }
-        add('0', 'ENDSEC', '0', 'EOF');
-        return lines.join('\n');
-      }
-
-      function exportCadText() {
-        downloadText(`${(state.projectName || 'isometric-piping-project').replace(/[^a-z0-9-_]+/gi, '_')}.dxf`, buildDxfLikeText(), 'application/dxf');
-        updateStatus('Exported DXF-like text file.');
-      }
-
-
-      function projectionUV(point, view) {
-        const c = Math.cos(Math.PI / 6);
-        const s = Math.sin(Math.PI / 6);
-        if (view === 'iso') return { u: (point.x - point.y) * c, v: (point.x + point.y) * s - point.z };
-        if (view === 'top') return { u: point.x, v: -point.y };
-        if (view === 'front') return { u: point.x, v: -point.z };
-        return { u: point.y, v: -point.z };
-      }
-
-      function getScenePointsForSheet() {
-        const pts = [];
-        for (const pipe of state.pipes) {
-          pts.push(clonePoint(pipe.start), clonePoint(pipe.end));
-        }
-        for (const comp of state.components) {
-          pts.push(clonePoint(comp.point));
-          componentConnectionPoints(comp).forEach(p => pts.push(clonePoint(p)));
-        }
-        for (const comp of computeAutoFittings()) {
-          pts.push(clonePoint(comp.point));
-          componentConnectionPoints(comp).forEach(p => pts.push(clonePoint(p)));
-        }
-        if (!pts.length) pts.push({ x: 0, y: 0, z: 0 }, { x: 10, y: 10, z: 0 });
-        return pts;
-      }
-
-      function buildSheetViewSvg(view, width, height, options = {}) {
-        const pts = getScenePointsForSheet();
-        const projected = pts.map(point => projectionUV(point, view));
-        let minU = Math.min(...projected.map(p => p.u));
-        let maxU = Math.max(...projected.map(p => p.u));
-        let minV = Math.min(...projected.map(p => p.v));
-        let maxV = Math.max(...projected.map(p => p.v));
-
-        if (minU === maxU) { minU -= 1; maxU += 1; }
-        if (minV === maxV) { minV -= 1; maxV += 1; }
-
-        const pad = 24;
-        const scale = Math.min((width - pad * 2) / (maxU - minU), (height - pad * 2) / (maxV - minV));
-
-        function mapPoint(point) {
-          const p = projectionUV(point, view);
+        function map(p) {
           return {
-            x: pad + (p.u - minU) * scale,
-            y: height - pad - (p.v - minV) * scale
+            x: (p.x - cx) * scale + w / 2,
+            y: (p.y - cy) * scale + h / 2
           };
         }
 
-        const showDimensions = options.showDimensions ?? true;
+        state.segments.forEach(seg => {
+          const a = map(seg.start);
+          const b = map(seg.end);
+          const vx = b.x - a.x;
+          const vy = b.y - a.y;
+          const L = Math.hypot(vx, vy) || 1;
+          const tx = vx / L;
+          const ty = vy / L;
+          const nx = -ty;
+          const ny = tx;
+          const r = (seg.size * scale) / 2;
+          const ex = tx * r;
+          const ey = ty * r;
 
-        function projectedDir(axis) {
-          const origin = mapPoint({ x: 0, y: 0, z: 0 });
-          const vec = mapPoint(axisVector(axis));
-          const dx = vec.x - origin.x;
-          const dy = vec.y - origin.y;
-          const len = Math.hypot(dx, dy) || 1;
-          return { x: dx / len, y: dy / len };
-        }
+          const p1 = `${a.x + nx * r},${a.y + ny * r}`;
+          const p2 = `${b.x + nx * r},${b.y + ny * r}`;
+          const p3 = `${b.x - nx * r},${b.y - ny * r}`;
+          const p4 = `${a.x - nx * r},${a.y - ny * r}`;
 
-        function nextBranchAxis(axis, branchAxis) {
-          return branchAxis || nextAxis(axis || 'x');
-        }
-
-        const parts = [];
-        parts.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`);
-        parts.push(`<rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff" stroke="#111827" stroke-width="1"/>`);
-        parts.push(`<rect x="10" y="10" width="${width - 20}" height="${height - 20}" fill="none" stroke="#cbd5e1" stroke-width="1"/>`);
-
-        for (const pipe of state.pipes) {
-          const a = mapPoint(pipe.start);
-          const b = mapPoint(pipe.end);
-          const strokeWidth = Math.max(2, pipe.diameter * scale * 0.18);
-          parts.push(`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#0f172a" stroke-width="${strokeWidth}" stroke-linecap="round"/>`);
-          if (showDimensions) {
-            const mx = (a.x + b.x) / 2;
-            const my = (a.y + b.y) / 2;
-            parts.push(`<text x="${mx}" y="${my - 8}" font-size="10" text-anchor="middle" fill="#334155">${lengthOfPipe(pipe)}u</text>`);
-          }
-        }
-
-        for (const gap of computeOcclusionBreaks(point => mapPoint(point), pipe => Math.max(2, pipe.diameter * scale * 0.18))) {
-          const half = gap.gapLength / 2;
-          const x1 = gap.x - gap.dir.x * half;
-          const y1 = gap.y - gap.dir.y * half;
-          const x2 = gap.x + gap.dir.x * half;
-          const y2 = gap.y + gap.dir.y * half;
-          parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#ffffff" stroke-width="${gap.maskWidth}" stroke-linecap="round"/>`);
-        }
-
-        function drawInlineSymbol(comp, color) {
-          const center = mapPoint(comp.point);
-          const dir = projectedDir(comp.axis || 'x');
-          const branch = projectedDir(nextBranchAxis(comp.axis, comp.branchAxis));
-          const n = { x: -dir.y, y: dir.x };
-          const size = 12 * (comp.scale || 1);
-          const lineA = { x: center.x - dir.x * size, y: center.y - dir.y * size };
-          const lineB = { x: center.x + dir.x * size, y: center.y + dir.y * size };
-          const add = s => parts.push(s);
-
-          if (comp.type === 'elbow_90') {
-            const inner1 = { x: center.x + dir.x * size * 0.25, y: center.y + dir.y * size * 0.25 };
-            const inner2 = { x: center.x + branch.x * size * 0.25, y: center.y + branch.y * size * 0.25 };
-            const leg1 = { x: center.x + dir.x * size * 0.95, y: center.y + dir.y * size * 0.95 };
-            const leg2 = { x: center.x + branch.x * size * 0.95, y: center.y + branch.y * size * 0.95 };
-            add(`<line x1="${inner1.x}" y1="${inner1.y}" x2="${leg1.x}" y2="${leg1.y}" stroke="${color}" stroke-width="2.2"/>`);
-            add(`<line x1="${inner2.x}" y1="${inner2.y}" x2="${leg2.x}" y2="${leg2.y}" stroke="${color}" stroke-width="2.2"/>`);
-            add(`<path d="M ${inner1.x} ${inner1.y} Q ${center.x} ${center.y} ${inner2.x} ${inner2.y}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>`);
-            return;
-          }
-
-          if (comp.type === 'tee') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2.3"/>`);
-            add(`<line x1="${center.x}" y1="${center.y}" x2="${center.x + branch.x * size}" y2="${center.y + branch.y * size}" stroke="${color}" stroke-width="2.3"/>`);
-            add(`<circle cx="${center.x}" cy="${center.y}" r="2.4" fill="#ffffff" stroke="${color}" stroke-width="1.6"/>`);
-            return;
-          }
-
-          if (comp.type === 'reducer') {
-            const p1 = { x: center.x - dir.x * size * 0.75 - n.x * size * 0.42, y: center.y - dir.y * size * 0.75 - n.y * size * 0.42 };
-            const p2 = { x: center.x - dir.x * size * 0.75 + n.x * size * 0.42, y: center.y - dir.y * size * 0.75 + n.y * size * 0.42 };
-            const p3 = { x: center.x + dir.x * size * 0.75 + n.x * size * 0.18, y: center.y + dir.y * size * 0.75 + n.y * size * 0.18 };
-            const p4 = { x: center.x + dir.x * size * 0.75 - n.x * size * 0.18, y: center.y + dir.y * size * 0.75 - n.y * size * 0.18 };
-            add(`<polygon points="${p1.x},${p1.y} ${p2.x},${p2.y} ${p3.x},${p3.y} ${p4.x},${p4.y}" fill="none" stroke="${color}" stroke-width="2"/>`);
-            return;
-          }
-
-          if (comp.type === 'flange') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
-            add(`<line x1="${center.x - dir.x * size * 0.25 - n.x * size * 0.55}" y1="${center.y - dir.y * size * 0.25 - n.y * size * 0.55}" x2="${center.x - dir.x * size * 0.25 + n.x * size * 0.55}" y2="${center.y - dir.y * size * 0.25 + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
-            add(`<line x1="${center.x + dir.x * size * 0.25 - n.x * size * 0.55}" y1="${center.y + dir.y * size * 0.25 - n.y * size * 0.55}" x2="${center.x + dir.x * size * 0.25 + n.x * size * 0.55}" y2="${center.y + dir.y * size * 0.25 + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
-            return;
-          }
-
-          if (comp.type === 'cap') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${center.x}" y2="${center.y}" stroke="${color}" stroke-width="2"/>`);
-            add(`<line x1="${center.x - n.x * size * 0.55}" y1="${center.y - n.y * size * 0.55}" x2="${center.x + n.x * size * 0.55}" y2="${center.y + n.y * size * 0.55}" stroke="${color}" stroke-width="2"/>`);
-            return;
-          }
-
-          if (comp.type === 'ball_valve' || comp.type === 'globe_valve') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
-            add(`<circle cx="${center.x}" cy="${center.y}" r="${size * 0.36}" fill="none" stroke="${color}" stroke-width="2"/>`);
-            return;
-          }
-
-          if (comp.type === 'gate_valve' || comp.type === 'check_valve') {
-            add(`<line x1="${lineA.x}" y1="${lineA.y}" x2="${lineB.x}" y2="${lineB.y}" stroke="${color}" stroke-width="2"/>`);
-            const q1 = { x: center.x - dir.x * size * 0.3 - n.x * size * 0.42, y: center.y - dir.y * size * 0.3 - n.y * size * 0.42 };
-            const q2 = { x: center.x - dir.x * size * 0.3 + n.x * size * 0.42, y: center.y - dir.y * size * 0.3 + n.y * size * 0.42 };
-            const q3 = { x: center.x + dir.x * size * 0.3 + n.x * size * 0.42, y: center.y + dir.y * size * 0.3 + n.y * size * 0.42 };
-            const q4 = { x: center.x + dir.x * size * 0.3 - n.x * size * 0.42, y: center.y + dir.y * size * 0.3 - n.y * size * 0.42 };
-            add(`<polygon points="${q1.x},${q1.y} ${q2.x},${q2.y} ${q3.x},${q3.y} ${q4.x},${q4.y}" fill="none" stroke="${color}" stroke-width="2"/>`);
-            return;
-          }
-
-          add(`<circle cx="${center.x}" cy="${center.y}" r="4" fill="${color}"/>`);
-        }
-
-        for (const comp of computeAutoFittings()) {
-          drawInlineSymbol(comp, '#b45309');
-        }
-
-        for (const comp of state.components) {
-          drawInlineSymbol(comp, '#1f2937');
-        }
-
-        parts.push('</svg>');
-        return parts.join('');
+          svg += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
+          svg += `<line x1="${a.x + nx * r}" y1="${a.y + ny * r}" x2="${b.x + nx * r}" y2="${b.y + ny * r}" stroke="#fff" stroke-opacity="0.65" stroke-width="1.3" />`;
+          svg += `<line x1="${a.x - nx * r}" y1="${a.y - ny * r}" x2="${b.x - nx * r}" y2="${b.y - ny * r}" stroke="#111" stroke-opacity="0.35" stroke-width="1.3" />`;
+          svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${a.x} ${a.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
+          svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${b.x} ${b.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
+          // small centerline
+          svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#666" stroke-opacity="0.25" stroke-dasharray="4 4" />`;
+        });
       }
 
-      function buildBomHtmlTable(limit = 14) {
-        const rows = buildBomCsv().split('\n').map(line =>
-          line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(cell => String(cell).replace(/^"|"$/g, '').replaceAll('""', '"'))
-        );
-        const header = rows.shift() || [];
-        const bodyRows = rows.slice(0, limit);
-        const htmlRows = bodyRows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('')}</tr>`).join('');
-        return `
-          <table class="bom-table">
-            <thead><tr>${header.map(cell => `<th>${escapeHtml(cell)}</th>`).join('')}</tr></thead>
-            <tbody>${htmlRows}</tbody>
-          </table>
-        `;
-      }
+      svg += `</svg>`;
+      els.printSvgWrap.innerHTML = svg;
+    }
 
-      function buildPrintSheetHtml() {
-        const now = new Date();
-        const dateStamp = now.toLocaleString();
-        const autoCount = computeAutoFittings().length;
-        const sheetDimensions = !!state.printShowDimensions;
-        const showMaterialSummary = !!state.printShowMaterialSummary;
-        const isoSvg = buildSheetViewSvg('iso', 740, 440, { showDimensions: sheetDimensions });
-        const topSvg = buildSheetViewSvg('top', 360, 240, { showDimensions: sheetDimensions });
-        const frontSvg = buildSheetViewSvg('front', 360, 240, { showDimensions: sheetDimensions });
-        const rightSvg = buildSheetViewSvg('right', 360, 240, { showDimensions: sheetDimensions });
-
-        return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<title>${escapeHtml(state.projectName)} - Print Sheet</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #dbe2ea; color: #0f172a; }
-  .toolbar { position: sticky; top: 0; display: flex; gap: 10px; padding: 10px 14px; background: #0f172a; color: #fff; z-index: 5; }
-  .toolbar button { padding: 10px 14px; border: 0; border-radius: 6px; font-weight: 700; cursor: pointer; }
-  .toolbar .print { background: #2563eb; color: #fff; }
-  .toolbar .close { background: #475569; color: #fff; }
-  .sheet { width: 1100px; min-height: 850px; margin: 18px auto; background: #fff; border: 1px solid #64748b; box-shadow: 0 12px 40px rgba(15,23,42,0.18); padding: 18px; }
-  .sheet-grid { display: grid; grid-template-columns: ${showMaterialSummary ? '2fr 1fr' : '1fr'}; gap: 14px; }
-  .panel { border: 1px solid #64748b; padding: 8px; background: #fff; }
-  .panel h3 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .ortho-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .title-block { margin-top: 14px; border: 1px solid #0f172a; display: grid; grid-template-columns: 2fr 1fr 1fr; }
-  .title-cell { min-height: 72px; border-right: 1px solid #0f172a; padding: 8px 10px; font-size: 12px; }
-  .title-cell:last-child { border-right: 0; }
-  .title-main { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; font-size: 12px; }
-  .bom-table { width: 100%; border-collapse: collapse; font-size: 10px; }
-  .bom-table th, .bom-table td { border: 1px solid #94a3b8; padding: 4px 6px; text-align: left; vertical-align: top; }
-  .bom-table th { background: #e2e8f0; }
-  .small { font-size: 11px; color: #334155; }
-  @page { size: landscape; margin: 0.35in; }
-  @media print {
-    body { background: #fff; }
-    .toolbar { display: none; }
-    .sheet { margin: 0; border: 0; box-shadow: none; width: auto; min-height: auto; padding: 0; }
-  }
-</style>
-</head>
-<body>
-  <div class="toolbar">
-    <button class="print" onclick="window.print()">Print</button>
-    <button class="close" onclick="window.close()">Close</button>
-  </div>
-  <div class="sheet">
-    <div class="sheet-grid">
-      <div class="panel">
-        <h3>Isometric View</h3>
-        ${isoSvg}
-      </div>
-      ${showMaterialSummary ? `<div class="panel">
-        <h3>Material Summary</h3>
-        ${buildBomHtmlTable(16)}
-        <div class="small" style="margin-top:8px;">Auto branch fittings shown on this sheet are derived from shared pipe endpoints when auto-join is enabled.</div>
-      </div>` : ''}
-    </div>
-
-    <div class="ortho-grid" style="margin-top:14px;">
-      <div class="panel">
-        <h3>Top View (X-Y)</h3>
-        ${topSvg}
-      </div>
-      <div class="panel">
-        <h3>Front View (X-Z)</h3>
-        ${frontSvg}
-      </div>
-      <div class="panel">
-        <h3>Right View (Y-Z)</h3>
-        ${rightSvg}
-      </div>
-      <div class="panel">
-        <h3>Notes</h3>
-        <div class="small">${sheetDimensions ? 'Pipe dimensions are centerline grid units. ' : 'Pipe dimensions are hidden on this print sheet. '}Pipe thickness in the print views is diagrammatic. Use exported JSON or DXF-like output for data exchange and the BOM CSV for tabular material summaries.</div>
-      </div>
-    </div>
-
-    <div class="title-block">
-      <div class="title-cell">
-        <div class="title-main">${escapeHtml(state.projectName)}</div>
-        <div class="small">Browser-only piping isometric sheet generated from the current layout.</div>
-      </div>
-      <div class="title-cell">
-        <div class="meta">
-          <div><strong>Date</strong></div><div>${escapeHtml(dateStamp)}</div>
-          <div><strong>Pipes</strong></div><div>${state.pipes.length}</div>
-          <div><strong>Components</strong></div><div>${state.components.length}</div>
-          <div><strong>Auto fittings</strong></div><div>${autoCount}</div>
-        </div>
-      </div>
-      <div class="title-cell">
-        <div class="meta">
-          <div><strong>Scale</strong></div><div>Not to scale</div>
-          <div><strong>Units</strong></div><div>Grid</div>
-          <div><strong>Diameter default</strong></div><div>${Number(state.defaultDiameter).toFixed(2)}</div>
-          <div><strong>Grid px</strong></div><div>${state.grid}</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-      }
-
-      function openPrintSheet() {
-        const win = window.open('', '_blank');
-        if (!win) {
-          updateStatus('Pop-up blocked. Allow pop-ups for this page to open the print sheet.');
-          return;
-        }
-        win.document.open();
-        win.document.write(buildPrintSheetHtml());
-        win.document.close();
-        updateStatus('Opened print sheet layout in a new tab/window.');
-      }
-
-      function attachEvents() {
-        els.modeButtons.forEach(btn => btn.addEventListener('click', () => setMode(btn.dataset.mode)));
-
-        els.pipeDiameter.addEventListener('input', () => {
-          state.defaultDiameter = Number(els.pipeDiameter.value);
-          els.pipeDiameterValue.textContent = `${state.defaultDiameter.toFixed(2)} grid`;
-          render();
-        });
-
-        els.gridScale.addEventListener('input', () => {
-          state.grid = Number(els.gridScale.value);
-          els.gridScaleValue.textContent = `${state.grid} px`;
-          render();
-        });
-
-        els.pipeColor.addEventListener('change', () => {
-          state.defaultPipeColor = els.pipeColor.value.trim() || '#7dd3fc';
-          render();
-        });
-
-        els.workingZ.addEventListener('change', () => {
-          state.workingZ = Math.round(Number(els.workingZ.value) || 0);
-          els.workingZ.value = String(state.workingZ);
-          render();
-        });
-
-        els.snapToggle.addEventListener('change', () => {
-          state.snapEnabled = !!els.snapToggle.checked;
-          render();
-        });
-
-        els.dimensionsToggle.addEventListener('change', () => {
-          state.showDimensions = !!els.dimensionsToggle.checked;
-          render();
-        });
-
-        els.autoJoinToggle.addEventListener('change', () => {
-          state.autoJoinEnabled = !!els.autoJoinToggle.checked;
-          render();
-        });
-
-        els.occlusionGapScale.addEventListener('input', () => {
-          state.occlusionGapScale = Number(els.occlusionGapScale.value);
-          els.occlusionGapScaleValue.textContent = `${Number(state.occlusionGapScale).toFixed(2)}x`;
-          render();
-        });
-
-        els.printMaterialSummaryToggle.addEventListener('change', () => {
-          state.printShowMaterialSummary = !!els.printMaterialSummaryToggle.checked;
-        });
-
-        els.printDimensionsToggle.addEventListener('change', () => {
-          state.printShowDimensions = !!els.printDimensionsToggle.checked;
-        });
-
-        els.endRunBtn.addEventListener('click', () => {
-          state.drawingStart = null;
-          state.previewEnd = null;
-          render();
-          updateStatus('Pipe run ended.');
-        });
-
-        els.deleteSelectionBtn.addEventListener('click', deleteSelection);
-        els.applySelectionBtn.addEventListener('click', applySelectionChanges);
-        els.clearSelectionBtn.addEventListener('click', () => {
-          state.selected = null;
-          state.dragState = null;
-          refreshSelectionInfo();
-          render();
-          updateStatus('Selection cleared.');
-        });
-
-        els.saveComponentBtn.addEventListener('click', () => saveComponent(false));
-        els.updateComponentBtn.addEventListener('click', () => saveComponent(true));
-        els.deleteComponentBtn.addEventListener('click', deleteActiveLibraryItem);
-
-        els.projectName.addEventListener('change', () => state.projectName = els.projectName.value.trim() || 'Untitled Project');
-        els.saveProjectBtn.addEventListener('click', saveProjectToBrowser);
-        els.loadProjectBtn.addEventListener('click', loadProjectFromBrowser);
-        els.newProjectBtn.addEventListener('click', resetProject);
-        els.exportJsonBtn.addEventListener('click', exportJson);
-        els.importJsonBtn.addEventListener('click', () => els.importJsonInput.click());
-        els.importJsonInput.addEventListener('change', evt => {
-          const file = evt.target.files?.[0];
-          if (file) importJsonFile(file);
-          evt.target.value = '';
-        });
-        els.exportBomBtn.addEventListener('click', exportBomCsv);
-        els.exportCadBtn.addEventListener('click', exportCadText);
-        els.printSheetBtn.addEventListener('click', openPrintSheet);
-
-        els.svg.addEventListener('pointerdown', handlePointerDown);
-        window.addEventListener('pointermove', handlePointerMove);
-        window.addEventListener('pointerup', handlePointerUp);
-        els.svg.addEventListener('wheel', handleWheel, { passive: false });
-        els.svg.addEventListener('dblclick', evt => {
-          const hit = hitTest(canvasPoint(evt).x, canvasPoint(evt).y);
-          if (!hit) centerView();
-        });
-
-        window.addEventListener('keydown', evt => {
-          if (evt.key === 'Escape') {
-            state.drawingStart = null;
-            state.previewEnd = null;
-            state.dragState = null;
-            render();
-            updateStatus('Cancelled current draw action.');
-          }
-          if ((evt.key === 'Delete' || evt.key === 'Backspace') && state.selected) {
-            evt.preventDefault();
-            deleteSelection();
-          }
-          if (evt.key.toLowerCase() === 'v') setMode('select');
-          if (evt.key.toLowerCase() === 'p') setMode('pipe');
-          if (evt.key.toLowerCase() === 'c') setMode('component');
-          if (evt.key.toLowerCase() === 'h') setMode('pan');
-          if (evt.key === '[') {
-            state.workingZ -= 1;
-            syncInputs();
-            render();
-          }
-          if (evt.key === ']') {
-            state.workingZ += 1;
-            syncInputs();
-            render();
-          }
-        });
-
-        window.addEventListener('resize', () => render());
-      }
-
-      function init() {
-        loadStoredState();
-        if (!state.activeLibraryId && state.library.length) {
-          state.activeLibraryId = state.library[0].id;
-          populateComponentEditor(state.library[0]);
-        }
-        state.originX = Math.max(420, els.workspace.clientWidth * 0.54);
-        state.originY = Math.max(260, els.workspace.clientHeight * 0.55);
-        syncInputs();
-        renderLibrary();
-        attachEvents();
-        render();
-      }
-
-      init();
-    })();
-  
+    window.addEventListener('resize', resize);
+    resize();
+    render();
   </script>
-</body>
-</html>
+
+</body></html>
