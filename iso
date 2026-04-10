@@ -1,6 +1,8 @@
-<html lang="en"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Isometric Piping Draft</title>
   <style>
     :root {
@@ -356,15 +358,15 @@
     <section class="card">
       <h2>Controls</h2>
       <div class="toolbar-grid">
-        <button class="primary" id="startBtn">Start Polyline</button>
-        <button id="finishBtn">Finish Polyline</button>
+        <button class="primary" id="lineBtn">Line</button>
+        <button id="polylineBtn">Polyline</button>
         <button id="undoBtn">Undo</button>
         <button id="clearBtn">Clear</button>
         <button id="centerBtn">Recenter</button>
         <button id="printBtn">Print Sheet</button>
       </div>
       <div class="hint">
-        Click to start drawing. Each click adds another continuous pipe segment. The software automatically snaps to the nearest isometric axis. Double-click, <span class="mono">Enter</span>, or <span class="mono">Esc</span> ends the current polyline.
+        Select <span class="mono">Line</span> or <span class="mono">Polyline</span>. The selected tool stays active. In Line mode, click point A then point B to place one 3D pipe section. In Polyline mode, the run begins on the first click and continues with each click until you press <span class="mono">Enter</span>. The software automatically snaps to the nearest isometric axis.
       </div>
     </section>
 
@@ -373,31 +375,44 @@
       <div class="row single">
         <div>
           <label for="pipeSize">Current Pipe Size (screen weight)</label>
-          <input type="range" id="pipeSize" min="8" max="42" step="1" value="18">
+          <input type="range" id="pipeSize" min="1" max="42" step="1" value="18" />
         </div>
       </div>
       <div class="row">
         <div>
           <label for="pipeSizeValue">Pipe Size</label>
-          <input id="pipeSizeValue" type="number" min="8" max="42" step="1" value="18">
+          <input id="pipeSizeValue" type="number" min="1" max="42" step="1" value="18" />
         </div>
         <div>
+          <label for="polylineStyle">Polyline Fitting Style</label>
+          <select id="polylineStyle">
+            <option value="short">Short Radius Elbow</option>
+            <option value="long">Long Radius Elbow</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
           <label for="gridStep">Grid Step</label>
-          <input id="gridStep" type="number" min="8" max="80" step="1" value="24">
+          <input id="gridStep" type="number" min="8" max="80" step="1" value="24" />
+        </div>
+        <div>
+          <label for="routeModeInfo">Selected Style</label>
+          <input id="routeModeInfo" type="text" value="Short Radius Elbow" readonly />
         </div>
       </div>
       <div class="row">
         <div>
           <label for="zoomInfo">Zoom</label>
-          <input id="zoomInfo" type="text" value="100%" readonly="">
+          <input id="zoomInfo" type="text" value="100%" readonly />
         </div>
         <div>
           <label for="segmentCount">Segments</label>
-          <input id="segmentCount" type="text" value="0" readonly="">
+          <input id="segmentCount" type="text" value="0" readonly />
         </div>
       </div>
       <div class="hint">
-        Mouse wheel zooms. Hold the middle mouse button to pan. Pipe segments keep the size that was active when they were drawn.
+        Mouse wheel zooms. Hold the middle mouse button to pan. Each run keeps the pipe size and tool settings that were active when it was started. Line mode places one single 3D pipe section from point A to point B. Polyline mode uses the selected elbow fitting style.
       </div>
     </section>
 
@@ -406,45 +421,46 @@
       <div class="row">
         <div>
           <label for="projectTitle">Project</label>
-          <input id="projectTitle" type="text" value="ISOMETRIC PIPING">
+          <input id="projectTitle" type="text" value="ISOMETRIC PIPING" />
         </div>
         <div>
           <label for="drawingNumber">Drawing No.</label>
-          <input id="drawingNumber" type="text" value="ISO-001">
+          <input id="drawingNumber" type="text" value="ISO-001" />
         </div>
       </div>
       <div class="row">
         <div>
           <label for="revision">Revision</label>
-          <input id="revision" type="text" value="0">
+          <input id="revision" type="text" value="0" />
         </div>
         <div>
           <label for="sheetScale">Scale</label>
-          <input id="sheetScale" type="text" value="NTS">
+          <input id="sheetScale" type="text" value="NTS" />
         </div>
       </div>
       <div class="row single">
         <div>
           <label for="drawnBy">Drawn By</label>
-          <input id="drawnBy" type="text" value="USER">
+          <input id="drawnBy" type="text" value="USER" />
         </div>
       </div>
     </section>
 
     <section class="card">
       <h2>Status</h2>
-      <div class="stat"><span>Mode</span><strong id="modeText">Idle</strong></div>
+      <div class="stat"><span>Tool</span><strong id="modeText">Line</strong></div>
+      <div class="stat"><span>Routing</span><strong id="routeText">Line</strong></div>
       <div class="stat"><span>North</span><strong>Fixed to top-right</strong></div>
       <div class="stat"><span>Theme</span><strong>Dark grayscale</strong></div>
-      <div class="stat"><span>Polyline</span><strong>Continuous</strong></div>
+      <div class="stat"><span>Polyline</span><strong>Ends on Enter</strong></div>
       <div class="hint">
-        This first build is focused on continuous isometric piping. A future piping component library can be layered on top of this data model without changing the drawing workflow.
+        This first build is focused on isometric piping layout. A future piping component library can be layered on top of this data model without changing the drawing workflow.
       </div>
     </section>
   </aside>
 
   <main class="main">
-    <canvas id="canvas" width="1125" height="1905"></canvas>
+    <canvas id="canvas"></canvas>
 
     <div class="overlay">
       <div class="badge north-indicator">
@@ -467,7 +483,7 @@
     </div>
 
     <div class="status-bar" id="statusBar">
-      Ready. Click <span class="mono">Start Polyline</span> or click directly on the canvas to begin. Continuous drawing stays active until you finish the run.
+      Ready. Select <span class="mono">Line</span> or <span class="mono">Polyline</span>. In Polyline mode, the run begins on the first click and ends when you press <span class="mono">Enter</span>.
     </div>
   </main>
 
@@ -531,12 +547,17 @@
       snappedHover: { x: 0, y: 0 },
       lastSnapAxis: axes.north,
       polylineStartIndex: 0,
-      polylineSeedPoint: null
+      polylineSeedPoint: null,
+      toolMode: 'line',
+      selectedPolylineStyle: 'short',
+      currentPolylineStyle: 'short',
+      nextPolylineId: 1,
+      activePolylineId: null
     };
 
     const els = {
-      startBtn: document.getElementById('startBtn'),
-      finishBtn: document.getElementById('finishBtn'),
+      lineBtn: document.getElementById('lineBtn'),
+      polylineBtn: document.getElementById('polylineBtn'),
       undoBtn: document.getElementById('undoBtn'),
       clearBtn: document.getElementById('clearBtn'),
       centerBtn: document.getElementById('centerBtn'),
@@ -544,9 +565,12 @@
       pipeSize: document.getElementById('pipeSize'),
       pipeSizeValue: document.getElementById('pipeSizeValue'),
       gridStep: document.getElementById('gridStep'),
+      polylineStyle: document.getElementById('polylineStyle'),
+      routeModeInfo: document.getElementById('routeModeInfo'),
       zoomInfo: document.getElementById('zoomInfo'),
       segmentCount: document.getElementById('segmentCount'),
       modeText: document.getElementById('modeText'),
+      routeText: document.getElementById('routeText'),
       statusBar: document.getElementById('statusBar'),
       cursorReadout: document.getElementById('cursorReadout'),
       projectTitle: document.getElementById('projectTitle'),
@@ -594,6 +618,8 @@
     function norm(v) { const l = len(v) || 1; return { x: v.x / l, y: v.y / l }; }
     function perp(v) { return { x: -v.y, y: v.x }; }
     function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function almostEqual(a, b, eps = 0.001) { return Math.abs(a - b) <= eps; }
+    function samePoint(a, b, eps = 0.001) { return almostEqual(a.x, b.x, eps) && almostEqual(a.y, b.y, eps); }
 
     function solvePlaneCoefficients(world) {
       const det = axes.north.x * axes.east.y - axes.north.y * axes.east.x;
@@ -643,13 +669,36 @@
       els.statusBar.innerHTML = text;
     }
 
+    function styleLabel(style) {
+      return style === 'long' ? 'Long Radius Elbow' : 'Short Radius Elbow';
+    }
+
+    function currentRouteLabel() {
+      return state.toolMode === 'line' ? 'Line' : styleLabel(state.selectedPolylineStyle);
+    }
+
+    function updateToolButtons() {
+      els.lineBtn.classList.toggle('primary', state.toolMode === 'line');
+      els.polylineBtn.classList.toggle('primary', state.toolMode === 'polyline');
+      els.polylineStyle.disabled = state.toolMode === 'line';
+      els.routeModeInfo.value = currentRouteLabel();
+    }
+
     function updateUi() {
       els.pipeSize.value = state.defaultPipeSize;
       els.pipeSizeValue.value = state.defaultPipeSize;
       els.gridStep.value = state.gridStep;
+      els.polylineStyle.value = state.selectedPolylineStyle;
+      updateToolButtons();
       els.zoomInfo.value = Math.round(state.camera.zoom * 100) + '%';
       els.segmentCount.value = String(state.segments.length);
-      els.modeText.textContent = state.isDrawing ? 'Drawing Polyline' : 'Idle';
+      if (state.isDrawing) {
+        els.modeText.textContent = state.toolMode === 'line' ? 'Drawing Line' : 'Drawing Polyline';
+        els.routeText.textContent = state.toolMode === 'line' ? 'Line' : styleLabel(state.currentPolylineStyle);
+      } else {
+        els.modeText.textContent = state.toolMode === 'line' ? 'Line' : 'Polyline';
+        els.routeText.textContent = currentRouteLabel();
+      }
       const c = inferIsoCoordinates(state.snappedHover || { x: 0, y: 0 });
       els.cursorReadout.textContent = `N-GRID: ${c.n}  E-GRID: ${c.e}  AXIS: ${state.lastSnapAxis.label}`;
     }
@@ -680,6 +729,115 @@
       ctx.stroke();
     }
 
+    function buildRenderModel(segments) {
+      const plans = segments.map(seg => ({
+        startTrim: 0,
+        endTrim: 0,
+        capStart: true,
+        capEnd: true
+      }));
+      const elbows = [];
+
+      for (let i = 1; i < segments.length; i++) {
+        const prev = segments[i - 1];
+        const curr = segments[i];
+        if (!samePoint(prev.end, curr.start)) continue;
+        if (prev.polylineId !== curr.polylineId || prev.style !== curr.style || prev.style === 'line') continue;
+
+        const joint = prev.end;
+        const awayPrev = norm(sub(prev.start, joint));
+        const awayCurr = norm(sub(curr.end, joint));
+        const cross = awayPrev.x * awayCurr.y - awayPrev.y * awayCurr.x;
+        const prevLen = len(sub(prev.end, prev.start));
+        const currLen = len(sub(curr.end, curr.start));
+
+        plans[i - 1].capEnd = false;
+        plans[i].capStart = false;
+
+        if (Math.abs(cross) < 0.0001) continue;
+
+        const trimFactor = prev.style === 'long' ? 1.65 : 1.05;
+        const trim = Math.max(
+          0.5,
+          Math.min(Math.min(prev.size, curr.size) * trimFactor, prevLen * 0.42, currLen * 0.42)
+        );
+
+        plans[i - 1].endTrim = Math.max(plans[i - 1].endTrim, trim);
+        plans[i].startTrim = Math.max(plans[i].startTrim, trim);
+
+        elbows.push({
+          joint: { ...joint },
+          from: add(joint, mul(awayPrev, trim)),
+          to: add(joint, mul(awayCurr, trim)),
+          size: Math.min(prev.size, curr.size),
+          style: prev.style,
+          startDir: mul(awayPrev, -1),
+          endDir: awayCurr
+        });
+      }
+
+      return { plans, elbows };
+    }
+
+    function getTrimmedSegment(segment, plan) {
+      const dir = norm(sub(segment.end, segment.start));
+      const inv = mul(dir, -1);
+      const start = plan.startTrim > 0 ? add(segment.start, mul(dir, plan.startTrim)) : segment.start;
+      const end = plan.endTrim > 0 ? add(segment.end, mul(inv, plan.endTrim)) : segment.end;
+      if (len(sub(end, start)) < 0.001) return null;
+      return {
+        start,
+        end,
+        size: segment.size,
+        capStart: plan.capStart,
+        capEnd: plan.capEnd
+      };
+    }
+
+    function drawSingleLineSegment(segment, alpha = 1) {
+      const a = worldToScreen(segment.start);
+      const b = worldToScreen(segment.end);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineWidth = Math.max(1.8, state.camera.zoom * 1.35);
+      ctx.strokeStyle = 'rgba(235,235,235,0.92)';
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineWidth = Math.max(0.8, state.camera.zoom * 0.45);
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function elbowBezierControls(elbow, alreadyScreen = false) {
+      const p1 = alreadyScreen ? elbow.from : worldToScreen(elbow.from);
+      const pc = alreadyScreen ? elbow.joint : worldToScreen(elbow.joint);
+      const p2 = alreadyScreen ? elbow.to : worldToScreen(elbow.to);
+      const d1 = norm(sub(pc, p1));
+      const d2 = norm(sub(p2, pc));
+      const turnAngle = Math.acos(clamp(dot(d1, d2), -1, 1));
+      if (!Number.isFinite(turnAngle) || turnAngle < 0.001 || Math.PI - turnAngle < 0.001) {
+        return { p1, p2, c1: p1, c2: p2, d1, d2, valid: false };
+      }
+      const tangentRun = (len(sub(pc, p1)) + len(sub(p2, pc))) / 2;
+      const radius = tangentRun / Math.tan(turnAngle / 2);
+      const handle = (4 / 3) * radius * Math.tan(turnAngle / 4);
+      return {
+        p1,
+        p2,
+        c1: add(p1, mul(d1, handle)),
+        c2: add(p2, mul(d2, -handle)),
+        d1,
+        d2,
+        valid: true
+      };
+    }
+
     function drawPipeSegment(segment, alpha = 1) {
       const a = worldToScreen(segment.start);
       const b = worldToScreen(segment.end);
@@ -699,7 +857,6 @@
       ctx.save();
       ctx.globalAlpha = alpha;
 
-      // Tube body
       const body = ctx.createLinearGradient(p1.x, p1.y, p4.x, p4.y);
       body.addColorStop(0, 'rgba(235,235,235,0.92)');
       body.addColorStop(0.3, 'rgba(198,198,198,0.95)');
@@ -715,12 +872,10 @@
       ctx.fillStyle = body;
       ctx.fill();
 
-      // Outline edges for crisp engineering look
       ctx.lineWidth = Math.max(1.1, state.camera.zoom * 0.9);
       ctx.strokeStyle = 'rgba(18,18,18,0.72)';
       ctx.stroke();
 
-      // Highlight edge
       ctx.beginPath();
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
@@ -728,7 +883,6 @@
       ctx.strokeStyle = 'rgba(255,255,255,0.62)';
       ctx.stroke();
 
-      // Shadow edge
       ctx.beginPath();
       ctx.moveTo(p4.x, p4.y);
       ctx.lineTo(p3.x, p3.y);
@@ -736,9 +890,58 @@
       ctx.strokeStyle = 'rgba(0,0,0,0.42)';
       ctx.stroke();
 
-      // End caps
-      drawEndCap(a, t, r, alpha);
-      drawEndCap(b, t, r, alpha);
+      if (segment.capStart) drawEndCap(a, t, r, alpha);
+      if (segment.capEnd) drawEndCap(b, t, r, alpha);
+
+      ctx.restore();
+    }
+
+    function drawElbow(elbow, alpha = 1) {
+      const { p1, p2, c1, c2, d1, d2 } = elbowBezierControls(elbow, false);
+      let bisector = add(perp(d1), perp(d2));
+      if (len(bisector) < 0.001) bisector = perp(norm(sub(p2, p1)));
+      bisector = norm(bisector);
+      const normal = perp(bisector);
+      const r = (elbow.size * state.camera.zoom) / 2;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+      ctx.lineWidth = Math.max(2, r * 2 + Math.max(1.2, state.camera.zoom * 0.9));
+      ctx.strokeStyle = 'rgba(18,18,18,0.72)';
+      ctx.stroke();
+
+      const midX = (p1.x + p2.x + c1.x + c2.x) / 4;
+      const midY = (p1.y + p2.y + c1.y + c2.y) / 4;
+      const body = ctx.createLinearGradient(
+        midX + normal.x * r,
+        midY + normal.y * r,
+        midX - normal.x * r,
+        midY - normal.y * r
+      );
+      body.addColorStop(0, 'rgba(235,235,235,0.95)');
+      body.addColorStop(0.32, 'rgba(198,198,198,0.98)');
+      body.addColorStop(0.72, 'rgba(148,148,148,0.98)');
+      body.addColorStop(1, 'rgba(88,88,88,1)');
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+      ctx.lineWidth = Math.max(1, r * 2);
+      ctx.strokeStyle = body;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+      ctx.lineWidth = Math.max(1, r * 0.38);
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.stroke();
 
       ctx.restore();
     }
@@ -797,25 +1000,26 @@
       // Axes marker at drawing origin
       drawOriginMarker();
 
-      // Pipes
-      for (const seg of state.segments) drawPipeSegment(seg, 1);
+      const renderModel = buildRenderModel(state.segments);
 
-      // joints
-      for (let i = 1; i < state.segments.length; i++) {
-        const prev = state.segments[i - 1];
-        const curr = state.segments[i];
-        if (prev.end.x === curr.start.x && prev.end.y === curr.start.y) {
-          drawJointBubble(curr.start, Math.max(prev.size, curr.size));
-        }
-      }
+      // Pipes
+      state.segments.forEach((seg, index) => {
+        const trimmed = getTrimmedSegment(seg, renderModel.plans[index]);
+        if (trimmed) drawPipeSegment(trimmed, 1);
+      });
+
+      // Elbows
+      renderModel.elbows.forEach(elbow => drawElbow(elbow, 1));
 
       // Preview
       if (state.isDrawing && state.currentPolylineStart && state.previewEnd) {
-        drawPipeSegment({
+        const previewSegment = {
           start: state.currentPolylineStart,
           end: state.previewEnd,
-          size: state.defaultPipeSize
-        }, 0.72);
+          size: state.defaultPipeSize,
+          style: state.currentPolylineStyle
+        };
+        drawPipeSegment(previewSegment, 0.72);
         const anchor = worldToScreen(state.currentPolylineStart);
         ctx.beginPath();
         ctx.arc(anchor.x, anchor.y, 4, 0, Math.PI * 2);
@@ -854,20 +1058,27 @@
 
     function beginPolyline(atWorld) {
       state.isDrawing = true;
+      state.currentPolylineStyle = state.toolMode === 'line' ? 'line' : state.selectedPolylineStyle;
+      state.activePolylineId = state.nextPolylineId++;
       state.currentPolylineStart = snapPointToIsoGrid(atWorld);
       state.polylineSeedPoint = { ...state.currentPolylineStart };
       state.polylineStartIndex = state.segments.length;
       state.previewEnd = state.currentPolylineStart;
-      setStatus('Drawing active. Move the cursor and click to add continuous pipe segments. Double-click, <span class="mono">Enter</span>, or <span class="mono">Esc</span> ends the current run.');
+      setStatus(
+        state.toolMode === 'line'
+          ? 'Line tool active. Move the cursor and click point B to place one 3D pipe section.'
+          : `Polyline active in <span class="mono">${styleLabel(state.currentPolylineStyle).toUpperCase()}</span> mode. Move the cursor and click to add continuous pipe segments. Press <span class="mono">Enter</span> to end the current run.`
+      );
       render();
     }
 
-    function finishPolyline() {
+    function finishPolyline(message = 'Polyline finished. Select Line or Polyline and click on the canvas to continue drawing. The print sheet will center the completed geometry automatically.') {
       state.isDrawing = false;
       state.currentPolylineStart = null;
       state.previewEnd = null;
       state.polylineSeedPoint = null;
-      setStatus('Polyline finished. Start another run at any time. The print sheet will center the completed geometry automatically.');
+      state.activePolylineId = null;
+      setStatus(message);
       render();
     }
 
@@ -878,11 +1089,19 @@
       state.segments.push({
         start: { ...state.currentPolylineStart },
         end: { ...snappedEnd },
-        size: state.defaultPipeSize
+        size: state.defaultPipeSize,
+        style: state.currentPolylineStyle,
+        polylineId: state.activePolylineId
       });
       state.currentPolylineStart = snappedEnd;
       state.previewEnd = snappedEnd;
-      setStatus(`Segment added along ${state.lastSnapAxis.label === 'Z' ? 'vertical' : state.lastSnapAxis.label === 'N' ? 'north' : 'east'} isometric axis. Continue clicking to extend the pipe run.`);
+      const justAddedStyle = state.currentPolylineStyle;
+      const axisLabel = state.lastSnapAxis.label === 'Z' ? 'vertical' : state.lastSnapAxis.label === 'N' ? 'north' : 'east';
+      if (state.toolMode === 'line') {
+        finishPolyline(`Single 3D pipe section placed along the ${axisLabel} isometric axis using the <span class="mono">LINE</span> tool.`);
+        return;
+      }
+      setStatus(`Segment added along the ${axisLabel} isometric axis using <span class="mono">${styleLabel(justAddedStyle).toUpperCase()}</span> mode. Continue clicking to extend the pipe run, then press <span class="mono">Enter</span> to end it.`);
       render();
     }
 
@@ -973,7 +1192,6 @@
       }
     });
 
-    canvas.addEventListener('dblclick', () => finishPolyline());
 
     canvas.addEventListener('wheel', (evt) => {
       evt.preventDefault();
@@ -988,7 +1206,9 @@
     }, { passive: false });
 
     document.addEventListener('keydown', (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Enter') {
+      if (evt.key === 'Enter') {
+        if (state.isDrawing && state.toolMode === 'polyline') finishPolyline();
+      } else if (evt.key === 'Escape') {
         if (state.isDrawing) finishPolyline();
       }
       if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'z') {
@@ -997,8 +1217,16 @@
       }
     });
 
-    els.startBtn.addEventListener('click', () => beginPolyline(state.snappedHover || { x: 0, y: 0 }));
-    els.finishBtn.addEventListener('click', finishPolyline);
+    els.lineBtn.addEventListener('click', () => {
+      state.toolMode = 'line';
+      if (state.isDrawing) finishPolyline('Switched to the Line tool.');
+      render();
+    });
+    els.polylineBtn.addEventListener('click', () => {
+      state.toolMode = 'polyline';
+      if (state.isDrawing && state.currentPolylineStyle === 'line') finishPolyline('Switched to the Polyline tool.');
+      render();
+    });
     els.undoBtn.addEventListener('click', () => {
       if (!state.segments.length) return;
       if (state.isDrawing) {
@@ -1035,12 +1263,16 @@
       render();
     });
     els.pipeSizeValue.addEventListener('input', () => {
-      state.defaultPipeSize = clamp(Number(els.pipeSizeValue.value || 18), 8, 42);
+      state.defaultPipeSize = clamp(Number(els.pipeSizeValue.value || 18), 1, 42);
       els.pipeSize.value = state.defaultPipeSize;
       render();
     });
     els.gridStep.addEventListener('input', () => {
       state.gridStep = clamp(Number(els.gridStep.value || 24), 8, 80);
+      render();
+    });
+    els.polylineStyle.addEventListener('input', () => {
+      state.selectedPolylineStyle = els.polylineStyle.value;
       render();
     });
 
@@ -1104,9 +1336,14 @@
           };
         }
 
-        state.segments.forEach(seg => {
-          const a = map(seg.start);
-          const b = map(seg.end);
+        const renderModel = buildRenderModel(state.segments);
+
+        state.segments.forEach((seg, index) => {
+          const trimmed = getTrimmedSegment(seg, renderModel.plans[index]);
+          if (!trimmed) return;
+
+          const a = map(trimmed.start);
+          const b = map(trimmed.end);
           const vx = b.x - a.x;
           const vy = b.y - a.y;
           const L = Math.hypot(vx, vy) || 1;
@@ -1114,9 +1351,7 @@
           const ty = vy / L;
           const nx = -ty;
           const ny = tx;
-          const r = (seg.size * scale) / 2;
-          const ex = tx * r;
-          const ey = ty * r;
+          const r = (trimmed.size * scale) / 2;
 
           const p1 = `${a.x + nx * r},${a.y + ny * r}`;
           const p2 = `${b.x + nx * r},${b.y + ny * r}`;
@@ -1126,10 +1361,24 @@
           svg += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
           svg += `<line x1="${a.x + nx * r}" y1="${a.y + ny * r}" x2="${b.x + nx * r}" y2="${b.y + ny * r}" stroke="#fff" stroke-opacity="0.65" stroke-width="1.3" />`;
           svg += `<line x1="${a.x - nx * r}" y1="${a.y - ny * r}" x2="${b.x - nx * r}" y2="${b.y - ny * r}" stroke="#111" stroke-opacity="0.35" stroke-width="1.3" />`;
-          svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${a.x} ${a.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
-          svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${b.x} ${b.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
-          // small centerline
+          if (trimmed.capStart) svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${a.x} ${a.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
+          if (trimmed.capEnd) svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${r}" ry="${Math.max(3, r * 0.45)}" transform="rotate(${Math.atan2(vy, vx) * 180 / Math.PI} ${b.x} ${b.y})" fill="url(#pipeGrad)" stroke="#111" stroke-width="1" />`;
           svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#666" stroke-opacity="0.25" stroke-dasharray="4 4" />`;
+        });
+
+        renderModel.elbows.forEach(elbow => {
+          const mappedElbow = {
+            ...elbow,
+            from: map(elbow.from),
+            joint: map(elbow.joint),
+            to: map(elbow.to)
+          };
+          const { p1, p2, c1, c2 } = elbowBezierControls(mappedElbow, true);
+          const width = Math.max(1, elbow.size * scale);
+          const path = `M ${p1.x} ${p1.y} C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${p2.x} ${p2.y}`;
+          svg += `<path d="${path}" fill="none" stroke="#111" stroke-width="${width + 1.2}" stroke-linecap="round" stroke-linejoin="round" />`;
+          svg += `<path d="${path}" fill="none" stroke="url(#pipeGrad)" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round" />`;
+          svg += `<path d="${path}" fill="none" stroke="#fff" stroke-opacity="0.18" stroke-width="${Math.max(1, width * 0.2)}" stroke-linecap="round" stroke-linejoin="round" />`;
         });
       }
 
@@ -1141,5 +1390,5 @@
     resize();
     render();
   </script>
-
-</body></html>
+</body>
+</html>
