@@ -1,0 +1,2905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Isometric Piping Draft</title>
+  <style>
+    :root {
+      --font-ui: "Segoe UI", "Arial", sans-serif;
+      --font-mono: Consolas, "Lucida Console", monospace;
+      --bg: #181818;
+      --panel: #232323;
+      --panel-2: #2b2b2b;
+      --panel-3: #343434;
+      --line: #4c4c4c;
+      --text: #e3e3e3;
+      --muted: #b2b2b2;
+      --accent: #cfcfcf;
+      --danger: #9b9b9b;
+      --canvas: #141414;
+      --grid: rgba(255,255,255,0.06);
+      --grid-strong: rgba(255,255,255,0.14);
+      --sidebar-top: #212121;
+      --sidebar-bottom: #191919;
+      --button-top: #3a3a3a;
+      --button-bottom: #2e2e2e;
+      --button-primary-top: #565656;
+      --button-primary-bottom: #404040;
+      --control-border: #4b4b4b;
+      --overlay-bg: rgba(25,25,25,0.85);
+      --overlay-border: rgba(255,255,255,0.14);
+      --overlay-text: #efefef;
+      --overlay-shadow: 0 8px 22px rgba(0,0,0,0.24);
+      --main-top: #1f1f1f;
+      --main-mid: #151515;
+      --main-bottom: #111111;
+    }
+
+    body[data-theme="ibm"] {
+      --font-ui: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+      --font-mono: "IBM Plex Mono", "Lucida Console", "Courier New", monospace;
+      --bg: #07100c;
+      --panel: #0b1711;
+      --panel-2: #0f1f17;
+      --panel-3: #173025;
+      --line: #2e5a42;
+      --text: #baffd4;
+      --muted: #78b694;
+      --accent: #86ffbb;
+      --danger: #f3bf72;
+      --canvas: #06100b;
+      --grid: rgba(134,255,187,0.07);
+      --grid-strong: rgba(134,255,187,0.16);
+      --sidebar-top: #0d1712;
+      --sidebar-bottom: #08110d;
+      --button-top: #183326;
+      --button-bottom: #102117;
+      --button-primary-top: #24563d;
+      --button-primary-bottom: #183827;
+      --control-border: #2b5a40;
+      --overlay-bg: rgba(7,16,12,0.9);
+      --overlay-border: rgba(134,255,187,0.18);
+      --overlay-text: #baffd4;
+      --overlay-shadow: 0 10px 26px rgba(0,0,0,0.34);
+      --main-top: #102118;
+      --main-mid: #09120d;
+      --main-bottom: #050905;
+    }
+
+    body[data-theme="matrix"] {
+      --font-ui: "Lucida Console", "Courier New", monospace;
+      --font-mono: "Lucida Console", "Courier New", monospace;
+      --bg: #020503;
+      --panel: #04110a;
+      --panel-2: #08180e;
+      --panel-3: #0b2615;
+      --line: #1f6b34;
+      --text: #8dff9f;
+      --muted: #49b45c;
+      --accent: #b7ffbe;
+      --danger: #f2d36e;
+      --canvas: #010402;
+      --grid: rgba(107,255,132,0.08);
+      --grid-strong: rgba(107,255,132,0.18);
+      --sidebar-top: #041109;
+      --sidebar-bottom: #010603;
+      --button-top: #0d3117;
+      --button-bottom: #07190c;
+      --button-primary-top: #185126;
+      --button-primary-bottom: #0d2c16;
+      --control-border: #1b6a33;
+      --overlay-bg: rgba(2,10,4,0.92);
+      --overlay-border: rgba(107,255,132,0.2);
+      --overlay-text: #a4ffb1;
+      --overlay-shadow: 0 0 18px rgba(50,255,96,0.12);
+      --main-top: #06150b;
+      --main-mid: #020904;
+      --main-bottom: #010201;
+    }
+
+    body[data-theme="graphite"] {
+      --font-ui: "Segoe UI", "Arial", sans-serif;
+      --font-mono: Consolas, "Lucida Console", monospace;
+      --bg: #090909;
+      --panel: #101010;
+      --panel-2: #151515;
+      --panel-3: #1d1d1d;
+      --line: #2f2f2f;
+      --text: #dfdfdf;
+      --muted: #8f8f8f;
+      --accent: #f0f0f0;
+      --danger: #b3b3b3;
+      --canvas: #070707;
+      --grid: rgba(255,255,255,0.045);
+      --grid-strong: rgba(255,255,255,0.095);
+      --sidebar-top: #111111;
+      --sidebar-bottom: #080808;
+      --button-top: #242424;
+      --button-bottom: #171717;
+      --button-primary-top: #343434;
+      --button-primary-bottom: #232323;
+      --control-border: #343434;
+      --overlay-bg: rgba(10,10,10,0.9);
+      --overlay-border: rgba(255,255,255,0.08);
+      --overlay-text: #ececec;
+      --overlay-shadow: 0 10px 24px rgba(0,0,0,0.38);
+      --main-top: #131313;
+      --main-mid: #0b0b0b;
+      --main-bottom: #050505;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: var(--font-ui); background: var(--bg); color: var(--text); }
+
+    body {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+      border-right: 1px solid var(--line);
+      padding: 14px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      margin-bottom: 14px;
+    }
+
+    .brand h1 {
+      font-size: 15px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .brand small {
+      color: var(--muted);
+      display: block;
+      margin-top: 3px;
+      letter-spacing: 0.08em;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      font-size: 12px;
+      margin: 0 0 10px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .collapsible-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .card-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      list-style: none;
+      cursor: pointer;
+      padding: 12px;
+      user-select: none;
+    }
+
+    .card-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .card-summary h2 {
+      margin: 0;
+    }
+
+    .card-summary::after {
+      content: '+';
+      color: var(--accent);
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .collapsible-card[open] .card-summary::after {
+      content: '-';
+    }
+
+    .card-body {
+      padding: 0 12px 12px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .row.single { grid-template-columns: 1fr; }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    input, button, select {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--control-border);
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 9px 10px;
+      font-size: 13px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      background: transparent;
+      border: none;
+    }
+
+    button {
+      cursor: pointer;
+      background: linear-gradient(180deg, var(--button-top) 0%, var(--button-bottom) 100%);
+      transition: transform 0.05s ease, filter 0.15s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+
+    .primary {
+      background: linear-gradient(180deg, var(--button-primary-top) 0%, var(--button-primary-bottom) 100%);
+      color: var(--overlay-text);
+    }
+
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .toolbar-grid.tight button {
+      padding-inline: 8px;
+      white-space: nowrap;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .stat:last-child { border-bottom: none; }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.45;
+      margin-top: 8px;
+    }
+
+    .main {
+      position: relative;
+      background: radial-gradient(circle at 30% 20%, var(--main-top) 0%, var(--main-mid) 55%, var(--main-bottom) 100%);
+      overflow: hidden;
+    }
+
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: var(--canvas);
+      cursor: crosshair;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .badge {
+      background: var(--overlay-bg);
+      border: 1px solid var(--overlay-border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--overlay-text);
+      box-shadow: var(--overlay-shadow);
+    }
+
+    .north-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      color: var(--accent);
+    }
+
+    .north-indicator svg {
+      width: 74px;
+      height: 50px;
+      overflow: visible;
+    }
+
+    body[data-theme="matrix"] .brand h1,
+    body[data-theme="matrix"] .card h2,
+    body[data-theme="matrix"] .badge,
+    body[data-theme="matrix"] .status-bar {
+      text-shadow: 0 0 8px rgba(107,255,132,0.22);
+    }
+
+    .status-bar {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      background: var(--overlay-bg);
+      border: 1px solid var(--overlay-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--overlay-text);
+      letter-spacing: 0.04em;
+      box-shadow: var(--overlay-shadow);
+      max-width: min(780px, calc(100vw - 380px));
+      line-height: 1.5;
+    }
+
+    .mono { font-family: var(--font-mono); }
+
+    #printSheet {
+      display: none;
+      background: white;
+      color: black;
+    }
+
+    .print-page {
+      width: 11in;
+      height: 8.5in;
+      position: relative;
+      margin: 0 auto;
+      background: white;
+      overflow: hidden;
+      color: #111;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .print-page:not(:last-child) {
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .print-border {
+      position: absolute;
+      inset: 0.25in;
+      border: 1.5px solid #111;
+    }
+
+    .print-title {
+      position: absolute;
+      right: 0.25in;
+      bottom: 0.25in;
+      width: 4.35in;
+      height: 1.25in;
+      border: 1.5px solid #111;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 0.42in 0.42in 0.41in;
+      font-size: 10px;
+      background: white;
+    }
+
+    .print-title > div {
+      border-right: 1px solid #111;
+      border-bottom: 1px solid #111;
+      padding: 5px 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 3px;
+    }
+
+    .print-title > div:nth-child(3n) { border-right: none; }
+    .print-title > div:nth-last-child(-n+3) { border-bottom: none; }
+
+    .title-label {
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #444;
+    }
+
+    .title-value {
+      font-weight: 700;
+      font-size: 10px;
+      word-break: break-word;
+    }
+
+    .drawing-field {
+      grid-column: span 2;
+    }
+
+    .sheet-header {
+      position: absolute;
+      left: 0.45in;
+      top: 0.33in;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .sheet-sub {
+      position: absolute;
+      left: 0.45in;
+      top: 0.58in;
+      font-size: 9px;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .print-artboard,
+    #printSvgWrap {
+      position: absolute;
+      left: 0.42in;
+      right: 0.42in;
+      top: 0.9in;
+      bottom: 1.7in;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .print-artboard svg,
+    #printSvgWrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: white;
+    }
+
+    .print-grid {
+      position: absolute;
+      left: 0.42in;
+      right: 0.42in;
+      top: 0.9in;
+      bottom: 1.7in;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 0.12in;
+    }
+
+    .view-cell {
+      position: relative;
+      border: 1.2px solid #111;
+      background: white;
+      overflow: hidden;
+    }
+
+    .view-overhead {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+    }
+
+    .view-north {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .view-east {
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .view-label {
+      position: absolute;
+      left: 0.08in;
+      top: 0.06in;
+      z-index: 1;
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      background: rgba(255,255,255,0.92);
+      padding: 0.01in 0.04in;
+    }
+
+    .view-svg {
+      position: absolute;
+      inset: 0.22in 0.08in 0.08in;
+    }
+
+    .view-svg svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: white;
+    }
+
+    .notes-box {
+      padding: 0.28in 0.12in 0.12in;
+    }
+
+    @media (max-width: 980px) {
+      body { grid-template-columns: 1fr; }
+      .sidebar {
+        position: absolute;
+        z-index: 5;
+        width: min(92vw, 340px);
+        max-height: calc(100vh - 16px);
+        left: 8px;
+        top: 8px;
+        border-radius: 12px;
+        border: 1px solid #434343;
+        box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+      }
+      .status-bar { max-width: calc(100vw - 30px); }
+    }
+
+    @media print {
+      body { display: block; background: white !important; }
+      .sidebar, .main { display: none !important; }
+      #printSheet { display: block !important; }
+      @page { size: landscape letter; margin: 0; }
+    }
+  </style>
+</head>
+<body data-theme="graphite">
+  <aside class="sidebar">
+    <div class="brand">
+      <div>
+        <h1>Isometric Piping Draft</h1>
+        <small>Dark engineering sketch environment</small>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Drawing Sheet</h2>
+      <div class="row">
+        <div>
+          <label for="projectTitle">Project</label>
+          <input id="projectTitle" type="text" value="ISOMETRIC PIPING" />
+        </div>
+        <div>
+          <label for="drawingNumber">Drawing No.</label>
+          <input id="drawingNumber" type="text" value="ISO-001" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="revision">Revision</label>
+          <input id="revision" type="text" value="0" />
+        </div>
+        <div>
+          <label for="sheetScale">Scale</label>
+          <input id="sheetScale" type="text" value="NTS" />
+        </div>
+      </div>
+      <div class="row single">
+        <div>
+          <label for="drawnBy">Drawn By</label>
+          <input id="drawnBy" type="text" value="USER" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Controls</h2>
+      <div class="toolbar-grid">
+        <button class="primary" id="lineBtn">Line</button>
+        <button id="polylineBtn">Polyline</button>
+        <button id="undoBtn">Undo</button>
+        <button id="clearBtn">Clear</button>
+        <button id="centerBtn">Recenter</button>
+        <button id="printBtn">Print Sheet</button>
+      </div>
+      <div class="hint">
+        Select <span class="mono">Line</span> or <span class="mono">Polyline</span>. The selected tool stays active. In Line mode, click point A then point B to place one 3D pipe section. In Polyline mode, the run begins on the first click and continues with each click until you press <span class="mono">Enter</span>. The software automatically snaps to the nearest isometric axis.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Status</h2>
+      <div class="stat"><span>Tool</span><strong id="modeText">Line</strong></div>
+      <div class="stat"><span>Routing</span><strong id="routeText">Line</strong></div>
+      <div class="stat"><span>Flange Rot.</span><strong id="flangeRotationText">0 deg</strong></div>
+      <div class="stat"><span>Theme</span><strong id="themeText">Dark grayscale</strong></div>
+      <div class="stat"><span>Polyline</span><strong>Ends on Enter</strong></div>
+      <div class="hint">
+        This first build is focused on isometric piping layout. A future piping component library can be layered on top of this data model without changing the drawing workflow.
+      </div>
+    </section>
+
+    <details class="card collapsible-card">
+      <summary class="card-summary">
+        <h2>Pipe Settings</h2>
+      </summary>
+      <div class="card-body">
+        <div class="row single">
+          <div>
+            <label for="pipeSize">Current Pipe Size (screen weight)</label>
+            <input type="range" id="pipeSize" min="1" max="42" step="1" value="2" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="pipeSizeValue">Pipe Size</label>
+            <input id="pipeSizeValue" type="number" min="1" max="42" step="1" value="2" />
+          </div>
+          <div>
+            <label for="polylineStyle">Polyline Fitting Style</label>
+            <select id="polylineStyle">
+              <option value="short">Short Radius Elbow</option>
+              <option value="long">Long Radius Elbow</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="gridStep">Grid Step</label>
+            <input id="gridStep" type="number" min="8" max="80" step="1" value="15" />
+          </div>
+          <div>
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect">
+              <option value="graphite">Very Dark Grey</option>
+              <option value="midnight">Dark Grayscale</option>
+              <option value="ibm">IBM Terminal</option>
+              <option value="matrix">Matrix</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="renderStyle">Pipe Render</label>
+            <select id="renderStyle">
+              <option value="gradient">Gradient</option>
+              <option value="outline">Outline Only</option>
+            </select>
+          </div>
+          <div>
+            <label for="outlineThicknessValue">Outline Thickness (%)</label>
+            <input id="outlineThicknessValue" type="number" min="40" max="240" step="5" value="100" />
+          </div>
+        </div>
+        <div class="row single">
+          <div>
+            <label for="outlineThickness">Outline Thickness</label>
+            <input id="outlineThickness" type="range" min="40" max="240" step="5" value="100" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="routeModeInfo">Selected Style</label>
+            <input id="routeModeInfo" type="text" value="Short Radius Elbow" readonly />
+          </div>
+          <div>
+            <label for="zoomInfo">Zoom</label>
+            <input id="zoomInfo" type="text" value="100%" readonly />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="flangeScaleValue">Flange Diameter (%)</label>
+            <input id="flangeScaleValue" type="number" min="100" max="220" step="5" value="122" />
+          </div>
+          <div>
+            <label for="flangeScale">Flange Size</label>
+            <input id="flangeScale" type="range" min="100" max="220" step="5" value="122" />
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="flangeRotationInfo">Flange Rotation</label>
+            <input id="flangeRotationInfo" type="text" value="0 deg" readonly />
+          </div>
+          <div>
+            <label>Rotate Flanges</label>
+            <div class="toolbar-grid tight">
+              <button id="rotateLeftBtn">-15 deg</button>
+              <button id="rotateRightBtn">+15 deg</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <label for="segmentCount">Segments</label>
+            <input id="segmentCount" type="text" value="0" readonly />
+          </div>
+          <div></div>
+        </div>
+        <div class="hint">
+        Mouse wheel zooms. Hold the middle mouse button to pan. Each run keeps the pipe size and tool settings that were active when it was started. Line mode places one single 3D pipe section from point A to point B. Polyline mode uses the selected elbow fitting style. Pipe render can switch between shaded and outline-only piping, outline thickness adjusts the hollow linework, and flange rotation turns the flange bolt-hole pattern in 15 deg steps without rotating the isometric view.
+        </div>
+      </div>
+    </details>
+  </aside>
+
+  <main class="main">
+    <canvas id="canvas"></canvas>
+
+    <div class="overlay">
+      <div class="badge north-indicator">
+        <svg viewBox="0 0 80 80" aria-hidden="true">
+          <defs>
+            <marker id="arrowHead" markerWidth="5" markerHeight="5" viewBox="0 0 5 5" refX="4.1" refY="2.5" orient="auto" markerUnits="strokeWidth">
+              <path d="M0.7 0.7 L4 2.5 L0.7 4.3" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"></path>
+            </marker>
+          </defs>
+          <path id="northArrowPath" d="M18 54 L58 30" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" marker-end="url(#arrowHead)"></path>
+          <text id="northArrowLabel" x="60" y="25" fill="currentColor" font-size="12" font-weight="700" text-anchor="middle">N</text>
+        </svg>
+      </div>
+      <div class="badge mono" id="cursorReadout">N-GRID: 0  E-GRID: 0  AXIS: N</div>
+    </div>
+
+    <div class="status-bar" id="statusBar">
+      Ready. Select <span class="mono">Line</span> or <span class="mono">Polyline</span>. In Polyline mode, the run begins on the first click and ends when you press <span class="mono">Enter</span>.
+    </div>
+  </main>
+
+  <section id="printSheet">
+    <div class="print-page">
+      <div class="print-border"></div>
+      <div class="sheet-header">Isometric Piping Drawing</div>
+      <div class="sheet-sub">Professional engineering print format</div>
+      <div id="printSvgWrap"></div>
+      <div class="print-title">
+        <div class="drawing-field">
+          <span class="title-label">Project</span>
+          <span class="title-value" id="tbProject">ISOMETRIC PIPING</span>
+        </div>
+        <div>
+          <span class="title-label">Rev</span>
+          <span class="title-value" id="tbRev">0</span>
+        </div>
+        <div>
+          <span class="title-label">Drawing No.</span>
+          <span class="title-value" id="tbDwg">ISO-001</span>
+        </div>
+        <div>
+          <span class="title-label">Scale</span>
+          <span class="title-value" id="tbScale">NTS</span>
+        </div>
+        <div>
+          <span class="title-label">Date</span>
+          <span class="title-value" id="tbDate">-</span>
+        </div>
+        <div>
+          <span class="title-label">Drawn By</span>
+          <span class="title-value" id="tbBy">USER</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const axes = {
+      north: { x: Math.cos(Math.PI / 6), y: -Math.sin(Math.PI / 6), label: 'N' },
+      east:  { x: Math.cos(Math.PI / 6), y:  Math.sin(Math.PI / 6), label: 'E' },
+      up:    { x: 0, y: -1, label: 'Z' }
+    };
+    const axisList = [axes.north, axes.east, axes.up];
+
+    const state = {
+      segments: [],
+      isDrawing: false,
+      currentPolylineStart: null,
+      currentPolylineStartIso: null,
+      previewEnd: null,
+      camera: { x: 0, y: 0, zoom: 1 },
+      panning: false,
+      lastPan: null,
+      gridStep: 15,
+      defaultPipeSize: 2,
+      renderStyle: 'gradient',
+      outlineThickness: 1,
+      flangeScale: 1.22,
+      flangeRotationDegrees: 0,
+      hoverWorld: { x: 0, y: 0 },
+      hoverIso: { n: 0, e: 0, z: 0 },
+      snappedHover: { x: 0, y: 0 },
+      snappedHoverIso: { n: 0, e: 0, z: 0 },
+      lastSnapAxis: axes.north,
+      polylineStartIndex: 0,
+      polylineSeedPoint: null,
+      polylineSeedPointIso: null,
+      previewEndIso: null,
+      toolMode: 'line',
+      theme: 'graphite',
+      selectedPolylineStyle: 'short',
+      currentPolylineStyle: 'short',
+      nextPolylineId: 1,
+      activePolylineId: null
+    };
+
+    const els = {
+      lineBtn: document.getElementById('lineBtn'),
+      polylineBtn: document.getElementById('polylineBtn'),
+      undoBtn: document.getElementById('undoBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      centerBtn: document.getElementById('centerBtn'),
+      printBtn: document.getElementById('printBtn'),
+      pipeSize: document.getElementById('pipeSize'),
+      pipeSizeValue: document.getElementById('pipeSizeValue'),
+      renderStyle: document.getElementById('renderStyle'),
+      outlineThickness: document.getElementById('outlineThickness'),
+      outlineThicknessValue: document.getElementById('outlineThicknessValue'),
+      flangeScale: document.getElementById('flangeScale'),
+      flangeScaleValue: document.getElementById('flangeScaleValue'),
+      gridStep: document.getElementById('gridStep'),
+      themeSelect: document.getElementById('themeSelect'),
+      polylineStyle: document.getElementById('polylineStyle'),
+      routeModeInfo: document.getElementById('routeModeInfo'),
+      zoomInfo: document.getElementById('zoomInfo'),
+      flangeRotationInfo: document.getElementById('flangeRotationInfo'),
+      rotateLeftBtn: document.getElementById('rotateLeftBtn'),
+      rotateRightBtn: document.getElementById('rotateRightBtn'),
+      segmentCount: document.getElementById('segmentCount'),
+      modeText: document.getElementById('modeText'),
+      routeText: document.getElementById('routeText'),
+      themeText: document.getElementById('themeText'),
+      flangeRotationText: document.getElementById('flangeRotationText'),
+      statusBar: document.getElementById('statusBar'),
+      cursorReadout: document.getElementById('cursorReadout'),
+      northArrowPath: document.getElementById('northArrowPath'),
+      northArrowLabel: document.getElementById('northArrowLabel'),
+      projectTitle: document.getElementById('projectTitle'),
+      drawingNumber: document.getElementById('drawingNumber'),
+      revision: document.getElementById('revision'),
+      sheetScale: document.getElementById('sheetScale'),
+      drawnBy: document.getElementById('drawnBy'),
+      printSheet: document.getElementById('printSheet'),
+      printSvgWrap: document.getElementById('printSvgWrap'),
+      tbProject: document.getElementById('tbProject'),
+      tbRev: document.getElementById('tbRev'),
+      tbDwg: document.getElementById('tbDwg'),
+      tbScale: document.getElementById('tbScale'),
+      tbDate: document.getElementById('tbDate'),
+      tbBy: document.getElementById('tbBy')
+    };
+
+    const themePaints = {
+      graphite: {
+        bgTop: [19, 19, 19],
+        bgBottom: [5, 5, 5],
+        grid: 'rgba(255,255,255,0.045)',
+        gridStrong: 'rgba(255,255,255,0.095)',
+        originStroke: 'rgba(255,255,255,0.28)',
+        originFill: 'rgba(255,255,255,0.62)',
+        anchorFill: 'rgba(255,255,255,0.8)',
+        hoverFill: 'rgba(255,255,255,0.25)',
+        maskEdge: [72, 72, 72],
+        pipeOutline: [244, 244, 244]
+      },
+      midnight: {
+        bgTop: [26, 26, 26],
+        bgBottom: [17, 17, 17],
+        grid: 'rgba(255,255,255,0.05)',
+        gridStrong: 'rgba(255,255,255,0.11)',
+        originStroke: 'rgba(255,255,255,0.38)',
+        originFill: 'rgba(255,255,255,0.75)',
+        anchorFill: 'rgba(255,255,255,0.85)',
+        hoverFill: 'rgba(255,255,255,0.35)',
+        maskEdge: [88, 88, 88],
+        pipeOutline: [246, 246, 246]
+      },
+      ibm: {
+        bgTop: [16, 33, 24],
+        bgBottom: [5, 9, 6],
+        grid: 'rgba(134,255,187,0.07)',
+        gridStrong: 'rgba(134,255,187,0.16)',
+        originStroke: 'rgba(134,255,187,0.4)',
+        originFill: 'rgba(186,255,212,0.82)',
+        anchorFill: 'rgba(186,255,212,0.92)',
+        hoverFill: 'rgba(134,255,187,0.36)',
+        maskEdge: [72, 126, 92],
+        pipeOutline: [186, 255, 212]
+      },
+      matrix: {
+        bgTop: [6, 21, 11],
+        bgBottom: [1, 2, 1],
+        grid: 'rgba(107,255,132,0.08)',
+        gridStrong: 'rgba(107,255,132,0.18)',
+        originStroke: 'rgba(107,255,132,0.42)',
+        originFill: 'rgba(183,255,190,0.84)',
+        anchorFill: 'rgba(183,255,190,0.94)',
+        hoverFill: 'rgba(107,255,132,0.38)',
+        maskEdge: [54, 142, 70],
+        pipeOutline: [183, 255, 190]
+      }
+    };
+
+    function resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      render();
+    }
+
+    function worldToScreen(p) {
+      return {
+        x: canvas.clientWidth / 2 + (p.x + state.camera.x) * state.camera.zoom,
+        y: canvas.clientHeight / 2 + (p.y + state.camera.y) * state.camera.zoom
+      };
+    }
+
+    function screenToWorld(p) {
+      return {
+        x: (p.x - canvas.clientWidth / 2) / state.camera.zoom - state.camera.x,
+        y: (p.y - canvas.clientHeight / 2) / state.camera.zoom - state.camera.y
+      };
+    }
+
+    function dot(a, b) { return a.x * b.x + a.y * b.y; }
+    function sub(a, b) { return { x: a.x - b.x, y: a.y - b.y }; }
+    function add(a, b) { return { x: a.x + b.x, y: a.y + b.y }; }
+    function mul(a, s) { return { x: a.x * s, y: a.y * s }; }
+    function len(v) { return Math.hypot(v.x, v.y); }
+    function norm(v) { const l = len(v) || 1; return { x: v.x / l, y: v.y / l }; }
+    function perp(v) { return { x: -v.y, y: v.x }; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+    function almostEqual(a, b, eps = 0.001) { return Math.abs(a - b) <= eps; }
+    function samePoint(a, b, eps = 0.001) { return almostEqual(a.x, b.x, eps) && almostEqual(a.y, b.y, eps); }
+    function cloneIso(p) { return { n: p.n, e: p.e, z: p.z }; }
+    function rgb(color, alpha = 1) { return `rgba(${color[0]},${color[1]},${color[2]},${alpha})`; }
+    function mixColor(a, b, t) {
+      return [
+        Math.round(a[0] + (b[0] - a[0]) * t),
+        Math.round(a[1] + (b[1] - a[1]) * t),
+        Math.round(a[2] + (b[2] - a[2]) * t)
+      ];
+    }
+    function currentThemePaint() { return themePaints[state.theme] || themePaints.graphite; }
+    function lerpIso(a, b, t) {
+      return {
+        n: a.n + (b.n - a.n) * t,
+        e: a.e + (b.e - a.e) * t,
+        z: a.z + (b.z - a.z) * t
+      };
+    }
+
+    function isoToWorld(p) {
+      return add(add(mul(axes.north, p.n), mul(axes.east, p.e)), mul(axes.up, p.z || 0));
+    }
+
+    function solvePlaneCoefficients(world) {
+      const det = axes.north.x * axes.east.y - axes.north.y * axes.east.x;
+      const nCoeff = (world.x * axes.east.y - world.y * axes.east.x) / det;
+      const eCoeff = (-world.x * axes.north.y + world.y * axes.north.x) / det;
+      return { nCoeff, eCoeff };
+    }
+
+    function canonicalIsoFromWorld(world) {
+      const { nCoeff, eCoeff } = solvePlaneCoefficients(world);
+      return { n: nCoeff, e: eCoeff, z: 0 };
+    }
+
+    function resolveSegmentEndpointIso(point) {
+      for (let i = state.segments.length - 1; i >= 0; i--) {
+        const segment = state.segments[i];
+        if (samePoint(segment.start, point)) return segment.isoStart ? cloneIso(segment.isoStart) : canonicalIsoFromWorld(point);
+        if (samePoint(segment.end, point)) return segment.isoEnd ? cloneIso(segment.isoEnd) : canonicalIsoFromWorld(point);
+      }
+      return canonicalIsoFromWorld(point);
+    }
+
+    // Hidden iso depth resolves which pipe sits in front when two centerlines share the same screen point.
+    function occlusionDepthFromIso(p) {
+      return -p.n + p.e + p.z;
+    }
+
+    function isoPointOnSegment(segment, t) {
+      const clamped = clamp(t, 0, 1);
+      if (segment.isoStart && segment.isoEnd) return lerpIso(segment.isoStart, segment.isoEnd, clamped);
+      const worldPoint = add(segment.start, mul(sub(segment.end, segment.start), clamped));
+      return canonicalIsoFromWorld(worldPoint);
+    }
+
+    function snapPointToIsoGrid(world) {
+      const step = state.gridStep;
+      const { nCoeff, eCoeff } = solvePlaneCoefficients(world);
+      return isoToWorld({
+        n: Math.round(nCoeff / step) * step,
+        e: Math.round(eCoeff / step) * step,
+        z: 0
+      });
+    }
+
+    function inferIsoCoordinates(world) {
+      const { nCoeff, eCoeff } = solvePlaneCoefficients(world);
+      return {
+        n: Math.round(nCoeff / state.gridStep),
+        e: Math.round(eCoeff / state.gridStep)
+      };
+    }
+
+    function snapAlongNearestAxis(anchor, world, anchorIso = null) {
+      const raw = sub(world, anchor);
+      let bestAxis = axisList[0];
+      let bestProj = 0;
+      let bestAbs = -Infinity;
+      for (const axis of axisList) {
+        const projection = dot(raw, axis);
+        const mag = Math.abs(projection);
+        if (mag > bestAbs) {
+          bestAbs = mag;
+          bestProj = projection;
+          bestAxis = axis;
+        }
+      }
+      const step = state.gridStep;
+      const snappedLength = Math.round(bestProj / step) * step;
+      const endIso = anchorIso ? cloneIso(anchorIso) : resolveSegmentEndpointIso(anchor);
+      if (bestAxis.label === 'N') endIso.n += snappedLength;
+      else if (bestAxis.label === 'E') endIso.e += snappedLength;
+      else endIso.z += snappedLength;
+      const end = isoToWorld(endIso);
+      end.iso = endIso;
+      state.lastSnapAxis = bestAxis;
+      return end;
+    }
+
+    function setStatus(text) {
+      els.statusBar.innerHTML = text;
+    }
+
+    function styleLabel(style) {
+      return style === 'long' ? 'Long Radius Elbow' : 'Short Radius Elbow';
+    }
+
+    function themeLabel(theme) {
+      if (theme === 'graphite') return 'Very dark grey';
+      if (theme === 'ibm') return 'IBM terminal';
+      if (theme === 'matrix') return 'Matrix';
+      return 'Dark grayscale';
+    }
+
+    function renderStyleLabel(style) {
+      return style === 'outline' ? 'Outline Only' : 'Gradient';
+    }
+
+    function applyTheme(theme) {
+      state.theme = themePaints[theme] ? theme : 'graphite';
+      document.body.dataset.theme = state.theme;
+    }
+
+    function setOutlineThickness(percent) {
+      state.outlineThickness = clamp((Number(percent) || 100) / 100, 0.4, 2.4);
+    }
+
+    function currentPipeOutlineColor(alpha = 1) {
+      return rgb(currentThemePaint().pipeOutline || [244, 244, 244], alpha);
+    }
+
+    function canvasOutlineStrokeWidth(radius, tone = 0.5) {
+      return Math.max(0.9, Math.max(radius * 0.12, state.camera.zoom * (0.42 + tone * 0.12)) * state.outlineThickness);
+    }
+
+    function printOutlineStrokeWidth(radius) {
+      return Math.max(0.8, Math.max(radius * 0.1, 0.85) * state.outlineThickness);
+    }
+
+    function formatDegrees(deg) {
+      const normalized = ((deg % 360) + 360) % 360;
+      return `${normalized} deg`;
+    }
+
+    function updateNorthIndicator() {
+      const dir = norm(axes.north);
+      const center = { x: 38, y: 42 };
+      const start = add(center, mul(dir, -20));
+      const end = add(center, mul(dir, 21));
+      const label = add(end, { x: dir.x * 8, y: dir.y * 8 - 2 });
+      els.northArrowPath.setAttribute('d', `M ${start.x.toFixed(1)} ${start.y.toFixed(1)} L ${end.x.toFixed(1)} ${end.y.toFixed(1)}`);
+      els.northArrowLabel.setAttribute('x', label.x.toFixed(1));
+      els.northArrowLabel.setAttribute('y', label.y.toFixed(1));
+    }
+
+    function setFlangeRotation(deg) {
+      state.flangeRotationDegrees = ((deg % 360) + 360) % 360;
+    }
+
+    function setFlangeScale(percent) {
+      state.flangeScale = clamp((Number(percent) || 122) / 100, 1, 2.2);
+    }
+
+    function currentRouteLabel() {
+      return state.toolMode === 'line' ? 'Line' : styleLabel(state.selectedPolylineStyle);
+    }
+
+    function updateToolButtons() {
+      els.lineBtn.classList.toggle('primary', state.toolMode === 'line');
+      els.polylineBtn.classList.toggle('primary', state.toolMode === 'polyline');
+      els.polylineStyle.disabled = state.toolMode === 'line';
+      els.routeModeInfo.value = currentRouteLabel();
+    }
+
+    function updateUi() {
+      els.pipeSize.value = state.defaultPipeSize;
+      els.pipeSizeValue.value = state.defaultPipeSize;
+      els.renderStyle.value = state.renderStyle;
+      els.outlineThickness.value = Math.round(state.outlineThickness * 100);
+      els.outlineThicknessValue.value = Math.round(state.outlineThickness * 100);
+      els.flangeScale.value = Math.round(state.flangeScale * 100);
+      els.flangeScaleValue.value = Math.round(state.flangeScale * 100);
+      els.gridStep.value = state.gridStep;
+      els.themeSelect.value = state.theme;
+      els.polylineStyle.value = state.selectedPolylineStyle;
+      updateToolButtons();
+      els.zoomInfo.value = Math.round(state.camera.zoom * 100) + '%';
+      els.flangeRotationInfo.value = formatDegrees(state.flangeRotationDegrees);
+      els.segmentCount.value = String(state.segments.length);
+      els.themeText.textContent = themeLabel(state.theme);
+      els.flangeRotationText.textContent = formatDegrees(state.flangeRotationDegrees);
+      if (state.isDrawing) {
+        els.modeText.textContent = state.toolMode === 'line' ? 'Drawing Line' : 'Drawing Polyline';
+        els.routeText.textContent = state.toolMode === 'line' ? 'Line' : styleLabel(state.currentPolylineStyle);
+      } else {
+        els.modeText.textContent = state.toolMode === 'line' ? 'Line' : 'Polyline';
+        els.routeText.textContent = currentRouteLabel();
+      }
+      const c = inferIsoCoordinates(state.snappedHover || { x: 0, y: 0 });
+      els.cursorReadout.textContent = `N-GRID: ${c.n}  E-GRID: ${c.e}  AXIS: ${state.lastSnapAxis.label}`;
+    }
+
+    function drawGrid() {
+      const extent = 220;
+      const step = state.gridStep;
+      const center = { x: 0, y: 0 };
+
+      for (let i = -extent; i <= extent; i++) {
+        const offset = i * step;
+        drawInfiniteGridLine(add(center, mul(axes.north, offset)), axes.east, i % 5 === 0);
+        drawInfiniteGridLine(add(center, mul(axes.east, offset)), axes.north, i % 5 === 0);
+        drawInfiniteGridLine(add(center, mul(axes.up, offset)), axes.north, false);
+      }
+    }
+
+    function drawInfiniteGridLine(point, dir, strong = false) {
+      const a = add(point, mul(dir, -20000));
+      const b = add(point, mul(dir, 20000));
+      const A = worldToScreen(a);
+      const B = worldToScreen(b);
+      const palette = currentThemePaint();
+      ctx.beginPath();
+      ctx.moveTo(A.x, A.y);
+      ctx.lineTo(B.x, B.y);
+      ctx.lineWidth = strong ? 1.1 : 0.8;
+      ctx.strokeStyle = strong ? palette.gridStrong : palette.grid;
+      ctx.stroke();
+    }
+
+    function buildRenderModel(segments) {
+      const plans = segments.map(seg => ({
+        startTrim: 0,
+        endTrim: 0,
+        capStart: true,
+        capEnd: true
+      }));
+      const elbows = [];
+
+      for (let i = 1; i < segments.length; i++) {
+        const prev = segments[i - 1];
+        const curr = segments[i];
+        if (!samePoint(prev.end, curr.start)) continue;
+        if (prev.polylineId !== curr.polylineId || prev.style !== curr.style || prev.style === 'line') continue;
+
+        const joint = prev.end;
+        const awayPrev = norm(sub(prev.start, joint));
+        const awayCurr = norm(sub(curr.end, joint));
+        const cross = awayPrev.x * awayCurr.y - awayPrev.y * awayCurr.x;
+        const prevLen = len(sub(prev.end, prev.start));
+        const currLen = len(sub(curr.end, curr.start));
+
+        plans[i - 1].capEnd = false;
+        plans[i].capStart = false;
+
+        if (Math.abs(cross) < 0.0001) continue;
+
+        const trimFactor = prev.style === 'long' ? 1.65 : 1.05;
+        const trim = Math.max(
+          0.5,
+          Math.min(Math.min(prev.size, curr.size) * trimFactor, prevLen * 0.42, currLen * 0.42)
+        );
+
+        plans[i - 1].endTrim = Math.max(plans[i - 1].endTrim, trim);
+        plans[i].startTrim = Math.max(plans[i].startTrim, trim);
+
+        elbows.push({
+          joint: { ...joint },
+          from: add(joint, mul(awayPrev, trim)),
+          to: add(joint, mul(awayCurr, trim)),
+          size: Math.min(prev.size, curr.size),
+          style: prev.style,
+          startDir: mul(awayPrev, -1),
+          endDir: awayCurr
+        });
+      }
+
+      return { plans, elbows };
+    }
+
+    function getTrimmedSegment(segment, plan) {
+      const delta = sub(segment.end, segment.start);
+      const fullLength = len(delta);
+      const dir = norm(delta);
+      const inv = mul(dir, -1);
+      const start = plan.startTrim > 0 ? add(segment.start, mul(dir, plan.startTrim)) : segment.start;
+      const end = plan.endTrim > 0 ? add(segment.end, mul(inv, plan.endTrim)) : segment.end;
+      if (len(sub(end, start)) < 0.001) return null;
+      const startT = fullLength > 0.001 ? clamp(plan.startTrim / fullLength, 0, 1) : 0;
+      const endT = fullLength > 0.001 ? clamp(1 - (plan.endTrim / fullLength), 0, 1) : 1;
+      return {
+        start,
+        end,
+        isoStart: segment.isoStart && segment.isoEnd ? lerpIso(segment.isoStart, segment.isoEnd, startT) : null,
+        isoEnd: segment.isoStart && segment.isoEnd ? lerpIso(segment.isoStart, segment.isoEnd, endT) : null,
+        size: segment.size,
+        capStart: plan.capStart,
+        capEnd: plan.capEnd
+      };
+    }
+
+    function drawSingleLineSegment(segment, alpha = 1) {
+      const a = worldToScreen(segment.start);
+      const b = worldToScreen(segment.end);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineWidth = Math.max(1.8, state.camera.zoom * 1.35);
+      ctx.strokeStyle = 'rgba(235,235,235,0.92)';
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.lineWidth = Math.max(0.8, state.camera.zoom * 0.45);
+      ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function elbowBezierControls(elbow, alreadyScreen = false) {
+      const p1 = alreadyScreen ? elbow.from : worldToScreen(elbow.from);
+      const pc = alreadyScreen ? elbow.joint : worldToScreen(elbow.joint);
+      const p2 = alreadyScreen ? elbow.to : worldToScreen(elbow.to);
+      const d1 = norm(sub(pc, p1));
+      const d2 = norm(sub(p2, pc));
+      const turnAngle = Math.acos(clamp(dot(d1, d2), -1, 1));
+      if (!Number.isFinite(turnAngle) || turnAngle < 0.001 || Math.PI - turnAngle < 0.001) {
+        return { p1, p2, c1: p1, c2: p2, d1, d2, valid: false };
+      }
+      const tangentRun = (len(sub(pc, p1)) + len(sub(p2, pc))) / 2;
+      const radius = tangentRun / Math.tan(turnAngle / 2);
+      const handle = (4 / 3) * radius * Math.tan(turnAngle / 4);
+      return {
+        p1,
+        p2,
+        c1: add(p1, mul(d1, handle)),
+        c2: add(p2, mul(d2, -handle)),
+        d1,
+        d2,
+        valid: true
+      };
+    }
+
+    function perspectiveFactorForHeight(y, height = canvas.clientHeight) {
+      const normalized = clamp(((y / Math.max(1, height)) - 0.48) / 0.52, -1, 1);
+      return 1 + normalized * 0.18;
+    }
+
+    function toneFromPerspective(perspective) {
+      return clamp((perspective - 0.82) / 0.36, 0, 1);
+    }
+
+    function gray(v) {
+      const c = Math.round(clamp(v, 0, 255));
+      return `rgba(${c},${c},${c},1)`;
+    }
+
+    function grayHex(v) {
+      const c = Math.round(clamp(v, 0, 255));
+      const hex = c.toString(16).padStart(2, '0');
+      return `#${hex}${hex}${hex}`;
+    }
+
+    function pipeShadeValues(tone) {
+      return {
+        hi: 225 + tone * 18,
+        hiMid: 190 + tone * 18,
+        loMid: 142 + tone * 18,
+        sh: 76 + tone * 16
+      };
+    }
+
+    function buildPipeGradient(x1, y1, x2, y2, tone) {
+      const { hi, hiMid, loMid, sh } = pipeShadeValues(tone);
+      const gradient = ctx.createLinearGradient(x1, y1, x2, y2);
+      gradient.addColorStop(0, gray(hi));
+      gradient.addColorStop(0.28, gray(hiMid));
+      gradient.addColorStop(0.72, gray(loMid));
+      gradient.addColorStop(1, gray(sh));
+      return gradient;
+    }
+
+    function flangeProfile(radius) {
+      const outerRadius = Math.max(radius, radius * state.flangeScale);
+      return {
+        outerRadius,
+        outerMinor: Math.max(3, outerRadius * 0.45),
+        innerRadius: radius * 0.96,
+        innerMinor: Math.max(2.4, radius * 0.43)
+      };
+    }
+
+    function flangeSlotLayout(flange) {
+      const bandWidth = flange.outerRadius - flange.innerRadius;
+      if (bandWidth < 1.4) return [];
+      const slotCount = flange.outerRadius >= 22 ? 8 : 4;
+      const rotation = state.flangeRotationDegrees * Math.PI / 180;
+      const baseAngle = slotCount === 4 ? Math.PI / 4 : Math.PI / 8;
+      const slotRadiusX = flange.innerRadius + bandWidth * 0.64;
+      const slotRadiusY = flange.innerMinor + (flange.outerMinor - flange.innerMinor) * 0.64;
+      const seatRx = Math.max(1.2, bandWidth * 0.26);
+      const seatRy = Math.max(0.9, seatRx * (flange.outerMinor / Math.max(1, flange.outerRadius)));
+      const holeRx = Math.max(0.72, seatRx * 0.54);
+      const holeRy = Math.max(0.55, seatRy * 0.54);
+      return Array.from({ length: slotCount }, (_, index) => {
+        const phi = baseAngle + rotation + (Math.PI * 2 * index) / slotCount;
+        return {
+          x: Math.cos(phi) * slotRadiusX,
+          y: Math.sin(phi) * slotRadiusY,
+          seatRx,
+          seatRy,
+          holeRx,
+          holeRy
+        };
+      });
+    }
+
+    function rotatePoint(point, angle) {
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      return {
+        x: point.x * c - point.y * s,
+        y: point.x * s + point.y * c
+      };
+    }
+
+    function flangeSlotSvg(center, pipeAngleRad, flange, tone) {
+      const pipeAngleDeg = pipeAngleRad * 180 / Math.PI;
+      return flangeSlotLayout(flange).map(slot => {
+        const offset = rotatePoint({ x: slot.x, y: slot.y }, pipeAngleRad);
+        const cx = center.x + offset.x;
+        const cy = center.y + offset.y;
+        return [
+          `<ellipse cx="${cx}" cy="${cy}" rx="${slot.seatRx}" ry="${slot.seatRy}" transform="rotate(${pipeAngleDeg} ${cx} ${cy})" fill="${grayHex(162 + tone * 14)}" stroke="${grayHex(72 + tone * 12)}" stroke-opacity="0.7" stroke-width="0.45" />`,
+          `<ellipse cx="${cx}" cy="${cy}" rx="${slot.holeRx}" ry="${slot.holeRy}" transform="rotate(${pipeAngleDeg} ${cx} ${cy})" fill="${grayHex(38 + tone * 10)}" stroke="${grayHex(232 + tone * 8)}" stroke-opacity="0.18" stroke-width="0.35" />`
+        ].join('');
+      }).join('');
+    }
+
+    function flangeHoleSvg(center, pipeAngleRad, flange, stroke = '#111', fill = '#fff', strokeWidth = 0.6) {
+      const pipeAngleDeg = pipeAngleRad * 180 / Math.PI;
+      return flangeSlotLayout(flange).map(slot => {
+        const offset = rotatePoint({ x: slot.x, y: slot.y }, pipeAngleRad);
+        const cx = center.x + offset.x;
+        const cy = center.y + offset.y;
+        return `<ellipse cx="${cx}" cy="${cy}" rx="${slot.holeRx}" ry="${slot.holeRy}" transform="rotate(${pipeAngleDeg} ${cx} ${cy})" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}" />`;
+      }).join('');
+    }
+
+    function screenBackgroundColorAt(y, height = canvas.clientHeight) {
+      const t = clamp(y / Math.max(1, height), 0, 1);
+      return rgb(mixColor(currentThemePaint().bgTop, currentThemePaint().bgBottom, t), 0.98);
+    }
+
+    function projectSegmentData(a, b, baseRadius, canvasHeight = canvas.clientHeight) {
+      const v = sub(b, a);
+      const L = len(v);
+      if (L < 0.001) return null;
+      const t = norm(v);
+      const n = perp(t);
+      const depth = (a.y + b.y) / 2;
+      const perspective = perspectiveFactorForHeight(depth, canvasHeight);
+      const r = Math.max(1, baseRadius * perspective);
+      const tone = toneFromPerspective(perspective);
+      return { a, b, v, L, t, n, depth, perspective, r, tone };
+    }
+
+    function projectCanvasSegment(segment) {
+      return projectSegmentData(
+        worldToScreen(segment.start),
+        worldToScreen(segment.end),
+        (segment.size * state.camera.zoom) / 2,
+        canvas.clientHeight
+      );
+    }
+
+    function projectCanvasElbow(elbow) {
+      const controls = elbowBezierControls(elbow, false);
+      const depth = (controls.p1.y + controls.p2.y + controls.c1.y + controls.c2.y) / 4;
+      const perspective = perspectiveFactorForHeight(depth, canvas.clientHeight);
+      const r = Math.max(1, (elbow.size * state.camera.zoom / 2) * perspective);
+      const tone = toneFromPerspective(perspective);
+      return { ...controls, depth, perspective, r, tone };
+    }
+
+    function lineIntersection(a, b, c, d) {
+      const r = sub(b, a);
+      const s = sub(d, c);
+      const denom = r.x * s.y - r.y * s.x;
+      if (Math.abs(denom) < 0.0001) return null;
+      const qp = sub(c, a);
+      const t = (qp.x * s.y - qp.y * s.x) / denom;
+      const u = (qp.x * r.y - qp.y * r.x) / denom;
+      if (t <= 0.06 || t >= 0.94 || u <= 0.06 || u >= 0.94) return null;
+      return {
+        point: add(a, mul(r, t)),
+        t,
+        u
+      };
+    }
+
+    function compareSegmentDepth(a, b) {
+      return (a.occlusionDepth || 0) - (b.occlusionDepth || 0)
+        || a.depth - b.depth
+        || (a.sourceIndex || 0) - (b.sourceIndex || 0);
+    }
+
+    function buildSegmentDrawOrder(segmentItems, edges, indegree) {
+      const byKey = new Map(segmentItems.map(item => [item.key, item]));
+      const queue = segmentItems
+        .filter(item => (indegree.get(item.key) || 0) === 0)
+        .sort(compareSegmentDepth);
+      const order = new Map();
+      let nextOrder = 0;
+
+      while (queue.length) {
+        const current = queue.shift();
+        if (order.has(current.key)) continue;
+        order.set(current.key, nextOrder++);
+        const followers = Array.from(edges.get(current.key) || []);
+        followers.forEach(key => {
+          indegree.set(key, (indegree.get(key) || 0) - 1);
+          if ((indegree.get(key) || 0) === 0) {
+            queue.push(byKey.get(key));
+            queue.sort(compareSegmentDepth);
+          }
+        });
+      }
+
+      segmentItems
+        .filter(item => !order.has(item.key))
+        .sort(compareSegmentDepth)
+        .forEach(item => order.set(item.key, nextOrder++));
+
+      return order;
+    }
+
+    function buildSegmentOverlapModel(segmentItems, height = canvas.clientHeight) {
+      const masks = new Map();
+      const edges = new Map();
+      const indegree = new Map();
+      segmentItems.forEach(item => {
+        edges.set(item.key, new Set());
+        indegree.set(item.key, 0);
+      });
+
+      for (let i = 0; i < segmentItems.length; i++) {
+        for (let j = i + 1; j < segmentItems.length; j++) {
+          const a = segmentItems[i];
+          const b = segmentItems[j];
+          if (a.sourceIndex === b.sourceIndex) continue;
+          if (a.polylineId && a.polylineId === b.polylineId && Math.abs(a.sourceIndex - b.sourceIndex) <= 1) continue;
+          const hit = lineIntersection(a.screen.a, a.screen.b, b.screen.a, b.screen.b);
+          if (!hit) continue;
+
+          const aOcclusionDepth = occlusionDepthFromIso(isoPointOnSegment(a.segment, hit.t));
+          const bOcclusionDepth = occlusionDepthFromIso(isoPointOnSegment(b.segment, hit.u));
+          const front = Math.abs(aOcclusionDepth - bOcclusionDepth) < 0.001
+            ? (a.depth >= b.depth ? a : b)
+            : (aOcclusionDepth >= bOcclusionDepth ? a : b);
+          const back = front === a ? b : a;
+          const gapLength = Math.max(8, front.screen.r * 2.8, back.screen.r * 2.15);
+          const gapWidth = Math.max(8, front.screen.r * 2.05, back.screen.r * 2.45);
+          const entry = {
+            center: hit.point,
+            dir: back.screen.t,
+            length: gapLength,
+            width: gapWidth,
+            fill: screenBackgroundColorAt(hit.point.y, height),
+            edge: rgb(currentThemePaint().maskEdge, 0.18 + front.screen.tone * 0.18)
+          };
+          if (!masks.has(back.key)) masks.set(back.key, []);
+          masks.get(back.key).push(entry);
+
+          if (!edges.get(back.key).has(front.key)) {
+            edges.get(back.key).add(front.key);
+            indegree.set(front.key, (indegree.get(front.key) || 0) + 1);
+          }
+        }
+      }
+
+      return {
+        masks,
+        order: buildSegmentDrawOrder(segmentItems, edges, indegree)
+      };
+    }
+
+    function drawGapMask(mask) {
+      const half = mask.length / 2;
+      const start = add(mask.center, mul(mask.dir, -half));
+      const end = add(mask.center, mul(mask.dir, half));
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.lineWidth = mask.width;
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = mask.fill;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.lineWidth = Math.max(1, mask.width * 0.1);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = mask.edge;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function strokeOutlinePipePath(pathBuilder, outerWidth, innerWidth, outlineColor, clearColor, lineCap = 'round', lineJoin = 'round') {
+      ctx.beginPath();
+      pathBuilder();
+      ctx.lineCap = lineCap;
+      ctx.lineJoin = lineJoin;
+      ctx.lineWidth = outerWidth;
+      ctx.strokeStyle = outlineColor;
+      ctx.stroke();
+
+      ctx.beginPath();
+      pathBuilder();
+      ctx.lineCap = lineCap;
+      ctx.lineJoin = lineJoin;
+      ctx.lineWidth = innerWidth;
+      ctx.strokeStyle = clearColor;
+      ctx.stroke();
+    }
+
+    function drawPipeSegment(segment, alpha = 1, projected = null) {
+      const data = projected || projectCanvasSegment(segment);
+      if (!data) return;
+      const { a, b, t, n, r, tone } = data;
+
+      if (state.renderStyle === 'outline') {
+        const outlineWidth = canvasOutlineStrokeWidth(r, tone);
+        const clearColor = screenBackgroundColorAt((a.y + b.y) / 2);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        strokeOutlinePipePath(
+          () => {
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          },
+          r * 2 + outlineWidth * 2,
+          Math.max(0.5, r * 2),
+          currentPipeOutlineColor(0.96),
+          clearColor,
+          'butt',
+          'round'
+        );
+        if (segment.capStart) drawEndCap(a, t, r, alpha, tone);
+        if (segment.capEnd) drawEndCap(b, t, r, alpha, tone);
+        ctx.restore();
+        return;
+      }
+
+      const p1 = add(a, mul(n, r));
+      const p2 = add(b, mul(n, r));
+      const p3 = add(b, mul(n, -r));
+      const p4 = add(a, mul(n, -r));
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+
+      const body = buildPipeGradient(p1.x, p1.y, p4.x, p4.y, tone);
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.lineTo(p4.x, p4.y);
+      ctx.closePath();
+      ctx.fillStyle = body;
+      ctx.fill();
+
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * (0.78 + tone * 0.32));
+      ctx.strokeStyle = `rgba(18,18,18,${0.58 + tone * 0.14})`;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * (0.72 + tone * 0.34));
+      ctx.strokeStyle = `rgba(255,255,255,${0.36 + tone * 0.34})`;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(p4.x, p4.y);
+      ctx.lineTo(p3.x, p3.y);
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * (0.72 + tone * 0.34));
+      ctx.strokeStyle = `rgba(0,0,0,${0.28 + tone * 0.26})`;
+      ctx.stroke();
+
+      if (segment.capStart) drawEndCap(a, t, r, alpha, tone);
+      if (segment.capEnd) drawEndCap(b, t, r, alpha, tone);
+
+      ctx.restore();
+    }
+
+    function drawElbow(elbow, alpha = 1, projected = null) {
+      const data = projected || projectCanvasElbow(elbow);
+      const { p1, p2, c1, c2, d1, d2, r, tone } = data;
+      let bisector = add(perp(d1), perp(d2));
+      if (len(bisector) < 0.001) bisector = perp(norm(sub(p2, p1)));
+      bisector = norm(bisector);
+      const normal = perp(bisector);
+
+      if (state.renderStyle === 'outline') {
+        const outlineWidth = canvasOutlineStrokeWidth(r, tone);
+        const clearColor = screenBackgroundColorAt((p1.y + p2.y + c1.y + c2.y) / 4);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        strokeOutlinePipePath(
+          () => {
+            ctx.moveTo(p1.x, p1.y);
+            ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+          },
+          r * 2 + outlineWidth * 2,
+          Math.max(0.5, r * 2),
+          currentPipeOutlineColor(0.96),
+          clearColor,
+          'round',
+          'round'
+        );
+        ctx.restore();
+        return;
+      }
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+      ctx.lineWidth = Math.max(2, r * 2 + Math.max(1.1, state.camera.zoom * (0.7 + tone * 0.28)));
+      ctx.strokeStyle = `rgba(18,18,18,${0.58 + tone * 0.14})`;
+      ctx.stroke();
+
+      const midX = (p1.x + p2.x + c1.x + c2.x) / 4;
+      const midY = (p1.y + p2.y + c1.y + c2.y) / 4;
+      const body = buildPipeGradient(
+        midX + normal.x * r,
+        midY + normal.y * r,
+        midX - normal.x * r,
+        midY - normal.y * r,
+        tone
+      );
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(c1.x, c1.y, c2.x, c2.y, p2.x, p2.y);
+      ctx.lineWidth = Math.max(1, r * 2);
+      ctx.strokeStyle = body;
+      ctx.stroke();
+
+      const hiOffset = mul(normal, r * 0.34);
+      ctx.beginPath();
+      ctx.moveTo(p1.x + hiOffset.x, p1.y + hiOffset.y);
+      ctx.bezierCurveTo(c1.x + hiOffset.x, c1.y + hiOffset.y, c2.x + hiOffset.x, c2.y + hiOffset.y, p2.x + hiOffset.x, p2.y + hiOffset.y);
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * (0.72 + tone * 0.34));
+      ctx.strokeStyle = `rgba(255,255,255,${0.36 + tone * 0.34})`;
+      ctx.stroke();
+
+      const shadowOffset = mul(normal, -r * 0.34);
+      ctx.beginPath();
+      ctx.moveTo(p1.x + shadowOffset.x, p1.y + shadowOffset.y);
+      ctx.bezierCurveTo(c1.x + shadowOffset.x, c1.y + shadowOffset.y, c2.x + shadowOffset.x, c2.y + shadowOffset.y, p2.x + shadowOffset.x, p2.y + shadowOffset.y);
+      ctx.lineWidth = Math.max(1.1, state.camera.zoom * (0.72 + tone * 0.34));
+      ctx.strokeStyle = `rgba(0,0,0,${0.28 + tone * 0.26})`;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawEndCap(center, tangent, radius, alpha = 1, tone = 0.5) {
+      if (state.renderStyle === 'outline') {
+        const angle = Math.atan2(tangent.y, tangent.x);
+        const flange = flangeProfile(radius);
+        const slots = flangeSlotLayout(flange);
+        const clearColor = screenBackgroundColorAt(center.y);
+        const outlineColor = currentPipeOutlineColor(0.96);
+        const edge = canvasOutlineStrokeWidth(radius, tone);
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(center.x, center.y);
+        ctx.rotate(angle);
+
+        ctx.beginPath();
+        ctx.ellipse(0, 0, flange.outerRadius, flange.outerMinor, 0, 0, Math.PI * 2);
+        ctx.fillStyle = clearColor;
+        ctx.fill();
+        ctx.lineWidth = edge;
+        ctx.strokeStyle = outlineColor;
+        ctx.stroke();
+
+        if (flange.outerRadius - flange.innerRadius > 0.8) {
+          ctx.beginPath();
+          ctx.ellipse(0, 0, flange.innerRadius, flange.innerMinor, 0, 0, Math.PI * 2);
+          ctx.fillStyle = clearColor;
+          ctx.fill();
+          ctx.lineWidth = Math.max(0.65, edge * 0.82);
+          ctx.strokeStyle = outlineColor;
+          ctx.stroke();
+        }
+
+        slots.forEach(slot => {
+          ctx.save();
+          ctx.translate(slot.x, slot.y);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, slot.holeRx, slot.holeRy, 0, 0, Math.PI * 2);
+          ctx.fillStyle = clearColor;
+          ctx.fill();
+          ctx.lineWidth = Math.max(0.5, edge * 0.68);
+          ctx.strokeStyle = outlineColor;
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        ctx.restore();
+        return;
+      }
+
+      const angle = Math.atan2(tangent.y, tangent.x);
+      const flange = flangeProfile(radius);
+      const slots = flangeSlotLayout(flange);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(center.x, center.y);
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.ellipse(0, 0, flange.outerRadius, flange.outerMinor, 0, 0, Math.PI * 2);
+      const cap = ctx.createLinearGradient(0, -flange.outerRadius, 0, flange.outerRadius);
+      cap.addColorStop(0, gray(238 + tone * 12));
+      cap.addColorStop(0.55, gray(170 + tone * 16));
+      cap.addColorStop(1, gray(86 + tone * 14));
+      ctx.fillStyle = cap;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = `rgba(18,18,18,${0.6 + tone * 0.12})`;
+      ctx.stroke();
+
+      slots.forEach(slot => {
+        ctx.save();
+        ctx.translate(slot.x, slot.y);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, slot.seatRx, slot.seatRy, 0, 0, Math.PI * 2);
+        ctx.fillStyle = gray(162 + tone * 14);
+        ctx.fill();
+        ctx.lineWidth = 0.65;
+        ctx.strokeStyle = `rgba(68,68,68,${0.62 + tone * 0.12})`;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(0, 0, slot.holeRx, slot.holeRy, 0, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(28,28,28,${0.82 + tone * 0.08})`;
+        ctx.fill();
+        ctx.lineWidth = 0.55;
+        ctx.strokeStyle = `rgba(238,238,238,${0.1 + tone * 0.08})`;
+        ctx.stroke();
+        ctx.restore();
+      });
+
+      if (flange.outerRadius - flange.innerRadius > 0.8) {
+        ctx.beginPath();
+        ctx.ellipse(0, 0, flange.innerRadius, flange.innerMinor, 0, 0, Math.PI * 2);
+        const face = ctx.createLinearGradient(0, -radius, 0, radius);
+        face.addColorStop(0, gray(246 + tone * 8));
+        face.addColorStop(0.52, gray(186 + tone * 12));
+        face.addColorStop(1, gray(94 + tone * 12));
+        ctx.fillStyle = face;
+        ctx.fill();
+        ctx.lineWidth = 0.9;
+        ctx.strokeStyle = `rgba(22,22,22,${0.46 + tone * 0.14})`;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawJointBubble(point, size) {
+      const p = worldToScreen(point);
+      const r = (size * state.camera.zoom) * 0.44;
+      if (r < 2) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+      const fill = ctx.createRadialGradient(p.x - r * 0.25, p.y - r * 0.35, r * 0.2, p.x, p.y, r);
+      fill.addColorStop(0, 'rgba(245,245,245,0.95)');
+      fill.addColorStop(0.5, 'rgba(170,170,170,0.96)');
+      fill.addColorStop(1, 'rgba(88,88,88,1)');
+      ctx.fillStyle = fill;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(18,18,18,0.72)';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      const palette = currentThemePaint();
+
+      // Background wash
+      const bg = ctx.createLinearGradient(0, 0, 0, canvas.clientHeight);
+      bg.addColorStop(0, rgb(palette.bgTop));
+      bg.addColorStop(1, rgb(palette.bgBottom));
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+
+      drawGrid();
+
+      // Axes marker at drawing origin
+      drawOriginMarker();
+
+      const renderModel = buildRenderModel(state.segments);
+      const drawables = [];
+
+      state.segments.forEach((seg, index) => {
+        const trimmed = getTrimmedSegment(seg, renderModel.plans[index]);
+        if (!trimmed) return;
+        const projected = projectCanvasSegment(trimmed);
+        if (!projected) return;
+        drawables.push({
+          key: `seg-${index}`,
+          type: 'segment',
+          sourceIndex: index,
+          polylineId: seg.polylineId,
+          segment: trimmed,
+          screen: projected,
+          depth: projected.depth,
+          occlusionDepth: occlusionDepthFromIso(isoPointOnSegment(trimmed, 0.5))
+        });
+      });
+
+      renderModel.elbows.forEach((elbow, index) => {
+        const projected = projectCanvasElbow(elbow);
+        if (!projected || !projected.valid) return;
+        drawables.push({
+          key: `elbow-${index}`,
+          type: 'elbow',
+          polylineId: null,
+          elbow,
+          screen: projected,
+          depth: projected.depth
+        });
+      });
+
+      const segmentItems = drawables.filter(item => item.type === 'segment');
+      const overlapModel = buildSegmentOverlapModel(segmentItems, canvas.clientHeight);
+
+      drawables.sort((a, b) => {
+        if (a.type === 'segment' && b.type === 'segment') {
+          return (overlapModel.order.get(a.key) || 0) - (overlapModel.order.get(b.key) || 0);
+        }
+        return compareSegmentDepth(a, b) || (a.type === 'segment' ? -1 : 1);
+      });
+
+      drawables.forEach(item => {
+        if (item.type === 'segment') {
+          drawPipeSegment(item.segment, 1, item.screen);
+          const masks = overlapModel.masks.get(item.key) || [];
+          masks.forEach(drawGapMask);
+        } else {
+          drawElbow(item.elbow, 1, item.screen);
+        }
+      });
+
+      // Preview
+      if (state.isDrawing && state.currentPolylineStart && state.previewEnd) {
+        const previewSegment = {
+          start: state.currentPolylineStart,
+          end: state.previewEnd,
+          size: state.defaultPipeSize,
+          style: state.currentPolylineStyle
+        };
+        drawPipeSegment(previewSegment, 0.72);
+        const anchor = worldToScreen(state.currentPolylineStart);
+        ctx.beginPath();
+        ctx.arc(anchor.x, anchor.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = palette.anchorFill;
+        ctx.fill();
+      } else if (!state.isDrawing && state.snappedHover) {
+        const p = worldToScreen(state.snappedHover);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = palette.hoverFill;
+        ctx.fill();
+      }
+
+      updateUi();
+    }
+
+    function drawOriginMarker() {
+      const o = worldToScreen({ x: 0, y: 0 });
+      const lengthPx = 54;
+      const palette = currentThemePaint();
+      ctx.save();
+      ctx.translate(o.x, o.y);
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = palette.originStroke;
+      ctx.fillStyle = palette.originFill;
+      for (const axis of axisList) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(axis.x * lengthPx, axis.y * lengthPx);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.arc(0, 0, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function beginPolyline(atWorld) {
+      state.isDrawing = true;
+      state.currentPolylineStyle = state.toolMode === 'line' ? 'line' : state.selectedPolylineStyle;
+      state.activePolylineId = state.nextPolylineId++;
+      state.currentPolylineStart = snapPointToIsoGrid(atWorld);
+      state.currentPolylineStartIso = resolveSegmentEndpointIso(state.currentPolylineStart);
+      state.polylineSeedPoint = { ...state.currentPolylineStart };
+      state.polylineSeedPointIso = cloneIso(state.currentPolylineStartIso);
+      state.polylineStartIndex = state.segments.length;
+      state.previewEnd = state.currentPolylineStart;
+      state.previewEndIso = cloneIso(state.currentPolylineStartIso);
+      setStatus(
+        state.toolMode === 'line'
+          ? 'Line tool active. Move the cursor and click point B to place one 3D pipe section.'
+          : `Polyline active in <span class="mono">${styleLabel(state.currentPolylineStyle).toUpperCase()}</span> mode. Move the cursor and click to add continuous pipe segments. Press <span class="mono">Enter</span> to end the current run.`
+      );
+      render();
+    }
+
+    function finishPolyline(message = 'Polyline finished. Select Line or Polyline and click on the canvas to continue drawing. The print sheet will center the completed geometry automatically.') {
+      state.isDrawing = false;
+      state.currentPolylineStart = null;
+      state.currentPolylineStartIso = null;
+      state.previewEnd = null;
+      state.previewEndIso = null;
+      state.polylineSeedPoint = null;
+      state.polylineSeedPointIso = null;
+      state.activePolylineId = null;
+      setStatus(message);
+      render();
+    }
+
+    function addSegment(endWorld) {
+      if (!state.currentPolylineStart || !state.currentPolylineStartIso) return;
+      const snappedEnd = snapAlongNearestAxis(state.currentPolylineStart, endWorld, state.currentPolylineStartIso);
+      if (snappedEnd.x === state.currentPolylineStart.x && snappedEnd.y === state.currentPolylineStart.y) return;
+      const snappedWorld = { x: snappedEnd.x, y: snappedEnd.y };
+      state.segments.push({
+        start: { ...state.currentPolylineStart },
+        end: snappedWorld,
+        isoStart: cloneIso(state.currentPolylineStartIso),
+        isoEnd: cloneIso(snappedEnd.iso),
+        size: state.defaultPipeSize,
+        style: state.currentPolylineStyle,
+        polylineId: state.activePolylineId
+      });
+      state.currentPolylineStart = snappedWorld;
+      state.currentPolylineStartIso = cloneIso(snappedEnd.iso);
+      state.previewEnd = snappedWorld;
+      state.previewEndIso = cloneIso(snappedEnd.iso);
+      const justAddedStyle = state.currentPolylineStyle;
+      const axisLabel = state.lastSnapAxis.label === 'Z' ? 'vertical' : state.lastSnapAxis.label === 'N' ? 'north' : 'east';
+      if (state.toolMode === 'line') {
+        finishPolyline(`Single 3D pipe section placed along the ${axisLabel} isometric axis using the <span class="mono">LINE</span> tool.`);
+        return;
+      }
+      setStatus(`Segment added along the ${axisLabel} isometric axis using <span class="mono">${styleLabel(justAddedStyle).toUpperCase()}</span> mode. Continue clicking to extend the pipe run, then press <span class="mono">Enter</span> to end it.`);
+      render();
+    }
+
+    function recenter() {
+      if (!state.segments.length) {
+        state.camera.x = 0;
+        state.camera.y = 0;
+        state.camera.zoom = 1;
+        render();
+        return;
+      }
+      const pts = [];
+      for (const s of state.segments) { pts.push(s.start, s.end); }
+      const minX = Math.min(...pts.map(p => p.x));
+      const maxX = Math.max(...pts.map(p => p.x));
+      const minY = Math.min(...pts.map(p => p.y));
+      const maxY = Math.max(...pts.map(p => p.y));
+      const cx = (minX + maxX) / 2;
+      const cy = (minY + maxY) / 2;
+      const width = Math.max(100, maxX - minX);
+      const height = Math.max(100, maxY - minY);
+      const zoomX = (canvas.clientWidth * 0.72) / width;
+      const zoomY = (canvas.clientHeight * 0.72) / height;
+      state.camera.zoom = clamp(Math.min(zoomX, zoomY), 0.25, 3.8);
+      state.camera.x = -cx;
+      state.camera.y = -cy;
+      render();
+    }
+
+    function updatePreviewFromPointer(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const world = screenToWorld({ x: clientX - rect.left, y: clientY - rect.top });
+      state.hoverWorld = world;
+      state.hoverIso = canonicalIsoFromWorld(world);
+      state.snappedHover = snapPointToIsoGrid(world);
+      state.snappedHoverIso = canonicalIsoFromWorld(state.snappedHover);
+      if (state.isDrawing && state.currentPolylineStart && state.currentPolylineStartIso) {
+        const previewEnd = snapAlongNearestAxis(state.currentPolylineStart, world, state.currentPolylineStartIso);
+        state.previewEnd = { x: previewEnd.x, y: previewEnd.y };
+        state.previewEndIso = cloneIso(previewEnd.iso);
+      }
+      render();
+    }
+
+    function pointerPosition(evt) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+    }
+
+    canvas.addEventListener('mousemove', (evt) => {
+      if (state.panning && state.lastPan) {
+        const now = { x: evt.clientX, y: evt.clientY };
+        const dx = now.x - state.lastPan.x;
+        const dy = now.y - state.lastPan.y;
+        state.camera.x += dx / state.camera.zoom;
+        state.camera.y += dy / state.camera.zoom;
+        state.lastPan = now;
+        render();
+        return;
+      }
+      updatePreviewFromPointer(evt.clientX, evt.clientY);
+    });
+
+    canvas.addEventListener('mousedown', (evt) => {
+      if (evt.button === 1) {
+        evt.preventDefault();
+        state.panning = true;
+        state.lastPan = { x: evt.clientX, y: evt.clientY };
+      }
+    });
+
+    canvas.addEventListener('mouseup', (evt) => {
+      if (evt.button === 1) {
+        state.panning = false;
+        state.lastPan = null;
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      state.panning = false;
+      state.lastPan = null;
+    });
+
+    canvas.addEventListener('click', (evt) => {
+      if (evt.button !== 0) return;
+      const rect = canvas.getBoundingClientRect();
+      const world = screenToWorld({ x: evt.clientX - rect.left, y: evt.clientY - rect.top });
+      if (!state.isDrawing) {
+        beginPolyline(world);
+      } else {
+        addSegment(world);
+      }
+    });
+
+
+    canvas.addEventListener('wheel', (evt) => {
+      evt.preventDefault();
+      const mouse = pointerPosition(evt);
+      const before = screenToWorld(mouse);
+      const factor = evt.deltaY < 0 ? 1.08 : 0.92;
+      state.camera.zoom = clamp(state.camera.zoom * factor, 0.2, 5);
+      const after = screenToWorld(mouse);
+      state.camera.x += before.x - after.x;
+      state.camera.y += before.y - after.y;
+      render();
+    }, { passive: false });
+
+    document.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter') {
+        if (state.isDrawing && state.toolMode === 'polyline') finishPolyline();
+      } else if (evt.key === 'Escape') {
+        if (state.isDrawing) finishPolyline();
+      }
+      if ((evt.ctrlKey || evt.metaKey) && evt.key.toLowerCase() === 'z') {
+        evt.preventDefault();
+        els.undoBtn.click();
+      }
+    });
+
+    els.lineBtn.addEventListener('click', () => {
+      state.toolMode = 'line';
+      if (state.isDrawing) finishPolyline('Switched to the Line tool.');
+      render();
+    });
+    els.polylineBtn.addEventListener('click', () => {
+      state.toolMode = 'polyline';
+      if (state.isDrawing && state.currentPolylineStyle === 'line') finishPolyline('Switched to the Polyline tool.');
+      render();
+    });
+    els.undoBtn.addEventListener('click', () => {
+      if (!state.segments.length) return;
+      if (state.isDrawing) {
+        if (state.segments.length > state.polylineStartIndex) {
+          state.segments.pop();
+          if (state.segments.length > state.polylineStartIndex) {
+            state.currentPolylineStart = { ...state.segments[state.segments.length - 1].end };
+            state.currentPolylineStartIso = state.segments[state.segments.length - 1].isoEnd
+              ? cloneIso(state.segments[state.segments.length - 1].isoEnd)
+              : resolveSegmentEndpointIso(state.currentPolylineStart);
+          } else if (state.polylineSeedPoint) {
+            state.currentPolylineStart = { ...state.polylineSeedPoint };
+            state.currentPolylineStartIso = state.polylineSeedPointIso
+              ? cloneIso(state.polylineSeedPointIso)
+              : resolveSegmentEndpointIso(state.currentPolylineStart);
+          }
+          state.previewEnd = state.currentPolylineStart;
+          state.previewEndIso = state.currentPolylineStartIso ? cloneIso(state.currentPolylineStartIso) : null;
+        }
+      } else {
+        state.segments.pop();
+      }
+      render();
+    });
+    els.clearBtn.addEventListener('click', () => {
+      state.segments = [];
+      state.hoverIso = { n: 0, e: 0, z: 0 };
+      state.snappedHoverIso = { n: 0, e: 0, z: 0 };
+      finishPolyline();
+      state.camera = { x: 0, y: 0, zoom: 1 };
+      setStatus('Drawing cleared. Ready for a new piping layout.');
+      render();
+    });
+    els.centerBtn.addEventListener('click', recenter);
+    els.printBtn.addEventListener('click', () => {
+      buildPrintSheet();
+      window.print();
+    });
+
+    els.pipeSize.addEventListener('input', () => {
+      state.defaultPipeSize = Number(els.pipeSize.value);
+      els.pipeSizeValue.value = state.defaultPipeSize;
+      render();
+    });
+    els.pipeSizeValue.addEventListener('input', () => {
+      state.defaultPipeSize = clamp(Number(els.pipeSizeValue.value || 2), 1, 42);
+      els.pipeSize.value = state.defaultPipeSize;
+      render();
+    });
+    els.renderStyle.addEventListener('input', () => {
+      state.renderStyle = els.renderStyle.value === 'outline' ? 'outline' : 'gradient';
+      render();
+    });
+    els.outlineThickness.addEventListener('input', () => {
+      setOutlineThickness(els.outlineThickness.value);
+      els.outlineThicknessValue.value = Math.round(state.outlineThickness * 100);
+      render();
+    });
+    els.outlineThicknessValue.addEventListener('input', () => {
+      setOutlineThickness(els.outlineThicknessValue.value);
+      els.outlineThickness.value = Math.round(state.outlineThickness * 100);
+      render();
+    });
+    els.flangeScale.addEventListener('input', () => {
+      setFlangeScale(els.flangeScale.value);
+      els.flangeScaleValue.value = Math.round(state.flangeScale * 100);
+      render();
+    });
+    els.flangeScaleValue.addEventListener('input', () => {
+      setFlangeScale(els.flangeScaleValue.value);
+      els.flangeScale.value = Math.round(state.flangeScale * 100);
+      render();
+    });
+    els.gridStep.addEventListener('input', () => {
+      state.gridStep = clamp(Number(els.gridStep.value || 15), 8, 80);
+      render();
+    });
+    els.themeSelect.addEventListener('input', () => {
+      applyTheme(els.themeSelect.value);
+      render();
+    });
+    els.rotateLeftBtn.addEventListener('click', () => {
+      setFlangeRotation(state.flangeRotationDegrees - 15);
+      render();
+    });
+    els.rotateRightBtn.addEventListener('click', () => {
+      setFlangeRotation(state.flangeRotationDegrees + 15);
+      render();
+    });
+    els.polylineStyle.addEventListener('input', () => {
+      state.selectedPolylineStyle = els.polylineStyle.value;
+      render();
+    });
+
+    function getBounds(segments) {
+      if (!segments.length) return null;
+      const pts = [];
+      segments.forEach(s => { pts.push(s.start, s.end); });
+      return {
+        minX: Math.min(...pts.map(p => p.x)),
+        maxX: Math.max(...pts.map(p => p.x)),
+        minY: Math.min(...pts.map(p => p.y)),
+        maxY: Math.max(...pts.map(p => p.y))
+      };
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function normalizedDrawingBase(value) {
+      const raw = (value || 'ISO-001').trim().toUpperCase();
+      const base = raw.replace(/-\d{3}$/, '');
+      return base || 'ISO';
+    }
+
+    function buildPrintMeta() {
+      return {
+        project: (els.projectTitle.value || 'ISOMETRIC PIPING').toUpperCase(),
+        revision: (els.revision.value || '0').toUpperCase(),
+        scale: (els.sheetScale.value || 'NTS').toUpperCase(),
+        drawnBy: (els.drawnBy.value || 'USER').toUpperCase(),
+        date: new Date().toLocaleDateString(),
+        drawingBase: normalizedDrawingBase(els.drawingNumber.value)
+      };
+    }
+
+    function buildPrintTitleHtml(meta, suffix) {
+      const drawingNo = `${meta.drawingBase}${suffix}`;
+      return `<div class="print-title">
+        <div class="drawing-field">
+          <span class="title-label">Project</span>
+          <span class="title-value">${escapeHtml(meta.project)}</span>
+        </div>
+        <div>
+          <span class="title-label">Rev</span>
+          <span class="title-value">${escapeHtml(meta.revision)}</span>
+        </div>
+        <div>
+          <span class="title-label">Drawing No.</span>
+          <span class="title-value">${escapeHtml(drawingNo)}</span>
+        </div>
+        <div>
+          <span class="title-label">Scale</span>
+          <span class="title-value">${escapeHtml(meta.scale)}</span>
+        </div>
+        <div>
+          <span class="title-label">Date</span>
+          <span class="title-value">${escapeHtml(meta.date)}</span>
+        </div>
+        <div>
+          <span class="title-label">Drawn By</span>
+          <span class="title-value">${escapeHtml(meta.drawnBy)}</span>
+        </div>
+      </div>`;
+    }
+
+    function buildPrintPageHtml({ header, sub, bodyHtml, meta, suffix }) {
+      return `<div class="print-page">
+        <div class="print-border"></div>
+        <div class="sheet-header">${escapeHtml(header)}</div>
+        <div class="sheet-sub">${escapeHtml(sub)}</div>
+        ${bodyHtml}
+        ${buildPrintTitleHtml(meta, suffix)}
+      </div>`;
+    }
+
+    function segmentIsoEndpoints(segment) {
+      return {
+        isoStart: segment.isoStart ? cloneIso(segment.isoStart) : canonicalIsoFromWorld(segment.start),
+        isoEnd: segment.isoEnd ? cloneIso(segment.isoEnd) : canonicalIsoFromWorld(segment.end)
+      };
+    }
+
+    const orthographicViewSpecs = {
+      overhead: {
+        key: 'overhead',
+        label: 'Overhead',
+        project: (iso) => ({ x: iso.e, y: -iso.n, depth: iso.z })
+      },
+      west: {
+        key: 'west',
+        label: 'Facing West',
+        project: (iso) => ({ x: iso.n, y: -iso.z, depth: iso.e })
+      },
+      north: {
+        key: 'north',
+        label: 'Facing North',
+        project: (iso) => ({ x: iso.e, y: -iso.z, depth: -iso.n })
+      },
+      east: {
+        key: 'east',
+        label: 'Facing East',
+        project: (iso) => ({ x: -iso.n, y: -iso.z, depth: -iso.e })
+      },
+      south: {
+        key: 'south',
+        label: 'Facing South',
+        project: (iso) => ({ x: -iso.e, y: -iso.z, depth: iso.n })
+      }
+    };
+
+    function getProjectedBoundsForView(viewSpec) {
+      if (!state.segments.length) return null;
+      const pts = [];
+      state.segments.forEach(segment => {
+        const { isoStart, isoEnd } = segmentIsoEndpoints(segment);
+        pts.push(viewSpec.project(isoStart), viewSpec.project(isoEnd));
+      });
+      return {
+        minX: Math.min(...pts.map(p => p.x)),
+        maxX: Math.max(...pts.map(p => p.x)),
+        minY: Math.min(...pts.map(p => p.y)),
+        maxY: Math.max(...pts.map(p => p.y))
+      };
+    }
+
+    function projectFlatSegmentData(a, b, baseRadius) {
+      const v = sub(b, a);
+      const L = len(v);
+      if (L < 0.001) return null;
+      const t = norm(v);
+      const n = perp(t);
+      const r = Math.max(1, baseRadius);
+      const tone = 0.22;
+      return { a, b, v, L, t, n, r, tone, depth: (a.y + b.y) / 2 };
+    }
+
+    function getTrimmedDepthRange(segment, plan) {
+      const fullLength = len(sub(segment.end, segment.start));
+      if (fullLength < 0.001) return { start: segment.depthStart, end: segment.depthEnd };
+      const startT = clamp(plan.startTrim / fullLength, 0, 1);
+      const endT = clamp(1 - (plan.endTrim / fullLength), 0, 1);
+      return {
+        start: segment.depthStart + (segment.depthEnd - segment.depthStart) * startT,
+        end: segment.depthStart + (segment.depthEnd - segment.depthStart) * endT
+      };
+    }
+
+    function buildOrthographicOverlapModel(segmentItems) {
+      const masks = new Map();
+      const edges = new Map();
+      const indegree = new Map();
+      segmentItems.forEach(item => {
+        edges.set(item.key, new Set());
+        indegree.set(item.key, 0);
+      });
+
+      for (let i = 0; i < segmentItems.length; i++) {
+        for (let j = i + 1; j < segmentItems.length; j++) {
+          const a = segmentItems[i];
+          const b = segmentItems[j];
+          if (a.sourceIndex === b.sourceIndex) continue;
+          if (a.polylineId && a.polylineId === b.polylineId && Math.abs(a.sourceIndex - b.sourceIndex) <= 1) continue;
+          const hit = lineIntersection(a.screen.a, a.screen.b, b.screen.a, b.screen.b);
+          if (!hit) continue;
+
+          const aDepth = a.depthStart + (a.depthEnd - a.depthStart) * hit.t;
+          const bDepth = b.depthStart + (b.depthEnd - b.depthStart) * hit.u;
+          const front = Math.abs(aDepth - bDepth) < 0.001
+            ? (a.occlusionDepth >= b.occlusionDepth ? a : b)
+            : (aDepth >= bDepth ? a : b);
+          const back = front === a ? b : a;
+          const gapLength = Math.max(8, front.screen.r * 2.2, back.screen.r * 2.05);
+          const gapWidth = Math.max(8, front.screen.r * 1.95, back.screen.r * 2.15);
+          const entry = {
+            center: hit.point,
+            dir: back.screen.t,
+            length: gapLength,
+            width: gapWidth,
+            fill: '#ffffff',
+            edge: '#bbbbbb'
+          };
+          if (!masks.has(back.key)) masks.set(back.key, []);
+          masks.get(back.key).push(entry);
+
+          if (!edges.get(back.key).has(front.key)) {
+            edges.get(back.key).add(front.key);
+            indegree.set(front.key, (indegree.get(front.key) || 0) + 1);
+          }
+        }
+      }
+
+      return {
+        masks,
+        order: buildSegmentDrawOrder(segmentItems, edges, indegree)
+      };
+    }
+
+    function buildOrthographicViewSvg(viewSpec, w = 330, h = 210) {
+      let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><defs></defs>`;
+      const bounds = getProjectedBoundsForView(viewSpec);
+      if (!bounds) {
+        svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-size="18" fill="#777" font-family="Arial">NO PIPING DRAWN</text>`;
+        svg += `</svg>`;
+        return svg;
+      }
+
+      const pad = 18;
+      const bw = Math.max(1, bounds.maxX - bounds.minX);
+      const bh = Math.max(1, bounds.maxY - bounds.minY);
+      const scale = Math.max(0.01, Math.min((w - pad * 2) / bw, (h - pad * 2) / bh));
+      const cx = (bounds.minX + bounds.maxX) / 2;
+      const cy = (bounds.minY + bounds.maxY) / 2;
+      const defs = [];
+
+      function mapViewPoint(point) {
+        return {
+          x: (point.x - cx) * scale + w / 2,
+          y: (point.y - cy) * scale + h / 2
+        };
+      }
+
+      const projectedSegments = state.segments.map((segment, sourceIndex) => {
+        const { isoStart, isoEnd } = segmentIsoEndpoints(segment);
+        const startView = viewSpec.project(isoStart);
+        const endView = viewSpec.project(isoEnd);
+        return {
+          start: mapViewPoint(startView),
+          end: mapViewPoint(endView),
+          size: Math.max(2.4, segment.size * scale),
+          style: segment.style,
+          polylineId: segment.polylineId,
+          sourceIndex,
+          depthStart: startView.depth,
+          depthEnd: endView.depth
+        };
+      }).filter(segment => len(sub(segment.end, segment.start)) >= 0.5);
+
+      if (!projectedSegments.length) {
+        svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-size="18" fill="#777" font-family="Arial">NO VISIBLE PROJECTION</text>`;
+        svg += `</svg>`;
+        return svg;
+      }
+
+      const renderModel = buildRenderModel(projectedSegments);
+      const drawables = [];
+
+      projectedSegments.forEach((segment, index) => {
+        const trimmed = getTrimmedSegment(segment, renderModel.plans[index]);
+        if (!trimmed) return;
+        const depthRange = getTrimmedDepthRange(segment, renderModel.plans[index]);
+        const projected = projectFlatSegmentData(trimmed.start, trimmed.end, trimmed.size / 2);
+        if (!projected) return;
+        drawables.push({
+          key: `${viewSpec.key}-seg-${index}`,
+          type: 'segment',
+          sourceIndex: segment.sourceIndex,
+          polylineId: segment.polylineId,
+          segment: trimmed,
+          screen: projected,
+          depth: projected.depth,
+          occlusionDepth: (depthRange.start + depthRange.end) / 2,
+          depthStart: depthRange.start,
+          depthEnd: depthRange.end
+        });
+      });
+
+      renderModel.elbows.forEach((elbow, index) => {
+        const controls = elbowBezierControls(elbow, true);
+        if (!controls.valid) return;
+        const depth = (controls.p1.y + controls.p2.y + controls.c1.y + controls.c2.y) / 4;
+        drawables.push({
+          key: `${viewSpec.key}-elbow-${index}`,
+          type: 'elbow',
+          polylineId: null,
+          elbow,
+          screen: { ...controls, r: Math.max(1, elbow.size / 2), tone: 0.22, depth },
+          depth
+        });
+      });
+
+      const segmentItems = drawables.filter(item => item.type === 'segment');
+      const overlapModel = buildOrthographicOverlapModel(segmentItems);
+
+      drawables.sort((a, b) => {
+        if (a.type === 'segment' && b.type === 'segment') {
+          return (overlapModel.order.get(a.key) || 0) - (overlapModel.order.get(b.key) || 0);
+        }
+        return compareSegmentDepth(a, b) || (a.type === 'segment' ? -1 : 1);
+      });
+
+      drawables.forEach((item, order) => {
+        if (item.type === 'segment') {
+          const { a, b, n, r, tone, t } = item.screen;
+          const flange = flangeProfile(r);
+          const angleRad = Math.atan2(t.y, t.x);
+          const angle = angleRad * 180 / Math.PI;
+          if (state.renderStyle === 'outline') {
+            const outlineStroke = printOutlineStrokeWidth(r);
+            svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#111" stroke-width="${r * 2 + outlineStroke * 2}" stroke-linecap="butt" />`;
+            svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#fff" stroke-width="${Math.max(0.5, r * 2)}" stroke-linecap="butt" />`;
+            if (item.segment.capStart) {
+              svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="#fff" stroke="#111" stroke-width="${outlineStroke}" />`;
+              svg += flangeHoleSvg(a, angleRad, flange, '#111', '#fff', Math.max(0.45, outlineStroke * 0.7));
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="#fff" stroke="#111" stroke-width="${Math.max(0.45, outlineStroke * 0.82)}" />`;
+            }
+            if (item.segment.capEnd) {
+              svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="#fff" stroke="#111" stroke-width="${outlineStroke}" />`;
+              svg += flangeHoleSvg(b, angleRad, flange, '#111', '#fff', Math.max(0.45, outlineStroke * 0.7));
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="#fff" stroke="#111" stroke-width="${Math.max(0.45, outlineStroke * 0.82)}" />`;
+            }
+          } else {
+            const p1 = `${a.x + n.x * r},${a.y + n.y * r}`;
+            const p2 = `${b.x + n.x * r},${b.y + n.y * r}`;
+            const p3 = `${b.x - n.x * r},${b.y - n.y * r}`;
+            const p4 = `${a.x - n.x * r},${a.y - n.y * r}`;
+            const gradId = `${viewSpec.key}PipeGrad${order}`;
+            defs.push(`<linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${a.x + n.x * r}" y1="${a.y + n.y * r}" x2="${a.x - n.x * r}" y2="${a.y - n.y * r}">
+              <stop offset="0%" stop-color="${grayHex(228 + tone * 8)}" />
+              <stop offset="32%" stop-color="${grayHex(196 + tone * 8)}" />
+              <stop offset="72%" stop-color="${grayHex(154 + tone * 8)}" />
+              <stop offset="100%" stop-color="${grayHex(94 + tone * 10)}" />
+            </linearGradient>`);
+            svg += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="url(#${gradId})" stroke="#111" stroke-width="0.9" />`;
+            svg += `<line x1="${a.x + n.x * r}" y1="${a.y + n.y * r}" x2="${b.x + n.x * r}" y2="${b.y + n.y * r}" stroke="#fff" stroke-opacity="0.44" stroke-width="${Math.max(0.9, r * 0.08)}" />`;
+            svg += `<line x1="${a.x - n.x * r}" y1="${a.y - n.y * r}" x2="${b.x - n.x * r}" y2="${b.y - n.y * r}" stroke="#111" stroke-opacity="0.34" stroke-width="${Math.max(0.9, r * 0.08)}" />`;
+            if (item.segment.capStart) {
+              svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="url(#${gradId})" stroke="#111" stroke-width="0.9" />`;
+              svg += flangeSlotSvg(a, angleRad, flange, tone);
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="url(#${gradId})" stroke="#222" stroke-width="0.75" />`;
+            }
+            if (item.segment.capEnd) {
+              svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="url(#${gradId})" stroke="#111" stroke-width="0.9" />`;
+              svg += flangeSlotSvg(b, angleRad, flange, tone);
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="url(#${gradId})" stroke="#222" stroke-width="0.75" />`;
+            }
+          }
+          const masks = overlapModel.masks.get(item.key) || [];
+          masks.forEach(mask => {
+            const half = mask.length / 2;
+            const start = add(mask.center, mul(mask.dir, -half));
+            const end = add(mask.center, mul(mask.dir, half));
+            svg += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" stroke="${mask.fill}" stroke-width="${mask.width}" stroke-linecap="round" />`;
+            svg += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" stroke="${mask.edge}" stroke-width="${Math.max(1, mask.width * 0.08)}" stroke-linecap="round" />`;
+          });
+        } else {
+          const { p1, p2, c1, c2, r, tone } = item.screen;
+          const path = `M ${p1.x} ${p1.y} C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${p2.x} ${p2.y}`;
+          if (state.renderStyle === 'outline') {
+            const outlineStroke = printOutlineStrokeWidth(r);
+            svg += `<path d="${path}" fill="none" stroke="#111" stroke-width="${r * 2 + outlineStroke * 2}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${path}" fill="none" stroke="#fff" stroke-width="${Math.max(0.5, r * 2)}" stroke-linecap="round" stroke-linejoin="round" />`;
+          } else {
+            const gradId = `${viewSpec.key}ElbowGrad${order}`;
+            const midX = (p1.x + p2.x + c1.x + c2.x) / 4;
+            const midY = (p1.y + p2.y + c1.y + c2.y) / 4;
+            let bisector = add(perp(item.screen.d1), perp(item.screen.d2));
+            if (len(bisector) < 0.001) bisector = perp(norm(sub(p2, p1)));
+            bisector = norm(bisector);
+            const normal = perp(bisector);
+            const hiOffset = mul(normal, r * 0.34);
+            const shadowOffset = mul(normal, -r * 0.34);
+            const hiPath = `M ${p1.x + hiOffset.x} ${p1.y + hiOffset.y} C ${c1.x + hiOffset.x} ${c1.y + hiOffset.y} ${c2.x + hiOffset.x} ${c2.y + hiOffset.y} ${p2.x + hiOffset.x} ${p2.y + hiOffset.y}`;
+            const shadowPath = `M ${p1.x + shadowOffset.x} ${p1.y + shadowOffset.y} C ${c1.x + shadowOffset.x} ${c1.y + shadowOffset.y} ${c2.x + shadowOffset.x} ${c2.y + shadowOffset.y} ${p2.x + shadowOffset.x} ${p2.y + shadowOffset.y}`;
+            defs.push(`<linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${midX + normal.x * r}" y1="${midY + normal.y * r}" x2="${midX - normal.x * r}" y2="${midY - normal.y * r}">
+              <stop offset="0%" stop-color="${grayHex(228 + tone * 8)}" />
+              <stop offset="32%" stop-color="${grayHex(196 + tone * 8)}" />
+              <stop offset="72%" stop-color="${grayHex(154 + tone * 8)}" />
+              <stop offset="100%" stop-color="${grayHex(94 + tone * 10)}" />
+            </linearGradient>`);
+            svg += `<path d="${path}" fill="none" stroke="#111" stroke-width="${r * 2 + 1}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${path}" fill="none" stroke="url(#${gradId})" stroke-width="${r * 2}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${hiPath}" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="${Math.max(0.9, r * 0.08)}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${shadowPath}" fill="none" stroke="#111" stroke-opacity="0.34" stroke-width="${Math.max(0.9, r * 0.08)}" stroke-linecap="round" stroke-linejoin="round" />`;
+          }
+        }
+      });
+
+      svg = svg.replace('</defs>', defs.join('') + '</defs>');
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function buildAlternateGridHtml() {
+      const viewSvg = {
+        overhead: buildOrthographicViewSvg(orthographicViewSpecs.overhead, 480, 560),
+        north: buildOrthographicViewSvg(orthographicViewSpecs.north, 560, 280),
+        east: buildOrthographicViewSvg(orthographicViewSpecs.east, 560, 280)
+      };
+
+      return `<div class="print-grid">
+        <div class="view-cell view-overhead">
+          <div class="view-label">${escapeHtml(orthographicViewSpecs.overhead.label)}</div>
+          <div class="view-svg">${viewSvg.overhead}</div>
+        </div>
+        <div class="view-cell view-north">
+          <div class="view-label">${escapeHtml(orthographicViewSpecs.north.label)}</div>
+          <div class="view-svg">${viewSvg.north}</div>
+        </div>
+        <div class="view-cell view-east">
+          <div class="view-label">${escapeHtml(orthographicViewSpecs.east.label)}</div>
+          <div class="view-svg">${viewSvg.east}</div>
+        </div>
+      </div>`;
+    }
+
+    function buildIsometricPrintSvg() {
+      const w = 1200;
+      const h = 700;
+      const pad = 55;
+      const bounds = getBounds(state.segments);
+      const borderInsetX = (w / 11) * 0.25;
+      const borderInsetY = (h / 8.5) * 0.25;
+      const orientBox = { x: w - borderInsetX - 116, y: borderInsetY, width: 116, height: 92 };
+      const orientCenter = { x: orientBox.x + orientBox.width / 2 - 2, y: orientBox.y + orientBox.height / 2 + 6 };
+      const northDir = norm(axes.north);
+      const orientStart = add(orientCenter, mul(northDir, -20));
+      const orientEnd = add(orientCenter, mul(northDir, 22));
+      const orientLabel = add(orientEnd, { x: northDir.x * 8, y: northDir.y * 8 - 2 });
+
+      let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+      svg += `<defs>
+        <marker id="printArrow" markerWidth="5" markerHeight="5" viewBox="0 0 5 5" refX="4.1" refY="2.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0.7 0.7 L4 2.5 L0.7 4.3" fill="none" stroke="#111" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" />
+        </marker>
+      </defs>`;
+
+      svg += `<rect x="${orientBox.x}" y="${orientBox.y}" width="${orientBox.width}" height="${orientBox.height}" rx="12" fill="#fff" stroke="#111" stroke-width="1.2" />`;
+      svg += `<path d="M${orientStart.x} ${orientStart.y} L${orientEnd.x} ${orientEnd.y}" stroke="#111" stroke-width="2.4" stroke-linecap="round" marker-end="url(#printArrow)" />`;
+      svg += `<text x="${orientLabel.x}" y="${orientLabel.y}" font-size="14" font-family="Arial" font-weight="700" text-anchor="middle">N</text>`;
+
+      if (!bounds) {
+        svg += `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-size="28" fill="#666" font-family="Arial">NO PIPING DRAWN</text>`;
+      } else {
+        const bw = Math.max(60, bounds.maxX - bounds.minX);
+        const bh = Math.max(60, bounds.maxY - bounds.minY);
+        const scale = Math.min((w - pad * 2) / bw, (h - pad * 2) / bh);
+        const cx = (bounds.minX + bounds.maxX) / 2;
+        const cy = (bounds.minY + bounds.maxY) / 2;
+
+        function map(p) {
+          return {
+            x: (p.x - cx) * scale + w / 2,
+            y: (p.y - cy) * scale + h / 2
+          };
+        }
+
+        const renderModel = buildRenderModel(state.segments);
+        const drawables = [];
+        const defs = [];
+
+        state.segments.forEach((seg, index) => {
+          const trimmed = getTrimmedSegment(seg, renderModel.plans[index]);
+          if (!trimmed) return;
+          const projected = projectSegmentData(map(trimmed.start), map(trimmed.end), (trimmed.size * scale) / 2, h);
+          if (!projected) return;
+          drawables.push({
+            key: `pseg-${index}`,
+            type: 'segment',
+            sourceIndex: index,
+            polylineId: seg.polylineId,
+            segment: trimmed,
+            screen: projected,
+            depth: projected.depth,
+            occlusionDepth: occlusionDepthFromIso(isoPointOnSegment(trimmed, 0.5))
+          });
+        });
+
+        renderModel.elbows.forEach((elbow, index) => {
+          const mappedElbow = {
+            ...elbow,
+            from: map(elbow.from),
+            joint: map(elbow.joint),
+            to: map(elbow.to)
+          };
+          const controls = elbowBezierControls(mappedElbow, true);
+          const depth = (controls.p1.y + controls.p2.y + controls.c1.y + controls.c2.y) / 4;
+          const perspective = perspectiveFactorForHeight(depth, h);
+          const r = Math.max(1, (elbow.size * scale / 2) * perspective);
+          const tone = toneFromPerspective(perspective);
+          drawables.push({
+            key: `pelbow-${index}`,
+            type: 'elbow',
+            polylineId: null,
+            elbow: mappedElbow,
+            screen: { ...controls, depth, perspective, r, tone },
+            depth
+          });
+        });
+
+        const segmentItems = drawables.filter(item => item.type === 'segment');
+        const overlapModel = buildSegmentOverlapModel(segmentItems, h);
+
+        drawables.sort((a, b) => {
+          if (a.type === 'segment' && b.type === 'segment') {
+            return (overlapModel.order.get(a.key) || 0) - (overlapModel.order.get(b.key) || 0);
+          }
+          return compareSegmentDepth(a, b) || (a.type === 'segment' ? -1 : 1);
+        });
+
+      drawables.forEach((item, order) => {
+        if (item.type === 'segment') {
+          const { a, b, n, r, tone, t } = item.screen;
+          const flange = flangeProfile(r);
+          const angleRad = Math.atan2(t.y, t.x);
+          const angle = angleRad * 180 / Math.PI;
+          if (state.renderStyle === 'outline') {
+            const outlineStroke = printOutlineStrokeWidth(r);
+            svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#111" stroke-width="${r * 2 + outlineStroke * 2}" stroke-linecap="butt" />`;
+            svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#fff" stroke-width="${Math.max(0.5, r * 2)}" stroke-linecap="butt" />`;
+            if (item.segment.capStart) {
+              svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="#fff" stroke="#111" stroke-width="${outlineStroke}" />`;
+              svg += flangeHoleSvg(a, angleRad, flange, '#111', '#fff', Math.max(0.45, outlineStroke * 0.7));
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="#fff" stroke="#111" stroke-width="${Math.max(0.45, outlineStroke * 0.82)}" />`;
+            }
+            if (item.segment.capEnd) {
+              svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="#fff" stroke="#111" stroke-width="${outlineStroke}" />`;
+              svg += flangeHoleSvg(b, angleRad, flange, '#111', '#fff', Math.max(0.45, outlineStroke * 0.7));
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="#fff" stroke="#111" stroke-width="${Math.max(0.45, outlineStroke * 0.82)}" />`;
+            }
+          } else {
+            const p1 = `${a.x + n.x * r},${a.y + n.y * r}`;
+            const p2 = `${b.x + n.x * r},${b.y + n.y * r}`;
+            const p3 = `${b.x - n.x * r},${b.y - n.y * r}`;
+            const p4 = `${a.x - n.x * r},${a.y - n.y * r}`;
+            const gradId = `pipeGrad${order}`;
+            defs.push(`<linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${a.x + n.x * r}" y1="${a.y + n.y * r}" x2="${a.x - n.x * r}" y2="${a.y - n.y * r}">
+              <stop offset="0%" stop-color="${grayHex(225 + tone * 18)}" />
+              <stop offset="28%" stop-color="${grayHex(190 + tone * 18)}" />
+              <stop offset="72%" stop-color="${grayHex(142 + tone * 18)}" />
+              <stop offset="100%" stop-color="${grayHex(76 + tone * 16)}" />
+            </linearGradient>`);
+            svg += `<polygon points="${p1} ${p2} ${p3} ${p4}" fill="url(#${gradId})" stroke="#111" stroke-width="1" />`;
+            svg += `<line x1="${a.x + n.x * r}" y1="${a.y + n.y * r}" x2="${b.x + n.x * r}" y2="${b.y + n.y * r}" stroke="#fff" stroke-opacity="${0.34 + tone * 0.3}" stroke-width="${Math.max(1, r * 0.08)}" />`;
+            svg += `<line x1="${a.x - n.x * r}" y1="${a.y - n.y * r}" x2="${b.x - n.x * r}" y2="${b.y - n.y * r}" stroke="#111" stroke-opacity="${0.26 + tone * 0.24}" stroke-width="${Math.max(1, r * 0.08)}" />`;
+            const capStroke = `stroke="#111" stroke-width="1"`;
+            const innerStroke = `stroke="#222" stroke-width="0.9"`;
+            if (item.segment.capStart) {
+              svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="url(#${gradId})" ${capStroke} />`;
+              svg += flangeSlotSvg(a, angleRad, flange, tone);
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${a.x}" cy="${a.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${a.x} ${a.y})" fill="url(#${gradId})" ${innerStroke} />`;
+            }
+            if (item.segment.capEnd) {
+              svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.outerRadius}" ry="${flange.outerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="url(#${gradId})" ${capStroke} />`;
+              svg += flangeSlotSvg(b, angleRad, flange, tone);
+              if (flange.outerRadius - flange.innerRadius > 0.8) svg += `<ellipse cx="${b.x}" cy="${b.y}" rx="${flange.innerRadius}" ry="${flange.innerMinor}" transform="rotate(${angle} ${b.x} ${b.y})" fill="url(#${gradId})" ${innerStroke} />`;
+            }
+          }
+          const masks = overlapModel.masks.get(item.key) || [];
+          masks.forEach(mask => {
+            const half = mask.length / 2;
+            const start = add(mask.center, mul(mask.dir, -half));
+            const end = add(mask.center, mul(mask.dir, half));
+              svg += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" stroke="#fff" stroke-width="${mask.width}" stroke-linecap="round" />`;
+              svg += `<line x1="${start.x}" y1="${start.y}" x2="${end.x}" y2="${end.y}" stroke="#8a8a8a" stroke-opacity="0.24" stroke-width="${Math.max(1, mask.width * 0.1)}" stroke-linecap="round" />`;
+            });
+        } else {
+          const { p1, p2, c1, c2, r, tone } = item.screen;
+          const path = `M ${p1.x} ${p1.y} C ${c1.x} ${c1.y} ${c2.x} ${c2.y} ${p2.x} ${p2.y}`;
+          if (state.renderStyle === 'outline') {
+            const outlineStroke = printOutlineStrokeWidth(r);
+            svg += `<path d="${path}" fill="none" stroke="#111" stroke-width="${r * 2 + outlineStroke * 2}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${path}" fill="none" stroke="#fff" stroke-width="${Math.max(0.5, r * 2)}" stroke-linecap="round" stroke-linejoin="round" />`;
+          } else {
+            const gradId = `elbowGrad${order}`;
+            const midX = (p1.x + p2.x + c1.x + c2.x) / 4;
+            const midY = (p1.y + p2.y + c1.y + c2.y) / 4;
+            let bisector = add(perp(item.screen.d1), perp(item.screen.d2));
+            if (len(bisector) < 0.001) bisector = perp(norm(sub(p2, p1)));
+            bisector = norm(bisector);
+            const normal = perp(bisector);
+            const hiOffset = mul(normal, r * 0.34);
+            const shadowOffset = mul(normal, -r * 0.34);
+            const hiPath = `M ${p1.x + hiOffset.x} ${p1.y + hiOffset.y} C ${c1.x + hiOffset.x} ${c1.y + hiOffset.y} ${c2.x + hiOffset.x} ${c2.y + hiOffset.y} ${p2.x + hiOffset.x} ${p2.y + hiOffset.y}`;
+            const shadowPath = `M ${p1.x + shadowOffset.x} ${p1.y + shadowOffset.y} C ${c1.x + shadowOffset.x} ${c1.y + shadowOffset.y} ${c2.x + shadowOffset.x} ${c2.y + shadowOffset.y} ${p2.x + shadowOffset.x} ${p2.y + shadowOffset.y}`;
+            defs.push(`<linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${midX + normal.x * r}" y1="${midY + normal.y * r}" x2="${midX - normal.x * r}" y2="${midY - normal.y * r}">
+              <stop offset="0%" stop-color="${grayHex(225 + tone * 18)}" />
+              <stop offset="28%" stop-color="${grayHex(190 + tone * 18)}" />
+              <stop offset="72%" stop-color="${grayHex(142 + tone * 18)}" />
+              <stop offset="100%" stop-color="${grayHex(76 + tone * 16)}" />
+            </linearGradient>`);
+            svg += `<path d="${path}" fill="none" stroke="#111" stroke-width="${r * 2 + 1.1}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${path}" fill="none" stroke="url(#${gradId})" stroke-width="${r * 2}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${hiPath}" fill="none" stroke="#fff" stroke-opacity="${0.36 + tone * 0.34}" stroke-width="${Math.max(1, r * 0.08)}" stroke-linecap="round" stroke-linejoin="round" />`;
+            svg += `<path d="${shadowPath}" fill="none" stroke="#111" stroke-opacity="${0.28 + tone * 0.26}" stroke-width="${Math.max(1, r * 0.08)}" stroke-linecap="round" stroke-linejoin="round" />`;
+          }
+        }
+      });
+
+        svg = svg.replace('</defs>', defs.join('') + '</defs>');
+      }
+
+      svg += `</svg>`;
+      return svg;
+    }
+
+    function buildPrintSheet() {
+      const meta = buildPrintMeta();
+      const pageOne = buildPrintPageHtml({
+        header: 'Isometric Piping Drawing',
+        sub: 'Primary isometric view',
+        bodyHtml: `<div class="print-artboard">${buildIsometricPrintSvg()}</div>`,
+        meta,
+        suffix: '-001'
+      });
+      const pageTwo = buildPrintPageHtml({
+        header: 'Alternate Views',
+        sub: 'Overhead and orthographic reference views',
+        bodyHtml: buildAlternateGridHtml(),
+        meta,
+        suffix: '-002'
+      });
+      els.printSheet.innerHTML = pageOne + pageTwo;
+    }
+
+    window.addEventListener('resize', resize);
+    applyTheme(state.theme);
+    setOutlineThickness(state.outlineThickness * 100);
+    setFlangeScale(state.flangeScale * 100);
+    setFlangeRotation(state.flangeRotationDegrees);
+    updateNorthIndicator();
+    resize();
+    render();
+  </script>
+</body>
+</html>
